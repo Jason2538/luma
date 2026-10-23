@@ -1,6 +1,10 @@
 package app.luma.player;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.webkit.JavascriptInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,6 +14,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +39,29 @@ public class MainActivity extends Activity {
     };
 
     private WebView web;
+    private static MainActivity current;
+
+    /** 웹 화면(Luma)과 앱을 잇는 다리: 재생 상태를 받아 알림과 백그라운드 재생을 관리해요. */
+    private final class Bridge {
+        @JavascriptInterface
+        public void updateMedia(String json) {
+            PlaybackService.update(getApplicationContext(), json);
+        }
+
+        @JavascriptInterface
+        public void stopMedia() {
+            PlaybackService.stop();
+        }
+    }
+
+    /** 알림창·잠금화면 버튼을 누르면 Luma 화면에 전달해요 (play, pause, next, prev, seek:ms). */
+    static void dispatch(final String action) {
+        final MainActivity a = current;
+        if (a == null || a.web == null) return;
+        a.runOnUiThread(() -> {
+            if (a.web != null) a.web.evaluateJavascript("window.lumaNative&&window.lumaNative(" + JSONObject.quote(action) + ")", null);
+        });
+    }
 
     private static boolean hostIn(Uri uri, String[] hosts) {
         String scheme = uri.getScheme();
@@ -52,9 +81,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        current = this;
         web = new WebView(this);
         web.setBackgroundColor(0xFF0E0E10);
         setContentView(web);
+        web.addJavascriptInterface(new Bridge(), "LumaAndroid");
+
+        // 안드로이드 13 이상: 알림창에 재생 조작을 띄우려면 알림 권한이 필요해요.
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -130,12 +167,20 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        // 뒤로 가기: 먼저 Luma 화면(플레이어 닫기, 이전 화면)에 맡기고, 더 갈 곳이 없으면
+        // 앱을 끄지 않고 뒤로 보내서 음악이 계속 재생되게 해요.
+        web.evaluateJavascript("window.lumaBack?window.lumaBack():false", v -> {
+            if (!"true".equals(v)) {
+                if (web.canGoBack()) web.goBack();
+                else moveTaskToBack(true);
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
+        PlaybackService.stop();
+        if (current == this) current = null;
         if (web != null) {
             web.destroy();
             web = null;

@@ -133,7 +133,7 @@ h2.sec{font-size:20px;font-weight:700;margin:30px 0 14px;letter-spacing:-.02em}
 @keyframes viewIn{from{opacity:0;transform:translateY(16px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 .trk,.pl,.artist,.mix,.mood,.rc{animation:itemIn .65s var(--ease) both;animation-delay:calc(min(var(--i,0),14) * 32ms)}
 @keyframes itemIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-body[data-view=spot] .hero,body[data-view=detail] .hero{display:none}
+body[data-view=spot] .hero,body[data-view=detail] .hero,body[data-view=set] .hero{display:none}
 body[data-view=spot] #appBody,body[data-view=detail] #appBody{padding-top:4px}
 
 /* ---------- 아래 탭바 ---------- */
@@ -189,7 +189,7 @@ body[data-mode=spot] .trk.on{background:rgba(30,215,96,.13)}
 .rc .a{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .segs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .seg{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--faint);position:relative}
-.seg button{position:relative;z-index:1;padding:7px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--dim);transition:color .35s}
+.seg button{position:relative;z-index:1;padding:7px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--dim);transition:color .35s;white-space:nowrap;flex:none}
 .seg button.on{color:#04120a}
 .seg .ind{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:999px;background:var(--spot);
   transition:transform .5s cubic-bezier(.34,1.25,.5,1),width .5s cubic-bezier(.34,1.25,.5,1)}
@@ -327,7 +327,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 14%,#000 86%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 14%,#000 86%,transparent)}
 #lyrics::-webkit-scrollbar{display:none}
 #lyrics.msg{padding:0;overflow:hidden;-webkit-mask-image:none;mask-image:none}
-.ln{font-size:clamp(26px,3.3vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.28;margin:0 0 .62em;cursor:pointer;
+.ln{font-size:calc(clamp(26px,3.3vw,46px) * var(--lys,1));font-weight:800;letter-spacing:-.02em;line-height:1.28;margin:0 0 .62em;cursor:pointer;
   opacity:.34;filter:blur(calc(var(--d,4) * 1.3px));transform-origin:left center;transform:scale(.96);
   transition:opacity .8s var(--ease),filter .8s var(--ease),transform .9s var(--ease),text-shadow .9s}
 .ln.act{opacity:1;filter:none;transform:scale(1);text-shadow:0 0 30px rgba(255,255,255,.22)}
@@ -352,7 +352,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   .ctrls .ic.big{width:40px;height:40px}
   .vol{display:none}
   #lyrics{padding:24vh 0 30vh;}
-  .ln{font-size:clamp(22px,6vw,32px)}
+  .ln{font-size:calc(clamp(22px,6vw,32px) * var(--lys,1))}
   .lmsg{padding:0}
   .pl-right{height:auto;min-height:0}
   .lsrc{bottom:8px}
@@ -392,6 +392,88 @@ body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
 #toast .tact{display:block;margin:9px auto 0;padding:8px 16px;border-radius:999px;background:#1a1814;color:#fff;font-weight:700;font-size:13px}
 .spin{width:26px;height:26px;border:3px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:30px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
+/* ---------- 설정 ---------- */
+body[data-ly=s]{--lys:.8} body[data-ly=l]{--lys:1.22}
+body.no-lyrics #player{grid-template-columns:minmax(0,1fr);justify-items:center}
+body.no-lyrics .pl-right{display:none}
+body.no-lyrics .pl-left{justify-self:center;max-width:min(520px,60vh)}
+body.calm *,body.calm *::before,body.calm *::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-delay:0s!important}
+body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:none!important}
+#setBtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--faint);color:var(--fg);transition:background .3s,scale .35s var(--spring),transform .6s var(--ease)}
+#setBtn svg{width:20px;height:20px}
+#setBtn:hover{transform:rotate(25deg)}
+#setBtn:active{scale:.9}
+#setBtn.on{background:rgba(255,217,160,.25)}
+.setHead h1{font-size:clamp(28px,3.6vw,40px);letter-spacing:-.03em;margin:18px 0 6px}
+.setGroup{margin:22px 0;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:2px 20px 4px}
+.setGroup h2{font-size:13px;color:var(--dim);margin:16px 0 4px;font-weight:700;letter-spacing:.04em}
+.row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 0;border-top:1px solid rgba(255,255,255,.06)}
+.setGroup h2+.row{border-top:0}
+.rl{min-width:0;flex:1}
+.rl b{display:block;font-size:15px;font-weight:600}
+.rl small{display:block;font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.5}
+.tg{flex:none;width:52px;height:31px;border-radius:999px;background:rgba(255,255,255,.18);position:relative;transition:background .35s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .45s var(--spring)}
+.tg[aria-checked=true]{background:var(--spot)}
+.tg[aria-checked=true]::after{transform:translateX(21px)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.chips button{padding:7px 13px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px;transition:background .3s,color .3s,scale .35s var(--spring)}
+.chips button:active{scale:.92}
+.chips button.on{background:var(--spot);color:#04120a;font-weight:700}
+.pill{flex:none;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.1);font-size:13px;font-weight:600;white-space:nowrap;transition:background .3s,scale .35s var(--spring)}
+.pill:active{scale:.94}
+.pill.danger{color:#ffb4a8}
+.val{flex:none;font-weight:700;white-space:nowrap}
+.rangeBox{display:flex;align-items:center;gap:12px;width:min(260px,100%)}
+.rangeBox span{width:44px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.acct img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--faint);flex:none}
+.acct .noimg{width:44px;height:44px;border-radius:50%;background:var(--faint);display:grid;place-items:center;font-weight:800;flex:none}
+@media (max-width:640px){.row{flex-direction:column;align-items:flex-start}.chips{justify-content:flex-start}.row.acct{flex-direction:row;align-items:center}.rangeBox{width:100%}}
+
+/* ---------- 재생 시간 통계 ---------- */
+.dateRow{display:flex;align-items:center;gap:10px;margin:-4px 0 14px;flex-wrap:wrap;color:var(--dim);font-size:13px}
+.dateRow input{padding:8px 10px;border-radius:10px;border:1px solid var(--faint);background:rgba(255,255,255,.06);color:var(--fg);color-scheme:dark}
+#segPeriod{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.stTiles{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.stTile{background:rgba(255,255,255,.05);border:1px solid var(--faint);border-radius:16px;padding:16px 18px;min-width:0}
+.stTile .lbl{display:block;font-size:12.5px;color:var(--dim)}
+.stTile b{display:block;font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stTile .sub{display:block;font-size:12px;color:var(--dim);margin-top:3px}
+.stTile.big b{font-size:clamp(34px,4.2vw,50px);margin-top:4px}
+.chartCard{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:16px 16px 8px;margin-bottom:14px}
+.chHead{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);margin:0 4px 6px}
+.chart svg{display:block;width:100%;height:240px;overflow:visible}
+.chart .grid{stroke:rgba(255,255,255,.08);stroke-width:1}
+.chart .base{stroke:rgba(255,255,255,.22);stroke-width:1}
+.chart .tick{fill:var(--dim);font-size:11px;font-variant-numeric:tabular-nums}
+.chart .xl{fill:var(--dim);font-size:11px}
+.chart .xl.today{fill:var(--fg);font-weight:700}
+.chart .bar{fill:var(--spot);transform-box:fill-box;transform-origin:bottom;animation:barUp .8s var(--ease) both;animation-delay:calc(min(var(--i,0),40) * 18ms);transition:fill .2s,opacity .2s}
+.chart .bar.dim{opacity:.45}
+.chart .bar.hl{fill:#7af0a6}
+.chart .vlab{fill:var(--fg);font-size:12px;font-weight:700}
+.chart .hit{fill:transparent;cursor:pointer}
+@keyframes barUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.chTip{position:absolute;z-index:3;pointer-events:none;background:rgba(250,246,240,.97);color:#1a1814;font-size:12.5px;padding:7px 10px;border-radius:10px;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.chTip b{font-weight:700}
+.stCols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stCard{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:16px 18px}
+.stCard h3{font-size:14px;font-weight:700;margin-bottom:10px}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;margin:10px 0;animation:itemIn .6s var(--ease) both;animation-delay:calc(var(--i,0) * 50ms)}
+.hb .n{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb .v{font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.hb .trackbar{grid-column:1/-1;height:6px;border-radius:4px;background:rgba(30,215,96,.14);overflow:hidden}
+.hb .trackbar i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--spot);transform-origin:left;animation:barX .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 150ms)}
+@keyframes barX{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.tbl{margin-top:12px;font-size:13px;color:var(--dim)}
+.tbl summary{cursor:pointer;padding:6px 2px;width:max-content}
+.tbl table{width:100%;max-width:420px;border-collapse:collapse;margin-top:8px}
+.tbl td,.tbl th{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+.tbl td:last-child,.tbl th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.statNote{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
+@media (max-width:900px){.stTiles{grid-template-columns:1fr 1fr}.stTiles .big{grid-column:1/-1}.stCols{grid-template-columns:1fr}}
+@media (max-width:600px){.seg button{padding:7px 12px}}
+
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}.pbg,#glow,.spKicker i,.skel{animation:none!important}}
 </style>
 </head>
@@ -414,6 +496,7 @@ body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
   <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 10.3L12 4l8 6.3V19a1.5 1.5 0 0 1-1.5 1.5h-3v-5.5h-7v5.5h-3A1.5 1.5 0 0 1 4 19z"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c.6 4 2.5 5.9 6.5 6.5-4 .6-5.9 2.5-6.5 6.5-.6-4-2.5-5.9-6.5-6.5 4-.6 5.9-2.5 6.5-6.5z"/><path d="M18.5 15c.3 1.7 1 2.4 2.5 2.7-1.5.3-2.2 1-2.5 2.7-.3-1.7-1-2.4-2.5-2.7 1.5-.3 2.2-1 2.5-2.7z"/></g></symbol>
   <symbol id="i-spark-f" viewBox="0 0 24 24"><path d="M11 2.5c.7 4.6 2.9 6.8 7.5 7.5-4.6.7-6.8 2.9-7.5 7.5-.7-4.6-2.9-6.8-7.5-7.5 4.6-.7 6.8-2.9 7.5-7.5zM18.5 14.5c.35 1.9 1.1 2.65 3 3-1.9.35-2.65 1.1-3 3-.35-1.9-1.1-2.65-3-3 1.9-.35 2.65-1.1 3-3z"/></symbol>
+  <symbol id="i-set" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M18 7h2M4 17h3M11 17h9"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="8.5" cy="17" r="2.5"/></g></symbol>
   <symbol id="i-add" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.5v7M8.5 12h7"/></g></symbol>
 </svg>
 
@@ -426,6 +509,7 @@ body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
     <div class="brand">Luma<i></i></div>
   </div>
   <div class="user" id="userBox" hidden>
+    <button id="setBtn" aria-label="설정"><svg><use href="#i-set"/></svg></button>
     <img id="userImg" alt="">
     <span id="userName"></span>
     <button id="logoutBtn">로그아웃</button>
@@ -484,6 +568,13 @@ body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
       </div>
       <div id="spBody">
         <section class="spSec"><h2 class="sec">나를 위한 믹스</h2><div class="mixes" id="spMixes"></div></section>
+        <section class="spSec" id="statSec">
+          <h2 class="sec">내 재생 시간</h2>
+          <div class="segs"><div class="seg" id="segPeriod"><span class="ind"></span><button data-p="week" class="on">이번 주</button><button data-p="lastweek">지난 주</button><button data-p="month">이번 달</button><button data-p="30d">최근 30일</button><button data-p="custom">직접 선택</button></div></div>
+          <div class="dateRow" id="dateRow" hidden><input type="date" id="dFrom" aria-label="시작 날짜"> ~ <input type="date" id="dTo" aria-label="끝 날짜"></div>
+          <div id="statBody"></div>
+          <p class="statNote">Luma에서 들은 시간과 Spotify 최근 재생 기록(최근 50곡)으로 계산해요. 기록은 이 기기에만 저장돼요.</p>
+        </section>
         <section class="spSec">
           <div class="secHead"><h2 class="sec">최근 재생한 곡</h2><button class="link" data-act="recentAll">모두 보기</button></div>
           <div class="recent" id="spRecent"></div>
@@ -501,6 +592,40 @@ body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
     </section>
 
     <div id="plDetail" hidden></div>
+
+    <!-- 설정 -->
+    <section id="vSet" hidden>
+      <header class="setHead"><h1>설정</h1></header>
+      <div class="setGroup"><h2>재생</h2>
+        <div class="row"><div class="rl"><b>기본 재생 위치</b><small>곡을 누르면 어디서 소리가 날지 정해요</small></div>
+          <div class="seg" id="setOut"><span class="ind"></span><button data-v="luma">Luma에서 재생</button><button data-v="remote">Spotify 앱 조작</button></div></div>
+        <div class="row"><div class="rl"><b>크로스페이드</b><small>Luma에서 재생할 때 곡 끝은 줄이고 다음 곡은 키워서 부드럽게 넘겨요</small></div>
+          <div class="rangeBox"><input type="range" id="setCf" min="0" max="12" step="1" value="0" aria-label="크로스페이드 시간"><span id="setCfV">꺼짐</span></div></div>
+        <div class="row"><div class="rl"><b>자동 재생</b><small>듣던 목록이 끝나면 비슷한 곡을 이어서 틀어요</small></div>
+          <button class="tg" id="setAuto" role="switch" aria-checked="true" aria-label="자동 재생"></button></div>
+        <div class="row"><div class="rl"><b>수면 타이머</b><small id="sleepInfo">꺼져 있어요</small></div>
+          <div class="chips" id="setSleep"><button data-v="0" class="on">끄기</button><button data-v="15">15분</button><button data-v="30">30분</button><button data-v="45">45분</button><button data-v="60">1시간</button><button data-v="end">이 곡 끝나면</button></div></div>
+      </div>
+      <div class="setGroup"><h2>음질</h2>
+        <div class="row"><div class="rl"><b>Luma에서 재생할 때</b><small>Spotify 웹 재생은 음질이 정해져 있어서 바꿀 수 없어요 (Premium 기준)</small></div><span class="val">AAC 256kbps</span></div>
+        <div class="row"><div class="rl"><b>Spotify 앱으로 재생할 때</b><small>Spotify 앱의 설정 → 음질에서 자동·낮음·보통·높음·매우 높음·무손실 중에 고를 수 있어요</small></div><button class="pill" id="openSpApp">Spotify 앱 열기</button></div>
+      </div>
+      <div class="setGroup"><h2>화면</h2>
+        <div class="row"><div class="rl"><b>가사 보기</b><small>플레이어 오른쪽에 가사를 보여줘요</small></div>
+          <button class="tg" id="setLyrics" role="switch" aria-checked="true" aria-label="가사 보기"></button></div>
+        <div class="row"><div class="rl"><b>가사 글자 크기</b></div>
+          <div class="seg" id="setLys"><span class="ind"></span><button data-v="s">작게</button><button data-v="m">보통</button><button data-v="l">크게</button></div></div>
+        <div class="row"><div class="rl"><b>애니메이션 줄이기</b><small>움직이는 효과를 최소로 줄여요</small></div>
+          <button class="tg" id="setCalm" role="switch" aria-checked="false" aria-label="애니메이션 줄이기"></button></div>
+        <div class="row"><div class="rl"><b>시작 화면</b><small>Luma를 열면 처음 보일 화면</small></div>
+          <div class="seg" id="setStart"><span class="ind"></span><button data-v="home">홈</button><button data-v="spot">Spotify</button></div></div>
+      </div>
+      <div class="setGroup"><h2>계정</h2>
+        <div class="row acct"><span id="setAvaBox"></span><div class="rl"><b id="setName"></b><small id="setId"></small></div><button class="pill" id="setLogout">로그아웃</button></div>
+        <div class="row"><div class="rl"><b>저장된 데이터 지우기</b><small>재생 시간 기록, 설정, 임시 저장 내용을 지워요. 로그인은 그대로예요.</small></div><button class="pill danger" id="setClear">지우기</button></div>
+        <div class="row"><div class="rl"><b>Luma 정보</b><small id="setVer"></small></div></div>
+      </div>
+    </section>
   </div>
 </main>
 
@@ -598,8 +723,18 @@ function toast(msg, ms = 4200, action){
 
 /* ---------- 애니메이션 도우미 ---------- */
 const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home' };
+let SET = { ...SET_DEF };
+try { SET = { ...SET_DEF, ...JSON.parse(LS.get('luma_set') || '{}') }; } catch {}
+const saveSet = () => LS.set('luma_set', JSON.stringify(SET));
+const isCalm = () => RM || SET.calm;
+function applySettings(){
+  document.body.classList.toggle('no-lyrics', !SET.lyrics);
+  document.body.dataset.ly = SET.lys;
+  document.body.classList.toggle('calm', !!SET.calm);
+}
 function anim(el, frames, opts){
-  if (RM || !el || !el.animate) return;
+  if (isCalm() || !el || !el.animate) return;
   try { el.animate(frames, { easing: 'cubic-bezier(.22,1,.36,1)', ...opts }); } catch {}
 }
 const shuffleArr = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -717,6 +852,7 @@ async function handleCallback(){
 }
 function logout(){
   forgetTokens();
+  try { window.LumaAndroid && window.LumaAndroid.stopMedia(); } catch {}
   try { player && player.disconnect(); } catch {}
   location.href = redirectUri();
 }
@@ -913,7 +1049,11 @@ function applyTrack(tr){
   if (!tr) return;
   const changed = !S.track || S.track.uri !== tr.uri;
   S.track = tr; S.dur = tr.dur || S.dur;
-  if (changed) renderTrack();
+  if (changed) {
+    if (sleepT.end && sleepT.uri && sleepT.uri !== tr.uri && !S.paused) { clearSleep(); setTimeout(pauseNow, 50); toast('수면 타이머: 재생을 멈췄어요'); }
+    sessionPlayed.add(tr.uri);
+    renderTrack();
+  }
 }
 let bgFlip = false;
 function setPlayerBg(url){
@@ -967,11 +1107,13 @@ function syncUI(){
   $('bRep').classList.toggle('on', S.repeat > 0);
   $('repBadge').hidden = S.repeat !== 2;
   if (!volDrag) { $('vol').value = S.vol; $('vol').style.setProperty('--p', S.vol + '%'); }
-  $('state').textContent = S.dev ? `${S.dev}에서 재생` : '';
+  $('state').textContent = (S.dev ? `${S.dev}에서 재생` : '') + sleepLabel();
+  nativeSync();
 }
 function applySdkState(st){
   const c = st.track_window && st.track_window.current_track;
   if (!c) return;
+  markNearEnd();
   S.web = true; S.devId = deviceId; S.dev = 'Luma'; S.devSeenAt = Date.now();
   setPos(st.position || 0, !!st.paused);
   S.shuffle = !!st.shuffle; S.repeat = st.repeat_mode || 0;
@@ -983,6 +1125,7 @@ function applySdkState(st){
   });
   S.dur = st.duration || S.dur;
   syncUI();
+  checkQueueEnd();
 }
 async function pollRemote(){
   const seq = playSeq;
@@ -995,6 +1138,7 @@ async function pollRemote(){
     if (j.device.is_active) S.devSeenAt = Date.now();
     if (typeof j.device.volume_percent === 'number' && !volDrag) S.vol = j.device.volume_percent;
     if (j.item && j.item.type === 'track') {
+      markNearEnd();
       const now = Date.now();
       if (now < S.holdUntil) {
         // Spotify가 아직 이전 곡을 알려주면 화면을 되돌리지 않고 기다려요
@@ -1008,6 +1152,7 @@ async function pollRemote(){
       S.repeat = { off: 0, context: 1, track: 2 }[j.repeat_state] || 0;
       applyTrack(normTrack(j.item));
       syncUI();
+      checkQueueEnd();
     }
   } catch {}
 }
@@ -1031,7 +1176,7 @@ function initSDK(){
     });
     player.addListener('not_ready', () => { deviceId = null; });
     player.addListener('player_state_changed', st => {
-      if (!st) { S.web = false; return; }
+      if (!st) { S.web = false; nativeSync(); return; }
       applySdkState(st);
     });
     player.addListener('account_error', () => { sdkFailed = true; toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
@@ -1204,7 +1349,7 @@ async function seekTo(ms){
 let volT;
 function setVolume(v){
   S.vol = v; LS.set('luma_vol', String(v));
-  if (S.web && player) { player.setVolume(v / 100).catch(() => {}); return; }
+  if (S.web && player) { player.setVolume(v / 100 * cfVol).catch(() => {}); return; }
   clearTimeout(volT);
   volT = setTimeout(() => { api(withDev('/me/player/volume?volume_percent=' + v), { method: 'PUT' }).catch(() => {}); }, 250);
 }
@@ -1451,10 +1596,323 @@ async function pickDevice(id){
   } catch (e) { handleErr(e); }
 }
 
+/* ---------- 앱(APK) 알림창 · 백그라운드 재생 연동 ---------- */
+let lastNative = '';
+function nativeSync(){
+  const N = window.LumaAndroid; if (!N) return;
+  try {
+    if (!S.track || !S.web) { if (lastNative !== 'stop') { lastNative = 'stop'; N.stopMedia(); } return; }
+    const t = S.track;
+    const msg = JSON.stringify({ title: t.name, artist: t.artists.join(', '), album: t.album || '', art: t.cover || t.thumb || '',
+      playing: !S.paused, pos: Math.round(curPos()), dur: Math.round(S.dur || 0) });
+    if (msg === lastNative) return;
+    lastNative = msg; N.updateMedia(msg);
+  } catch {}
+}
+window.lumaNative = a => {
+  if (a === 'play') { if (S.paused) togglePlay(); }
+  else if (a === 'pause') { if (!S.paused) togglePlay(); }
+  else if (a === 'next') skip(1);
+  else if (a === 'prev') { if (curPos() > 4000) seekTo(0); else skip(-1); }
+  else if (typeof a === 'string' && a.startsWith('seek:')) seekTo(+a.slice(5));
+};
+/* 안드로이드 뒤로 가기: 처리했으면 true */
+window.lumaBack = () => {
+  if (!$('devMenu').hidden) { $('devMenu').hidden = true; return true; }
+  if (!$('reqDlg').hidden) { closeReq(); return true; }
+  if ($('player').classList.contains('open')) { closePlayer(); return true; }
+  if (curView === 'detail') { backFromDetail(); return true; }
+  if (curView === 'spot' || curView === 'set' || (sQ && $('q').value.trim())) { goTab('home'); return true; }
+  return false;
+};
+
+/* ---------- 크로스페이드 (Luma에서 재생할 때) ---------- */
+let cfVol = 1, cfLast = 0;
+function setCfVol(v){ cfVol = v; cfLast = performance.now(); if (player) player.setVolume(S.vol / 100 * v).catch(() => {}); }
+function crossfadeTick(){
+  const cf = (SET.cf || 0) * 1000;
+  if (!S.web || !player || !cf || S.paused || !S.track || !S.dur) { if (cfVol !== 1 && player && S.web) setCfVol(1); else cfVol = 1; return; }
+  const p = curPos(), rem = S.dur - p;
+  let v = 1;
+  if (rem < cf) v = Math.max(.04, rem / cf);
+  else if (p < cf) v = Math.max(.04, p / cf);
+  if (Math.abs(v - cfVol) > .03 && performance.now() - cfLast > 110) setCfVol(v);
+}
+
+/* ---------- 수면 타이머 ---------- */
+let sleepT = { until: 0, end: false, uri: null };
+function clearSleep(){ sleepT = { until: 0, end: false, uri: null }; renderSleep(); }
+function setSleep(v){
+  if (v === '0') clearSleep();
+  else if (v === 'end') { sleepT = { until: 0, end: true, uri: S.track ? S.track.uri : null }; if (!S.track) toast('곡을 재생하면 그 곡이 끝날 때 멈춰요'); }
+  else sleepT = { until: Date.now() + (+v) * 60000, end: false, uri: null };
+  renderSleep(); syncUI();
+}
+const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+function sleepLabel(){
+  if (sleepT.until) return ` · 수면 타이머 ${mmss(sleepT.until - Date.now())}`;
+  if (sleepT.end) return ' · 이 곡이 끝나면 멈춰요';
+  return '';
+}
+function renderSleep(){
+  const v = sleepT.until ? null : sleepT.end ? 'end' : '0';
+  document.querySelectorAll('#setSleep button').forEach(b => b.classList.toggle('on', v ? b.dataset.v === v : false));
+  $('sleepInfo').textContent = sleepT.until ? `${mmss(sleepT.until - Date.now())} 뒤에 멈춰요` : sleepT.end ? '지금 곡이 끝나면 멈춰요' : '꺼져 있어요';
+}
+async function pauseNow(){ if (S.track && !S.paused) await togglePlay(); }
+
+/* ---------- 자동 재생: 목록이 끝나면 비슷한 곡 이어서 ---------- */
+const sessionPlayed = new Set();
+let nearEnd = { uri: null, at: 0 }, autoplayBusy = false;
+/* 곡 끝 4초 안쪽까지 재생됐는지 기억 (목록 끝 판단용) */
+function markNearEnd(){
+  if (S.track && !S.paused && S.dur && curPos() >= S.dur - 4000) nearEnd = { uri: S.track.uri, at: Date.now() };
+}
+function checkQueueEnd(){
+  if (!SET.autoplay || !S.track || !S.paused || S.repeat > 0 || autoplayBusy) return;
+  if (!nearEnd.uri || nearEnd.uri !== S.track.uri || Date.now() - nearEnd.at > 8000 || Date.now() - S.lastCtl < 3000) return;
+  if (sleepT.end || (sleepT.until && sleepT.until <= Date.now())) return;
+  nearEnd = { uri: null, at: 0 };
+  startAutoplay(S.track);
+}
+async function startAutoplay(seed){
+  autoplayBusy = true;
+  try {
+    const name = seed.artists[0] || '';
+    const q = `artist:"${name.replace(/"/g, '')}"`;
+    const pages = await Promise.all([0, 10].map(o => api('/search?' + new URLSearchParams({ q, type: 'track', limit: 10, offset: o })).then(j => j.tracks?.items || []).catch(() => [])));
+    let pool = pages.flat().filter(t => t && t.uri).map(normTrack);
+    if (hasScopes(NEED_SPOT)) pool = pool.concat(shuffleArr(await getTopTracks('short_term').catch(() => [])).slice(0, 12));
+    pool = dedupe(shuffleArr(pool)).filter(t => !sessionPlayed.has(t.uri) && t.uri !== seed.uri);
+    if (!pool.length) return;
+    toast(`자동 재생: ${name}와(과) 비슷한 곡을 이어서 틀게요`);
+    playList(pool.slice(0, 25), 0);
+  } finally { setTimeout(() => { autoplayBusy = false; }, 4000); }
+}
+
+/* ---------- 재생 시간 기록 ---------- */
+let H = { d: {}, m: {}, seen: [] }, histDirty = false;
+try { const h = JSON.parse(LS.get('luma_hist') || 'null'); if (h && h.d) H = { d: h.d, m: h.m || {}, seen: h.seen || [] }; } catch {}
+const pad2 = n => String(n).padStart(2, '0');
+const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); };
+function addListen(t, ms, ts){
+  if (!t || !t.id || !(ms > 0)) return;
+  const k = dayKey(ts || Date.now());
+  const day = H.d[k] || (H.d[k] = { t: 0, tr: {} });
+  day.t += ms; day.tr[t.id] = (day.tr[t.id] || 0) + ms;
+  H.m[t.id] = [t.name, t.artists.join(', '), t.artists[0] || '', t.thumb || t.cover || ''];
+  histDirty = true;
+}
+function saveHist(){
+  if (!histDirty) return;
+  const keys = Object.keys(H.d).sort();
+  if (keys.length > 400) for (const k of keys.slice(0, keys.length - 400)) delete H.d[k];
+  H.seen = H.seen.slice(-300);
+  LS.set('luma_hist', JSON.stringify(H)); histDirty = false;
+}
+/* Spotify 최근 재생 기록(최근 50곡)으로 Luma가 못 본 재생을 채워요 */
+function importRecent(items){
+  const seen = new Set(H.seen);
+  for (const it of items || []) {
+    const t = it && it.track; if (!t || !t.id || !it.played_at) continue;
+    const key = t.id + '@' + it.played_at;
+    if (seen.has(key)) continue;
+    seen.add(key); H.seen.push(key);
+    const ts = Date.parse(it.played_at); const day = H.d[dayKey(ts)];
+    if (day && day.tr[t.id]) continue;            // Luma가 이미 기록한 곡
+    addListen(normTrack(t), t.duration_ms || 0, ts);
+  }
+  saveHist();
+}
+let tickLast = performance.now();
+function secondTick(){
+  const now = performance.now(), dt = Math.min(now - tickLast, 70000); tickLast = now;
+  if (S.track && !S.paused && (S.web || !document.hidden)) addListen(S.track, dt);
+  markNearEnd();
+  if (sleepT.until) {
+    if (Date.now() >= sleepT.until) { clearSleep(); pauseNow(); toast('수면 타이머: 재생을 멈췄어요'); syncUI(); }
+    else { $('state').textContent = (S.dev ? `${S.dev}에서 재생` : '') + sleepLabel(); if (curView === 'set') renderSleep(); }
+  }
+  checkQueueEnd();
+}
+
+/* ---------- 재생 시간 통계 화면 ---------- */
+const ST = { p: 'week', from: null, to: null };
+const WD = ['일', '월', '화', '수', '목', '금', '토'];
+const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+function fmtDur(ms){
+  const m = Math.round(ms / 60000);
+  if (ms > 0 && m < 1) return '1분 미만';
+  const h = Math.floor(m / 60), r = m % 60;
+  return h ? (r ? `${h}시간 ${r}분` : `${h}시간`) : `${m}분`;
+}
+const fmtDay = d => `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+function periodRange(){
+  const today = startOfDay(new Date());
+  const mon = addDays(today, -((today.getDay() + 6) % 7));
+  if (ST.p === 'week') return [mon, addDays(mon, 6)];
+  if (ST.p === 'lastweek') return [addDays(mon, -7), addDays(mon, -1)];
+  if (ST.p === 'month') return [new Date(today.getFullYear(), today.getMonth(), 1), new Date(today.getFullYear(), today.getMonth() + 1, 0)];
+  if (ST.p === '30d') return [addDays(today, -29), today];
+  let a = ST.from || addDays(today, -13), b = ST.to || today;
+  if (a > b) [a, b] = [b, a];
+  if ((b - a) / 864e5 > 730) a = addDays(b, -730);
+  return [a, b];
+}
+function renderStats(){
+  const box = $('statBody'); if (!box) return;
+  const [a, b] = periodRange(), today = startOfDay(new Date());
+  const days = [];
+  for (let d = a; d <= b; d = addDays(d, 1)) days.push(d);
+  let total = 0; const tr = {};
+  const daily = days.map(d => { const rec = H.d[dayKey(d)]; const ms = rec ? rec.t : 0; total += ms;
+    if (rec) for (const [id, v] of Object.entries(rec.tr)) tr[id] = (tr[id] || 0) + v; return { d, ms }; });
+  const label = `${a.getMonth() + 1}월 ${a.getDate()}일 ~ ${b.getMonth() + 1}월 ${b.getDate()}일`;
+  if (!total) {
+    box.innerHTML = `<div class="stTiles"><div class="stTile big"><span class="lbl">총 재생 시간</span><b>0분</b><span class="sub">${label}</span></div></div>` +
+      '<div class="empty">이 기간에 기록된 재생 시간이 없어요.<br>Luma로 음악을 들으면 여기에 쌓여요.</div>';
+    return;
+  }
+  // 막대 묶음: 62일 이하면 하루 단위, 넘으면 주 단위
+  let buckets;
+  if (days.length <= 62) buckets = daily.map(x => ({ label: days.length <= 8 ? WD[x.d.getDay()] : `${x.d.getMonth() + 1}/${x.d.getDate()}`, full: fmtDay(x.d), ms: x.ms, today: +x.d === +today }));
+  else {
+    buckets = [];
+    for (let i = 0; i < daily.length; i += 7) {
+      const part = daily.slice(i, i + 7), s0 = part[0].d, s1 = part[part.length - 1].d;
+      buckets.push({ label: `${s0.getMonth() + 1}/${s0.getDate()}`, full: `${fmtDay(s0)} ~ ${fmtDay(s1)}`, ms: part.reduce((s, x) => s + x.ms, 0), today: part.some(x => +x.d === +today) });
+    }
+  }
+  const pastDays = daily.filter(x => x.d <= today).length || 1;
+  const best = daily.reduce((m, x) => x.ms > m.ms ? x : m, daily[0]);
+  const ids = Object.keys(tr);
+  const byArtist = {};
+  for (const id of ids) { const m = H.m[id]; const n = m ? m[2] : '알 수 없음'; byArtist[n] = (byArtist[n] || 0) + tr[id]; }
+  const topA = Object.entries(byArtist).sort((x, y) => y[1] - x[1]).slice(0, 5);
+  const topT = ids.sort((x, y) => tr[y] - tr[x]).slice(0, 5);
+  const maxA = topA.length ? topA[0][1] : 1, maxT = topT.length ? tr[topT[0]] : 1;
+  box.innerHTML =
+    `<div class="stTiles">` +
+      `<div class="stTile big"><span class="lbl">총 재생 시간</span><b>${fmtDur(total)}</b><span class="sub">${label}</span></div>` +
+      `<div class="stTile"><span class="lbl">하루 평균</span><b>${fmtDur(total / pastDays)}</b></div>` +
+      `<div class="stTile"><span class="lbl">가장 많이 들은 날</span><b>${best.d.getMonth() + 1}월 ${best.d.getDate()}일</b><span class="sub">${fmtDur(best.ms)}</span></div>` +
+      `<div class="stTile"><span class="lbl">들은 곡</span><b>${ids.length}곡</b></div>` +
+    `</div>` +
+    `<div class="chartCard"><div class="chHead"><span>${buckets.length === days.length ? '일별' : '주별'} 재생 시간</span></div><div class="chart" id="chart" role="img" aria-label="${esc(label)} 재생 시간 막대 그래프"></div><div class="chTip" id="chTip" hidden></div></div>` +
+    `<div class="stCols">` +
+      `<div class="stCard"><h3>많이 들은 아티스트</h3>${topA.map(([n, v], i) =>
+        `<div class="hb" style="--i:${i}"><span class="n">${esc(n)}</span><span class="v">${fmtDur(v)}</span><span class="trackbar"><i style="width:${Math.max(3, v / maxA * 100)}%"></i></span></div>`).join('')}</div>` +
+      `<div class="stCard"><h3>많이 들은 곡</h3>${topT.map((id, i) => { const m = H.m[id] || ['알 수 없음', '']; return (
+        `<div class="hb" style="--i:${i}"><span class="n">${esc(m[0])} <span style="color:var(--dim)">· ${esc(m[1])}</span></span><span class="v">${fmtDur(tr[id])}</span><span class="trackbar"><i style="width:${Math.max(3, tr[id] / maxT * 100)}%"></i></span></div>`); }).join('')}</div>` +
+    `</div>` +
+    `<details class="tbl"><summary>표로 보기</summary><table><thead><tr><th>${buckets.length === days.length ? '날짜' : '주'}</th><th>재생 시간</th></tr></thead><tbody>` +
+      buckets.map(x => `<tr><td>${esc(x.full)}</td><td>${fmtDur(x.ms)}</td></tr>`).join('') + `</tbody></table></details>`;
+  drawChart($('chart'), buckets);
+}
+function niceStep(maxMin){
+  for (const s of [5, 10, 15, 20, 30, 60, 90, 120, 180, 240, 360, 480, 720, 1440, 2880]) if (s * 4 >= maxMin) return s;
+  return Math.ceil(maxMin / 4 / 60) * 60;
+}
+const tickLabel = m => m === 0 ? '0' : m < 60 ? `${m}분` : `${+(m / 60).toFixed(1)}시간`;
+function drawChart(el, data){
+  if (!el) return;
+  const W = Math.max(280, el.clientWidth || 800), H0 = 240, ml = 52, mr = 8, mt = 24, mb = 28;
+  const pw = W - ml - mr, ph = H0 - mt - mb;
+  const maxMin = Math.max(...data.map(x => x.ms)) / 60000;
+  const step = niceStep(Math.max(maxMin, 1)), top = Math.max(step, Math.ceil(maxMin / step) * step);
+  const y = m => mt + ph - (m / top) * ph;
+  const slot = pw / data.length, bw = Math.max(3, Math.min(24, slot * .62));
+  const every = Math.ceil(data.length / (W < 500 ? 6 : 12));
+  const maxI = data.reduce((mi, x, i) => x.ms > data[mi].ms ? i : mi, 0);
+  let g = '';
+  for (let m = 0; m <= top + .001; m += step) {
+    const yy = y(m).toFixed(1);
+    g += `<line class="${m === 0 ? 'base' : 'grid'}" x1="${ml}" x2="${W - mr}" y1="${yy}" y2="${yy}"/><text class="tick" x="${ml - 8}" y="${+yy + 4}" text-anchor="end">${tickLabel(m)}</text>`;
+  }
+  data.forEach((x, i) => {
+    const cx = ml + slot * i + slot / 2, mins = x.ms / 60000, h = Math.max(0, (mins / top) * ph), bx = cx - bw / 2, by = mt + ph - h;
+    if (h > .5) {
+      const r = Math.min(4, h, bw / 2);
+      g += `<path class="bar" data-i="${i}" style="--i:${i}" d="M${bx.toFixed(1)} ${(by + h).toFixed(1)}V${(by + r).toFixed(1)}Q${bx.toFixed(1)} ${by.toFixed(1)} ${(bx + r).toFixed(1)} ${by.toFixed(1)}H${(bx + bw - r).toFixed(1)}Q${(bx + bw).toFixed(1)} ${by.toFixed(1)} ${(bx + bw).toFixed(1)} ${(by + r).toFixed(1)}V${(by + h).toFixed(1)}Z"/>`;
+      if (i === maxI) g += `<text class="vlab" x="${cx.toFixed(1)}" y="${(by - 7).toFixed(1)}" text-anchor="middle">${fmtDur(x.ms)}</text>`;
+    }
+    if (i % every === 0 || x.today) g += `<text class="xl${x.today ? ' today' : ''}" x="${cx.toFixed(1)}" y="${H0 - 8}" text-anchor="middle">${esc(x.today && data.length > 8 ? '오늘' : x.label)}</text>`;
+    g += `<rect class="hit" data-i="${i}" x="${(ml + slot * i).toFixed(1)}" y="${mt}" width="${slot.toFixed(1)}" height="${ph}"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H0}" preserveAspectRatio="none">${g}</svg>`;
+  const tip = $('chTip'), svg = el.firstChild;
+  const show = i => {
+    const x = data[i]; if (!x) return;
+    svg.querySelectorAll('.bar').forEach(b => { b.classList.toggle('hl', +b.dataset.i === i); b.classList.toggle('dim', +b.dataset.i !== i); });
+    tip.innerHTML = `${esc(x.full)} · <b>${fmtDur(x.ms)}</b>`; tip.hidden = false;
+    const r = el.getBoundingClientRect(), pr = el.parentElement.getBoundingClientRect();
+    const cx = (ml + slot * i + slot / 2) / W * r.width + (r.left - pr.left);
+    const top0 = Math.min(y(x.ms / 60000), mt + ph - 2) / H0 * r.height + (r.top - pr.top) - 10;
+    tip.style.left = Math.min(Math.max(cx, 90), pr.width - 90) + 'px'; tip.style.top = top0 + 'px';
+  };
+  const hide = () => { tip.hidden = true; svg.querySelectorAll('.bar').forEach(b => b.classList.remove('hl', 'dim')); };
+  svg.addEventListener('pointerover', e => { const h = e.target.closest('.hit'); if (h) show(+h.dataset.i); });
+  svg.addEventListener('pointerdown', e => { const h = e.target.closest('.hit'); if (h) show(+h.dataset.i); });
+  svg.addEventListener('pointerleave', hide);
+}
+
+/* ---------- 설정 화면 ---------- */
+function setSeg(id, v){
+  const box = $(id);
+  box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  requestAnimationFrame(() => placeSeg(box));
+}
+const setToggle = (id, on) => $(id).setAttribute('aria-checked', on ? 'true' : 'false');
+function renderSettings(){
+  setSeg('setOut', outPref()); setSeg('setLys', SET.lys); setSeg('setStart', SET.start);
+  $('setCf').value = SET.cf; $('setCf').style.setProperty('--p', (SET.cf / 12 * 100) + '%');
+  $('setCfV').textContent = SET.cf ? `${SET.cf}초` : '꺼짐';
+  setToggle('setAuto', SET.autoplay); setToggle('setLyrics', SET.lyrics); setToggle('setCalm', SET.calm);
+  renderSleep();
+  $('setName').textContent = me ? (me.display_name || me.id) : '';
+  $('setId').textContent = me ? `Spotify ID · ${me.id}` : '';
+  const im = me && pickImg(me.images, 64);
+  $('setAvaBox').innerHTML = im ? `<span class="acct"><img src="${esc(im)}" alt=""></span>` : `<span class="noimg">${esc(((me && me.display_name) || 'L').slice(0, 1))}</span>`;
+  $('setVer').textContent = `웹 버전 2026.10 · ${IS_APP ? '안드로이드 앱에서 실행 중' : '브라우저에서 실행 중'}`;
+}
+let clearArm = 0;
+function bindSettings(){
+  const v = $('vSet');
+  v.addEventListener('click', e => {
+    const sb = e.target.closest('.seg button');
+    if (sb) {
+      const id = sb.parentElement.id, val = sb.dataset.v;
+      if (id === 'setOut') { LS.set('luma_out', val); if (val === 'luma') { pickedDevice = null; sdkBroken = false; } else pickedDevice = null; toast(val === 'luma' ? '다음 곡부터 Luma에서 재생해요' : '다음 곡부터 Spotify 앱을 조작해요'); }
+      if (id === 'setLys') { SET.lys = val; saveSet(); applySettings(); }
+      if (id === 'setStart') { SET.start = val; saveSet(); }
+      setSeg(id, val); return;
+    }
+    const tg = e.target.closest('.tg');
+    if (tg) {
+      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm' }[tg.id];
+      SET[key] = !SET[key]; saveSet(); applySettings(); setToggle(tg.id, SET[key]); return;
+    }
+    const ch = e.target.closest('#setSleep button'); if (ch) return setSleep(ch.dataset.v);
+    if (e.target.closest('#openSpApp')) { location.href = 'spotify:'; return; }
+    if (e.target.closest('#setLogout')) return logout();
+    if (e.target.closest('#setClear')) {
+      const b = $('setClear');
+      if (Date.now() - clearArm > 4000) { clearArm = Date.now(); b.textContent = '한 번 더 누르면 지워져요'; setTimeout(() => { b.textContent = '지우기'; }, 4000); return; }
+      ['luma_hist', 'luma_set', 'luma_out', 'luma_vol', 'luma_after'].forEach(k => LS.del(k));
+      H = { d: {}, m: {}, seen: [] }; histDirty = false; SET = { ...SET_DEF }; applySettings(); renderSettings();
+      b.textContent = '지우기'; clearArm = 0; toast('저장된 데이터를 지웠어요');
+    }
+  });
+  const cf = $('setCf');
+  cf.addEventListener('input', () => { SET.cf = +cf.value; cf.style.setProperty('--p', (SET.cf / 12 * 100) + '%'); $('setCfV').textContent = SET.cf ? `${SET.cf}초` : '꺼짐'; });
+  cf.addEventListener('change', saveSet);
+}
+
 /* ---------- 화면(뷰) · 아래 탭바 ---------- */
 let curView = 'home', curTab = 'home';
 function showView(v){
-  const map = { home: $('vHome'), spot: $('vSpot'), detail: $('plDetail') };
+  const map = { home: $('vHome'), spot: $('vSpot'), detail: $('plDetail'), set: $('vSet') };
   for (const [k, el] of Object.entries(map)) el.hidden = k !== v;
   const el = map[v];
   el.classList.remove('view-in'); void el.offsetWidth; el.classList.add('view-in');
@@ -1463,7 +1921,8 @@ function showView(v){
   const spotMode = v === 'spot' || (v === 'detail' && detailFrom === 'spot');
   document.body.dataset.mode = spotMode ? 'spot' : 'luma';
   $('spotBtn').classList.toggle('on', spotMode);
-  if (v !== 'detail') setTab(v === 'spot' ? 'spot' : (sQ && $('q').value.trim() ? 'search' : 'home'));
+  $('setBtn').classList.toggle('on', v === 'set');
+  if (v !== 'detail') setTab(v === 'spot' ? 'spot' : v === 'set' ? '' : (sQ && $('q').value.trim() ? 'search' : 'home'));
 }
 function setTab(t){
   curTab = t;
@@ -1473,9 +1932,14 @@ function setTab(t){
 }
 function moveInd(){
   const b = document.querySelector('#tabbar button.on'), ind = $('tabInd');
+  ind.style.opacity = b ? '1' : '0';
   if (!b || $('tabbar').hidden) return;
   ind.style.width = b.offsetWidth + 'px';
   ind.style.transform = `translateX(${b.offsetLeft}px)`;
+}
+function openSettings(){
+  if (curView === 'set') return goTab('home');
+  detail = null; showView('set'); window.scrollTo({ top: 0 }); renderSettings();
 }
 function goTab(t){
   if (t === 'home') {
@@ -1542,10 +2006,12 @@ async function loadSpot(force){
   greet();
   if (!hasScopes(NEED_SPOT)) { $('spPerm').hidden = false; $('spBody').hidden = true; return; }
   $('spPerm').hidden = true; $('spBody').hidden = false;
-  requestAnimationFrame(() => { placeSeg($('segKind')); placeSeg($('segRange')); });
+  requestAnimationFrame(() => { placeSeg($('segKind')); placeSeg($('segRange')); placeSeg($('segPeriod')); });
+  if (SP.at) renderStats();
   if (!force && SP.at && Date.now() - SP.at < 10 * 60 * 1000) return;
   SP.at = Date.now(); SP.cacheT = {}; SP.cacheA = {};
   renderMoods();
+  renderStats();
   await Promise.allSettled([loadMixes(), loadRecent(), loadTop()]);
 }
 function spPermIssue(e){
@@ -1614,6 +2080,7 @@ async function loadRecent(){
   box.innerHTML = skelBlocks(6, 'flex:0 0 150px;height:190px');
   try {
     const j = await api('/me/player/recently-played?limit=50');
+    importRecent(j.items); renderStats();
     const seen = new Set(); SP.recent = [];
     for (const it of j.items || []) { const t = it && it.track; if (!t || !t.uri || seen.has(t.id)) continue; seen.add(t.id); SP.recent.push(normTrack(t)); }
     box.innerHTML = SP.recent.length ? SP.recent.slice(0, 20).map(rcHTML).join('') : '<div class="empty">최근 재생 기록이 없어요</div>';
@@ -1759,6 +2226,8 @@ async function startApp(){
   if (USE_SDK) initSDK();
   loadPlaylists();
   if (LS.get('luma_after') === 'spot') { LS.del('luma_after'); goTab('spot'); }
+  else if (SET.start === 'spot') goTab('spot');
+  if (hasScopes(NEED_SPOT)) api('/me/player/recently-played?limit=50').then(j => importRecent(j.items)).catch(() => {});
   pollRemote();
   setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
 }
@@ -1808,6 +2277,16 @@ function bind(){
     set('previoustrack', () => skip(-1));
   }
 
+  /* 설정 */
+  $('setBtn').onclick = openSettings;
+  bindSettings();
+  const dateChange = () => {
+    const pd = v => { const [y, m, d] = v.split('-').map(Number); return y ? new Date(y, m - 1, d) : null; };
+    ST.from = pd($('dFrom').value); ST.to = pd($('dTo').value); renderStats();
+  };
+  $('dFrom').addEventListener('change', dateChange); $('dTo').addEventListener('change', dateChange);
+  window.addEventListener('resize', () => { if (curView === 'spot' && $('chart')) renderStats(); placeSeg($('segPeriod')); });
+
   /* 아래 탭바 · 왼쪽 위 Spotify 버튼 */
   $('tabbar').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(b.dataset.tab); });
   $('spotBtn').onclick = () => goTab(curView === 'spot' ? 'home' : 'spot');
@@ -1829,6 +2308,17 @@ function bind(){
       if (SP.kind === 'artists') { SP.kind = 'tracks'; document.querySelectorAll('#segKind button').forEach(b => b.classList.toggle('on', b.dataset.kind === 'tracks')); placeSeg($('segKind')); return loadTop(); }
     }
     const seg = e.target.closest('.seg button');
+    if (seg && seg.dataset.p) {
+      seg.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg));
+      placeSeg(seg.parentElement);
+      ST.p = seg.dataset.p;
+      $('dateRow').hidden = ST.p !== 'custom';
+      if (ST.p === 'custom') {
+        const [a, b] = periodRange(), iso = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        $('dFrom').value = iso(a); $('dTo').value = iso(b); $('dTo').max = $('dFrom').max = iso(new Date());
+      }
+      return renderStats();
+    }
     if (seg) {
       const box = seg.parentElement;
       box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg));
@@ -1886,6 +2376,12 @@ function bind(){
 }
 
 async function init(){
+  applySettings();
+  setInterval(crossfadeTick, 200);
+  setInterval(secondTick, 1000);
+  setInterval(saveHist, 20000);
+  document.addEventListener('visibilitychange', saveHist);
+  window.addEventListener('pagehide', saveHist);
   startPhrases();
   bind();
   syncUI();
