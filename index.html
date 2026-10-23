@@ -9,7 +9,8 @@
 <style>
 :root{
   --bg:#0e0e10; --fg:#f4f1ec; --dim:rgba(244,241,236,.62); --faint:rgba(244,241,236,.14);
-  --accent:#ffd9a0; --green:#1db954;
+  --accent:#ffd9a0; --green:#1db954; --spot:#1ed760;
+  --ease:cubic-bezier(.22,1,.36,1); --spring:cubic-bezier(.34,1.56,.64,1);
   --radius:14px;
   --font:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,system-ui,sans-serif;
 }
@@ -22,18 +23,27 @@ input{font:inherit;color:inherit}
 [hidden]{display:none!important}
 
 /* ---------- 배경 ---------- */
-#glow{position:fixed;inset:0;z-index:0;pointer-events:none;
+#glow{position:fixed;inset:-20%;z-index:0;pointer-events:none;animation:glowFlow 34s ease-in-out infinite alternate;
   background:
    radial-gradient(60vmax 40vmax at 15% 10%,rgba(255,200,130,.16),transparent 60%),
    radial-gradient(50vmax 40vmax at 90% 90%,rgba(120,150,255,.12),transparent 60%);}
 #coverBg{position:fixed;inset:-10%;z-index:0;background-size:cover;background-position:center;
   filter:blur(70px) saturate(1.5) brightness(.55);opacity:0;transition:opacity .8s;transform:scale(1.2)}
 body.has-cover #coverBg{opacity:1}
+@keyframes glowFlow{0%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(4%,3%) rotate(8deg)}100%{transform:translate(-3%,5%) rotate(-6deg)}}
 
 /* ---------- 상단바 ---------- */
 .topbar{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;
   padding:calc(14px + env(safe-area-inset-top)) 22px 14px}
+.tl{display:flex;align-items:center;gap:14px}
 .brand{font-weight:800;font-size:22px;letter-spacing:-.02em}
+#spotBtn{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 7px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);
+  font-size:13px;font-weight:700;transition:background .35s,border-color .35s,color .35s,scale .4s var(--spring)}
+#spotBtn .gd{width:22px;height:22px;border-radius:50%;background:var(--spot);display:grid;place-items:center;color:#04120a;transition:transform .5s var(--spring)}
+#spotBtn .gd svg{width:13px;height:13px}
+#spotBtn:hover .gd{transform:rotate(25deg) scale(1.08)}
+#spotBtn.on{background:rgba(30,215,96,.16);border-color:rgba(30,215,96,.55);color:#c9f8da}
+#spotBtn:active{scale:.93}
 .brand i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);margin-left:5px;box-shadow:0 0 14px var(--accent)}
 .user{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--dim)}
 .user img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--faint)}
@@ -65,7 +75,8 @@ body.compact #phrase{font-size:clamp(20px,3vw,30px);min-height:1.4em}
 .search{position:relative;margin-top:8px}
 .search .ic{position:absolute;z-index:1;pointer-events:none;left:18px;top:50%;transform:translateY(-50%);color:var(--dim);width:22px;height:22px}
 .search input{width:100%;padding:17px 20px 17px 52px;border-radius:999px;border:1px solid var(--faint);
-  background:rgba(255,255,255,.08);font-size:17px;outline:none;backdrop-filter:blur(10px)}
+  background:rgba(255,255,255,.08);font-size:17px;outline:none;backdrop-filter:blur(10px);transition:border-color .35s,background .35s,box-shadow .5s var(--ease)}
+.search input:focus{box-shadow:0 10px 40px rgba(255,217,160,.12)}
 .search input:focus{border-color:rgba(255,217,160,.6);background:rgba(255,255,255,.12)}
 .search input::placeholder{color:var(--dim)}
 
@@ -76,7 +87,9 @@ h2.sec{font-size:20px;font-weight:700;margin:30px 0 14px;letter-spacing:-.02em}
 .artist span{font-size:13px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .tracks{display:flex;flex-direction:column}
-.trk{display:grid;grid-template-columns:48px 1fr minmax(0,.7fr) 48px;gap:14px;align-items:center;padding:8px 10px;border-radius:12px;cursor:pointer;text-align:left;width:100%}
+.trk{display:grid;grid-template-columns:48px 1fr minmax(0,.7fr) 48px;gap:14px;align-items:center;padding:8px 10px;border-radius:12px;cursor:pointer;text-align:left;width:100%;
+  transition:background .3s,scale .35s var(--spring)}
+.trk:active{scale:.985}
 .trk:hover,.trk:focus-visible{background:rgba(255,255,255,.08)}
 .trk.on{background:rgba(255,217,160,.12)}
 .trk img,.trk .ph{width:48px;height:48px;border-radius:8px;object-fit:cover;background:var(--faint)}
@@ -88,41 +101,178 @@ h2.sec{font-size:20px;font-weight:700;margin:30px 0 14px;letter-spacing:-.02em}
 .empty{color:var(--dim);text-align:center;padding:30px 0;font-size:14px;line-height:1.7}
 
 .pls{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px}
-.pl{text-align:left;padding:10px;border-radius:14px;transition:background .2s}
+.pl{text-align:left;padding:10px;border-radius:14px;transition:background .3s,scale .4s var(--spring)}
+.pl img{transition:transform .6s var(--ease),box-shadow .6s}
+.pl:hover img{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.35)}
 .pl:hover{background:rgba(255,255,255,.07)}
 .pl img,.pl .ph{width:100%;aspect-ratio:1;border-radius:10px;object-fit:cover;background:var(--faint);margin-bottom:10px;display:grid;place-items:center;color:var(--dim)}
 .pl .n{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pl .c{font-size:12px;color:var(--dim);margin-top:2px}
 .back{display:inline-flex;align-items:center;gap:6px;color:var(--dim);font-size:14px;margin:22px 0 4px;padding:6px 4px}
-.plhead{display:flex;gap:18px;align-items:center;margin:8px 0 18px}
-.plhead img,.plhead .ph{width:110px;height:110px;border-radius:12px;object-fit:cover;background:var(--faint)}
+.plhead{display:flex;gap:22px;align-items:center;margin:8px 0 22px}
+.plhead img,.plhead .ph{width:150px;height:150px;flex:none;border-radius:14px;object-fit:cover;background:var(--faint);box-shadow:0 18px 40px rgba(0,0,0,.4)}
+.plhead .ph.grad{display:grid;place-items:center;font-weight:800;font-size:20px;color:#fff;text-align:center;padding:10px}
+.dActs{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.saveBtn{display:flex;align-items:center;gap:7px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--faint);font-weight:700;font-size:14px;transition:background .3s,scale .35s var(--spring)}
+.saveBtn svg{width:18px;height:18px}
+.saveBtn:active{scale:.95}
+.saveBtn:disabled{opacity:.6}
 .plhead h2{font-size:26px;letter-spacing:-.02em}
 .plhead p{font-size:13px;color:var(--dim);margin-top:4px}
-.playall{margin-top:12px;background:var(--accent);color:#2a1d05;font-weight:700;padding:10px 22px;border-radius:999px;font-size:14px}
+.playall{display:flex;align-items:center;gap:6px;background:var(--accent);color:#2a1d05;font-weight:700;padding:10px 22px;border-radius:999px;font-size:14px;transition:scale .35s var(--spring),background .4s}
+.playall svg{width:18px;height:18px}
+.playall:active,.more:active,.btn-green:active{scale:.95}
+.more,.btn-green{transition:scale .35s var(--spring),background .3s}
+.pl:active,.artist:active,.mix:active,.mood:active,.rc:active{scale:.96}
+.artist{transition:scale .4s var(--spring)}
+.artist img{transition:transform .6s var(--ease)}
+.artist:hover img{transform:scale(1.04)}
+
+/* ---------- 화면 전환 · 순서대로 나타나기 ---------- */
+.view-in{animation:viewIn .6s var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(16px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.trk,.pl,.artist,.mix,.mood,.rc{animation:itemIn .65s var(--ease) both;animation-delay:calc(min(var(--i,0),14) * 32ms)}
+@keyframes itemIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+body[data-view=spot] .hero,body[data-view=detail] .hero{display:none}
+body[data-view=spot] #appBody,body[data-view=detail] #appBody{padding-top:4px}
+
+/* ---------- 아래 탭바 ---------- */
+#tabbar{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;display:flex;gap:2px;padding:6px;border-radius:999px;
+  background:rgba(30,28,26,.74);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);border:1px solid rgba(255,255,255,.1);box-shadow:0 14px 44px rgba(0,0,0,.4);
+  animation:tabIn .8s var(--ease) both}
+@keyframes tabIn{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translate(-50%,0)}}
+#tabbar button{position:relative;z-index:1;display:flex;align-items:center;gap:7px;padding:10px 20px;white-space:nowrap;border-radius:999px;font-size:14px;font-weight:600;color:var(--dim);
+  transition:color .4s,scale .4s var(--spring)}
+#tabbar button svg{width:21px;height:21px;transition:transform .5s var(--spring)}
+#tabbar button.on{color:var(--fg)}
+#tabbar button.on svg{transform:scale(1.08)}
+#tabbar button[data-tab=spot].on{color:#c9f8da}
+#tabbar button:active{scale:.9}
+#tabInd{position:absolute;z-index:0;top:6px;left:0;height:calc(100% - 12px);width:0;border-radius:999px;background:rgba(255,255,255,.13);
+  transition:transform .55s cubic-bezier(.34,1.25,.5,1),width .55s cubic-bezier(.34,1.25,.5,1),background .45s}
+#tabbar.spot #tabInd{background:rgba(30,215,96,.22)}
+body.has-tabs main{padding-bottom:calc(200px + env(safe-area-inset-bottom))}
+
+/* ---------- Spotify 모드 ---------- */
+body[data-mode=spot] h2.sec::before{content:"";display:inline-block;width:4px;height:.85em;border-radius:2px;background:var(--spot);margin-right:10px;vertical-align:-1px}
+body[data-mode=spot] .playall{background:var(--spot);color:#04120a}
+body[data-mode=spot] .trk.on{background:rgba(30,215,96,.13)}
+.spHead{margin:18px 0 4px}
+.spKicker{display:flex;align-items:center;gap:8px;font-size:13px;color:#9be8b6;font-weight:600}
+.spKicker i{width:8px;height:8px;border-radius:50%;background:var(--spot);box-shadow:0 0 12px var(--spot);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45;transform:scale(.8)}}
+.spHead h1{font-size:clamp(28px,3.6vw,42px);letter-spacing:-.03em;margin-top:8px}
+.secHead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.secHead h2.sec{margin-bottom:14px}
+.link{font-size:13px;color:#9be8b6;font-weight:600;padding:6px 8px;border-radius:8px;transition:background .3s}
+.link:hover{background:rgba(30,215,96,.1)}
+.mixes{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px}
+.mix{text-align:left;border-radius:16px;transition:scale .4s var(--spring)}
+.mix .art{position:relative;aspect-ratio:1;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;background:#222;
+  box-shadow:0 16px 36px rgba(0,0,0,.38);transition:transform .6s var(--ease),box-shadow .6s}
+.mix:hover .art{transform:translateY(-4px);box-shadow:0 22px 44px rgba(0,0,0,.45)}
+.mix .art img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.2s var(--ease)}
+.mix:hover .art img{transform:scale(1.06)}
+.mix .art.one img{grid-column:1/-1;grid-row:1/-1}
+.mix .art.three img:first-child{grid-row:1/-1}
+.mix .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75),transparent 58%)}
+.mix .lbl{position:absolute;left:14px;bottom:14px;z-index:1;font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1.1}
+.mix .lbl small{display:block;font-size:10px;font-weight:800;color:var(--mc,#9be8b6);letter-spacing:.12em;margin-bottom:4px}
+.mix .bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--mc,var(--spot));z-index:1}
+.mix .who{font-size:13px;color:var(--dim);margin-top:10px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.recent{display:flex;gap:16px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x proximity;scrollbar-width:none}
+.recent::-webkit-scrollbar{display:none}
+.rc{flex:0 0 150px;text-align:left;scroll-snap-align:start;transition:scale .4s var(--spring)}
+.rc img,.rc .ph{width:150px;height:150px;border-radius:12px;object-fit:cover;background:var(--faint);display:block;box-shadow:0 10px 26px rgba(0,0,0,.32);transition:transform .6s var(--ease)}
+.rc:hover img{transform:translateY(-3px)}
+.rc .t{font-size:14px;font-weight:600;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc .a{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.segs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--faint);position:relative}
+.seg button{position:relative;z-index:1;padding:7px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--dim);transition:color .35s}
+.seg button.on{color:#04120a}
+.seg .ind{position:absolute;z-index:0;top:4px;bottom:4px;left:0;width:0;border-radius:999px;background:var(--spot);
+  transition:transform .5s cubic-bezier(.34,1.25,.5,1),width .5s cubic-bezier(.34,1.25,.5,1)}
+.rkList .trk{grid-template-columns:30px 48px 1fr 48px}
+@media (min-width:901px){.rkList{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,auto);grid-auto-flow:column;column-gap:28px}}
+@media (max-width:600px){
+  .mixes{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .mix .lbl{font-size:16px;left:11px;bottom:11px}
+  .moods{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #userName{display:none}
+  #tabbar button{padding:10px 14px;font-size:13px}
+  .plhead img,.plhead .ph{width:110px;height:110px}
+  .plhead h2{font-size:22px}
+}
+.rk-n{font-size:16px;font-weight:800;color:var(--dim);text-align:center;font-variant-numeric:tabular-nums}
+.rkList .trk:nth-child(-n+3) .rk-n{color:#9be8b6}
+.rkArtists{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:18px}
+.rkArtists .artist{width:auto}
+.rkArtists .artist img,.rkArtists .artist .ph{width:100%;height:auto;aspect-ratio:1}
+.artist .num{display:block;font-size:12px;color:#9be8b6;font-weight:800;margin-bottom:2px}
+.moods{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.mood{position:relative;height:100px;border-radius:16px;overflow:hidden;text-align:left;padding:15px 16px;font-weight:800;font-size:19px;letter-spacing:-.01em;
+  background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 10px 26px rgba(0,0,0,.28);transition:scale .4s var(--spring)}
+.mood span{position:relative;z-index:1}
+.mood::after{content:"";position:absolute;width:96px;height:96px;right:-20px;bottom:-30px;border-radius:50%;background:rgba(255,255,255,.2);transition:transform .8s var(--ease)}
+.mood::before{content:"";position:absolute;width:50px;height:50px;right:46px;bottom:-24px;border-radius:50%;background:rgba(255,255,255,.12);transition:transform .9s var(--ease)}
+.mood:hover::after{transform:scale(1.3) translate(-6px,-6px)}
+.mood:hover::before{transform:scale(1.4) translateY(-8px)}
+.spPerm{margin:18px 0;padding:22px;border-radius:18px;background:rgba(30,215,96,.08);border:1px solid rgba(30,215,96,.35);line-height:1.7;font-size:14px}
+.spPerm button{margin-top:14px;background:var(--spot);color:#04120a;font-weight:700;padding:11px 20px;border-radius:999px;transition:scale .35s var(--spring)}
+.spPerm button:active{scale:.95}
+.skel{border-radius:14px;background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 70%);background-size:300% 100%;animation:skel 1.4s ease-in-out infinite}
+@keyframes skel{from{background-position:100% 0}to{background-position:0 0}}
 
 /* ---------- 미니바 ---------- */
 #miniBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:20;
   width:min(560px,calc(100% - 28px));display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:18px;
-  background:rgba(40,38,36,.78);backdrop-filter:blur(18px);border:1px solid var(--faint);cursor:pointer;text-align:left}
+  background:rgba(40,38,36,.78);backdrop-filter:blur(18px);border:1px solid var(--faint);cursor:pointer;text-align:left;
+  transition:bottom .5s var(--ease),scale .4s var(--spring)}
+#miniBar:not([hidden]){animation:miniIn .7s var(--ease) both}
+@keyframes miniIn{from{opacity:0;transform:translate(-50%,40px)}to{opacity:1;transform:translate(-50%,0)}}
+#miniBar:active{scale:.98}
+body.has-tabs #miniBar{bottom:calc(88px + env(safe-area-inset-bottom))}
 #miniBar img{width:44px;height:44px;border-radius:8px;object-fit:cover}
 #miniBar .m{flex:1;min-width:0}
 #miniBar .t{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #miniBar .a{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#miniBar .pp{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--fg);color:#111}
+#miniBar .pp{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--fg);color:#111;transition:scale .35s var(--spring)}
+#miniBar .pp:active{scale:.85}
+#miniBar .pp .ic{width:22px;height:22px}
+/* 재생 ↔ 일시정지 아이콘이 부드럽게 바뀌기 */
+.pp svg,#bPlay svg{grid-area:1/1;transition:opacity .3s,transform .5s var(--spring)}
+.pp .pa,#bPlay .pa{opacity:0;transform:scale(.4) rotate(-60deg)}
+.pp.is-playing .pi,#bPlay.is-playing .pi{opacity:0;transform:scale(.4) rotate(60deg)}
+.pp.is-playing .pa,#bPlay.is-playing .pa{opacity:1;transform:none}
 #miniBar .bar{position:absolute;left:14px;right:14px;bottom:0;height:2px;background:var(--faint);border-radius:2px;overflow:hidden}
 #miniBar .bar i{display:block;height:100%;width:0;background:var(--accent)}
 
 /* ---------- 플레이어 (전체 화면) ---------- */
 #player{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:minmax(300px,34vw) 1fr;gap:clamp(24px,6vw,110px);
   align-items:center;padding:0 clamp(24px,6vw,100px);padding-top:env(safe-area-inset-top);
-  transform:translateY(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1);background:#15130f;overflow:hidden}
-#player.open{transform:none}
-#pBg{position:absolute;inset:-15%;background-size:cover;background-position:center;filter:blur(80px) saturate(1.6) brightness(.62);transform:scale(1.15);transition:background-image .6s}
+  transform:translateY(100%);visibility:hidden;transition:transform .7s var(--ease),visibility 0s .7s;background:#15130f;overflow:hidden}
+#player.open{transform:none;visibility:visible;transition:transform .7s var(--ease)}
+#player .pl-left,#player .pl-right{opacity:0;transform:translateY(40px);transition:opacity .35s,transform .5s var(--ease)}
+#player.open .pl-left{opacity:1;transform:none;transition:opacity .8s .14s,transform 1s .14s var(--ease)}
+#player.open .pl-right{opacity:1;transform:none;transition:opacity .9s .28s,transform 1.1s .28s var(--ease)}
+main,.topbar{transition:transform .7s var(--ease),opacity .6s}
+body.player-open main,body.player-open .topbar{transform:scale(.96);opacity:.35}
+.pbg{position:absolute;inset:-22%;background-size:cover;background-position:center;filter:blur(72px) saturate(1.7) brightness(.6);opacity:0;
+  transition:opacity 1.6s ease;will-change:transform,opacity;animation:drift 40s ease-in-out infinite alternate}
+.pbg.on{opacity:1}
+#pBgB{animation-delay:-20s;animation-direction:alternate-reverse}
+@keyframes drift{0%{transform:scale(1.15) rotate(0deg) translate(0,0)}50%{transform:scale(1.32) rotate(7deg) translate(-3%,2%)}100%{transform:scale(1.2) rotate(-6deg) translate(3%,-2%)}}
 #pShade{position:absolute;inset:0;background:linear-gradient(120deg,rgba(0,0,0,.18),rgba(0,0,0,.08) 55%,rgba(0,0,0,.22))}
-#closeP{position:absolute;top:calc(22px + env(safe-area-inset-top));left:24px;z-index:3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--dim)}
-#closeP:hover{background:rgba(255,255,255,.12);color:#fff}
-#devBtn{position:absolute;top:calc(22px + env(safe-area-inset-top));right:24px;z-index:3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--dim)}
-#devBtn:hover{background:rgba(255,255,255,.12);color:#fff}
+#closeP{position:absolute;top:calc(22px + env(safe-area-inset-top));left:24px;z-index:3;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--dim);
+  background:rgba(255,255,255,.06);transition:background .3s,color .3s,scale .35s var(--spring)}
+#closeP:hover{background:rgba(255,255,255,.14);color:#fff}
+#closeP:active,#devBtn:active{scale:.88}
+#devBtn{position:absolute;top:calc(22px + env(safe-area-inset-top));right:24px;z-index:3;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--dim);
+  background:rgba(255,255,255,.06);transition:background .3s,color .3s,scale .35s var(--spring)}
+#devBtn:hover{background:rgba(255,255,255,.14);color:#fff}
+#devMenu:not([hidden]){animation:popIn .35s var(--ease) both;transform-origin:top right}
+@keyframes popIn{from{opacity:0;transform:scale(.92) translateY(-6px)}to{opacity:1;transform:none}}
 #devMenu{position:absolute;top:calc(72px + env(safe-area-inset-top));right:24px;z-index:4;min-width:230px;max-width:80vw;background:rgba(30,28,26,.92);backdrop-filter:blur(18px);border:1px solid var(--faint);border-radius:14px;padding:8px}
 #devMenu h4{font-size:12px;color:var(--dim);padding:8px 10px;font-weight:600}
 #devMenu button{display:block;width:100%;text-align:left;padding:10px;border-radius:9px;font-size:14px}
@@ -130,8 +280,10 @@ h2.sec{font-size:20px;font-weight:700;margin:30px 0 14px;letter-spacing:-.02em}
 #devMenu button.cur{color:var(--accent)}
 
 .pl-left{position:relative;z-index:2;width:100%;max-width:520px;justify-self:end}
+#coverWrap{position:relative}
 #cover{width:100%;aspect-ratio:1;border-radius:16px;object-fit:cover;background:rgba(255,255,255,.1);
-  box-shadow:0 30px 70px rgba(0,0,0,.45);display:block;transition:transform .4s}
+  box-shadow:0 30px 70px rgba(0,0,0,.45);display:block;transition:transform .9s cubic-bezier(.34,1.4,.64,1),box-shadow .9s var(--ease)}
+#player.paused #cover{transform:scale(.86);box-shadow:0 12px 30px rgba(0,0,0,.3)}
 .meta{display:flex;align-items:center;gap:12px;margin-top:18px}
 .meta .txt{flex:1;min-width:0}
 .meta .tt{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -144,16 +296,26 @@ input[type=range]::-moz-range-progress{height:5px;border-radius:5px;background:r
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:#fff;margin-top:-5px;box-shadow:0 1px 6px rgba(0,0,0,.4)}
 input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:#fff}
 .times{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:2px}
-.ctrls{display:flex;align-items:center;justify-content:center;gap:clamp(18px,3.4vw,40px);margin-top:14px}
-.ctrls button{color:var(--fg);opacity:.92;position:relative}
-.ctrls button:active{transform:scale(.92)}
-.ctrls .ic.big{width:62px;height:62px}
-.ctrls .ic.mid{width:40px;height:40px}
-.ctrls .tog{opacity:.5}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2.2vw,26px);margin-top:12px}
+.ctrls button{position:relative;display:grid;place-items:center;width:50px;height:50px;border-radius:50%;color:var(--fg);
+  transition:scale .45s var(--spring),opacity .3s,color .3s}
+.ctrls button::before{content:"";position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.15);opacity:0;scale:.55;
+  transition:opacity .3s,scale .45s var(--spring)}
+.ctrls button:hover::before{opacity:.7;scale:1}
+.ctrls button:active::before{opacity:1;scale:1}
+.ctrls button:active{scale:.84}
+.ctrls button svg{position:relative;z-index:1}
+.ctrls #bPlay{width:80px;height:80px}
+.ctrls #bPrev,.ctrls #bNext{width:66px;height:66px}
+.ctrls .ic.big{width:46px;height:46px}
+.ctrls .ic.mid{width:42px;height:36px}
+.ctrls .tog .ic{width:23px;height:23px}
+.ctrls .tog{opacity:.55}
 .ctrls .tog.on{opacity:1;color:var(--accent)}
-.ctrls .badge{position:absolute;right:-2px;top:-3px;font-size:10px;font-weight:800;color:var(--accent)}
-.vol{display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--dim)}
-.vol .ic{width:18px;height:18px;flex:none}
+.ctrls .tog.on::after{content:"";position:absolute;bottom:5px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor}
+.ctrls .badge{position:absolute;z-index:2;right:6px;top:6px;font-size:10px;font-weight:800;color:var(--accent)}
+.vol{display:flex;align-items:center;gap:12px;margin-top:16px;color:var(--dim)}
+.vol .ic{width:20px;height:20px;flex:none}
 #state{font-size:12px;color:var(--dim);text-align:center;margin-top:10px;min-height:1.4em}
 
 .pl-right{position:relative;z-index:2;height:100%;min-width:0}
@@ -162,8 +324,9 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 #lyrics::-webkit-scrollbar{display:none}
 #lyrics.msg{padding:0;overflow:hidden;-webkit-mask-image:none;mask-image:none}
 .ln{font-size:clamp(26px,3.3vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.28;margin:0 0 .62em;cursor:pointer;
-  opacity:.34;filter:blur(calc(var(--d,4) * 1.3px));transition:opacity .45s,filter .45s,transform .45s;transform-origin:left center;transform:scale(.97)}
-.ln.act{opacity:1;filter:none;transform:scale(1)}
+  opacity:.34;filter:blur(calc(var(--d,4) * 1.3px));transform-origin:left center;transform:scale(.96);
+  transition:opacity .8s var(--ease),filter .8s var(--ease),transform .9s var(--ease),text-shadow .9s}
+.ln.act{opacity:1;filter:none;transform:scale(1);text-shadow:0 0 30px rgba(255,255,255,.22)}
 .ln[data-d="1"]{opacity:.5}
 .ln[data-d="2"]{opacity:.4}
 .ln:hover{filter:none;opacity:.85}
@@ -176,11 +339,13 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 @media (max-width:900px),(orientation:portrait){
   #player{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-items:stretch;gap:10px;padding:calc(68px + env(safe-area-inset-top)) 20px 0}
   .pl-left{max-width:none;justify-self:stretch;align-self:start;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center;min-width:0}
-  #cover{width:min(44vw,34vh);grid-row:1 / span 2;border-radius:12px}
+  #coverWrap{grid-row:1 / span 2}
+  #cover{width:min(44vw,34vh);border-radius:12px}
   .meta{margin:0;align-self:end}
   .prog,.ctrls,.vol,#state{grid-column:1 / -1}
   .prog{margin-top:6px}
-  .ctrls .ic.big{width:54px;height:54px}
+  .ctrls #bPlay{width:70px;height:70px}
+  .ctrls .ic.big{width:40px;height:40px}
   .vol{display:none}
   #lyrics{padding:24vh 0 30vh;}
   .ln{font-size:clamp(22px,6vw,32px)}
@@ -189,6 +354,8 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   .lsrc{bottom:8px}
   .trk{grid-template-columns:48px 1fr 44px}
   .trk .al{display:none}
+  .rkList .trk{grid-template-columns:26px 48px 1fr 44px}
+  #tabbar button{padding:10px 16px}
 }
 @media (max-width:900px) and (orientation:landscape){
   #player{grid-template-columns:minmax(240px,40vw) 1fr;grid-template-rows:none;align-items:center;padding:0 20px;gap:24px}
@@ -212,6 +379,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 #reqDlg .acts button{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px}
 #reqDlg .go{background:var(--accent);color:#2a1d05}
 #reqDlg .no{background:var(--faint)}
+body.has-tabs #toast{bottom:calc(160px + env(safe-area-inset-bottom))}
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:100;
   background:rgba(250,246,240,.96);color:#1a1814;padding:11px 18px;border-radius:12px;font-size:14px;max-width:88vw;text-align:center;
   opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;line-height:1.5}
@@ -220,31 +388,39 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 #toast .tact{display:block;margin:9px auto 0;padding:8px 16px;border-radius:999px;background:#1a1814;color:#fff;font-weight:700;font-size:13px}
 .spin{width:26px;height:26px;border:3px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:30px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}.pbg,#glow,.spKicker i,.skel{animation:none!important}}
 </style>
 </head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
-  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></symbol>
-  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></symbol>
-  <symbol id="i-next" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></symbol>
-  <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></symbol>
-  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></symbol>
-  <symbol id="i-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></symbol>
-  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12l6.3 6.29-6.3 6.3 1.41 1.41 6.3-6.3 6.29 6.3 1.42-1.41-6.3-6.3 6.3-6.29z"/></symbol>
-  <symbol id="i-dev" viewBox="0 0 24 24"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
-  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7.5 5.3c0-1.2 1.3-1.9 2.3-1.3l10.1 6.4c.9.6.9 2 0 2.6L9.8 19.4c-1 .6-2.3-.1-2.3-1.3z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M5.5 5.6A1.6 1.6 0 0 1 7.1 4h2.3A1.6 1.6 0 0 1 11 5.6v12.8A1.6 1.6 0 0 1 9.4 20H7.1a1.6 1.6 0 0 1-1.6-1.6zm7.5 0A1.6 1.6 0 0 1 14.6 4h2.3a1.6 1.6 0 0 1 1.6 1.6v12.8a1.6 1.6 0 0 1-1.6 1.6h-2.3a1.6 1.6 0 0 1-1.6-1.6z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 28 24"><path d="M2.5 6.4c0-1 1.1-1.6 2-1.1l8.8 5.5c.8.5.8 1.7 0 2.2l-8.8 5.5c-.9.5-2-.1-2-1.1zM13.5 6.4c0-1 1.1-1.6 2-1.1l8.8 5.5c.8.5.8 1.7 0 2.2l-8.8 5.5c-.9.5-2-.1-2-1.1z"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 28 24"><path transform="matrix(-1 0 0 1 28 0)" d="M2.5 6.4c0-1 1.1-1.6 2-1.1l8.8 5.5c.8.5.8 1.7 0 2.2l-8.8 5.5c-.9.5-2-.1-2-1.1zM13.5 6.4c0-1 1.1-1.6 2-1.1l8.8 5.5c.8.5.8 1.7 0 2.2l-8.8 5.5c-.9.5-2-.1-2-1.1z"/></symbol>
+  <symbol id="i-shuffle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h2.8c1.7 0 2.8.7 3.7 2.1l3.9 5.8c.9 1.4 2 2.1 3.7 2.1H20.5"/><path d="M18 14.5l2.5 2.5-2.5 2.5"/><path d="M3 17h2.8c1.2 0 2.1-.4 2.9-1.1"/><path d="M14.4 8.1c.8-.7 1.7-1.1 2.9-1.1h3.2"/><path d="M18 4.5L20.5 7 18 9.5"/></g></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5V10a3.5 3.5 0 0 1 3.5-3.5H20"/><path d="M17 3.5l3 3-3 3"/><path d="M20 12.5V14a3.5 3.5 0 0 1-3.5 3.5H4"/><path d="M7 20.5l-3-3 3-3"/></g></symbol>
+  <symbol id="i-vol-lo" viewBox="0 0 24 24"><path d="M5 9h2.6l4.1-3.4c.6-.5 1.6-.1 1.6.8v11.2c0 .9-1 1.3-1.6.8L7.6 15H5a1.5 1.5 0 0 1-1.5-1.5v-3A1.5 1.5 0 0 1 5 9z"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 24 24"><path d="M3.5 9h2.6l4.1-3.4c.6-.5 1.6-.1 1.6.8v11.2c0 .9-1 1.3-1.6.8L6.1 15H3.5A1.5 1.5 0 0 1 2 13.5v-3A1.5 1.5 0 0 1 3.5 9z"/><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 9.3a3.8 3.8 0 0 1 0 5.4"/><path d="M18.3 6.5a7.8 7.8 0 0 1 0 11"/></g></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-dev" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 15V6.5A1.5 1.5 0 0 1 5 5h12a1.5 1.5 0 0 1 1.5 1.5V8"/><path d="M2 18.5h11"/><rect x="15.5" y="10.5" width="6" height="9" rx="1.5"/></g></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></g></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14.5 6l-6 6 6 6"/></symbol>
   <symbol id="i-note" viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 10.3L12 4l8 6.3V19a1.5 1.5 0 0 1-1.5 1.5h-3v-5.5h-7v5.5h-3A1.5 1.5 0 0 1 4 19z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c.6 4 2.5 5.9 6.5 6.5-4 .6-5.9 2.5-6.5 6.5-.6-4-2.5-5.9-6.5-6.5 4-.6 5.9-2.5 6.5-6.5z"/><path d="M18.5 15c.3 1.7 1 2.4 2.5 2.7-1.5.3-2.2 1-2.5 2.7-.3-1.7-1-2.4-2.5-2.7 1.5-.3 2.2-1 2.5-2.7z"/></g></symbol>
+  <symbol id="i-spark-f" viewBox="0 0 24 24"><path d="M11 2.5c.7 4.6 2.9 6.8 7.5 7.5-4.6.7-6.8 2.9-7.5 7.5-.7-4.6-2.9-6.8-7.5-7.5 4.6-.7 6.8-2.9 7.5-7.5zM18.5 14.5c.35 1.9 1.1 2.65 3 3-1.9.35-2.65 1.1-3 3-.35-1.9-1.1-2.65-3-3 1.9-.35 2.65-1.1 3-3z"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.5v7M8.5 12h7"/></g></symbol>
 </svg>
 
 <div id="glow"></div>
 <div id="coverBg"></div>
 
 <header class="topbar">
-  <div class="brand">Luma<i></i></div>
+  <div class="tl">
+    <button id="spotBtn" hidden aria-label="Spotify 모드"><span class="gd"><svg><use href="#i-spark-f"/></svg></span>Spotify</button>
+    <div class="brand">Luma<i></i></div>
+  </div>
   <div class="user" id="userBox" hidden>
     <img id="userImg" alt="">
     <span id="userName"></span>
@@ -282,34 +458,72 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   </section>
 
   <div id="appBody" hidden>
-    <div class="search box" style="max-width:720px">
-      <svg class="ic"><use href="#i-search"/></svg>
-      <input id="q" type="search" enterkeyhint="search" placeholder="노래나 가수를 검색해 보세요" autocomplete="off" spellcheck="false">
+    <div id="vHome">
+      <div class="search box" style="max-width:720px">
+        <svg class="ic"><use href="#i-search"/></svg>
+        <input id="q" type="search" enterkeyhint="search" placeholder="노래나 가수를 검색해 보세요" autocomplete="off" spellcheck="false">
+      </div>
+      <div id="results" hidden></div>
+      <section id="plSec"></section>
     </div>
 
-    <div id="results" hidden></div>
+    <!-- Spotify 모드 -->
+    <section id="vSpot" hidden>
+      <header class="spHead">
+        <p class="spKicker"><i></i>내 Spotify 기록으로 만든 추천</p>
+        <h1 id="spGreet">반가워요</h1>
+      </header>
+      <div class="spPerm" id="spPerm" hidden>
+        <b>Spotify 모드를 쓰려면 권한이 한 번 더 필요해요</b><br>
+        많이 들은 곡과 최근 재생 기록을 읽고, 추천 목록을 내 플레이리스트로 저장하는 권한이에요. 다시 로그인하면 바로 쓸 수 있어요.<br>
+        <button id="spPermBtn">권한 추가하고 다시 로그인</button>
+      </div>
+      <div id="spBody">
+        <section class="spSec"><h2 class="sec">나를 위한 믹스</h2><div class="mixes" id="spMixes"></div></section>
+        <section class="spSec">
+          <div class="secHead"><h2 class="sec">최근 재생한 곡</h2><button class="link" data-act="recentAll">모두 보기</button></div>
+          <div class="recent" id="spRecent"></div>
+        </section>
+        <section class="spSec">
+          <div class="secHead"><h2 class="sec">많이 들은 순위</h2><button class="link" data-act="topAll">모두 보기</button></div>
+          <div class="segs">
+            <div class="seg" id="segKind"><span class="ind"></span><button data-kind="tracks" class="on">곡</button><button data-kind="artists">아티스트</button></div>
+            <div class="seg" id="segRange"><span class="ind"></span><button data-range="short_term" class="on">최근 4주</button><button data-range="medium_term">6개월</button><button data-range="long_term">전체</button></div>
+          </div>
+          <div id="spTop"></div>
+        </section>
+        <section class="spSec"><h2 class="sec">기분·장르</h2><div class="moods" id="spMoods"></div></section>
+      </div>
+    </section>
+
     <div id="plDetail" hidden></div>
-    <section id="plSec"></section>
   </div>
 </main>
+
+<nav id="tabbar" hidden aria-label="메뉴">
+  <span id="tabInd"></span>
+  <button data-tab="home" class="on"><svg><use href="#i-home"/></svg>홈</button>
+  <button data-tab="search"><svg><use href="#i-search"/></svg>검색</button>
+  <button data-tab="spot"><svg><use href="#i-spark"/></svg>Spotify</button>
+</nav>
 
 <button id="miniBar" hidden aria-label="플레이어 열기">
   <img id="miniImg" alt="">
   <div class="m"><div class="t" id="miniT"></div><div class="a" id="miniA"></div></div>
-  <span class="pp" id="miniPP"><svg class="ic"><use href="#i-play"/></svg></span>
+  <span class="pp" id="miniPP"><svg class="ic pi"><use href="#i-play"/></svg><svg class="ic pa"><use href="#i-pause"/></svg></span>
   <div class="bar"><i id="miniBarFill"></i></div>
 </button>
 
 <!-- 플레이어 -->
 <section id="player" aria-label="플레이어">
-  <div id="pBg"></div><div id="pShade"></div>
-  <button id="closeP" aria-label="닫기"><svg class="ic"><use href="#i-close"/></svg></button>
+  <div class="pbg on" id="pBgA"></div><div class="pbg" id="pBgB"></div><div id="pShade"></div>
+  <button id="closeP" aria-label="플레이어 닫기"><svg class="ic"><use href="#i-close"/></svg></button>
   <button id="devBtn" aria-label="기기 선택"><svg class="ic"><use href="#i-dev"/></svg></button>
   <div id="devMenu" hidden></div>
 
   <div class="pl-left">
-    <img id="cover" alt="앨범 커버">
-    <div class="meta"><div class="txt"><div class="tt" id="pTitle">&nbsp;</div><div class="aa" id="pArtist">&nbsp;</div></div></div>
+    <div id="coverWrap"><img id="cover" alt="앨범 커버"></div>
+    <div class="meta"><div class="txt" id="pMeta"><div class="tt" id="pTitle">&nbsp;</div><div class="aa" id="pArtist">&nbsp;</div></div></div>
     <div class="prog">
       <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="재생 위치">
       <div class="times"><span id="tCur">0:00</span><span id="tLeft">-0:00</span></div>
@@ -317,11 +531,11 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
     <div class="ctrls">
       <button id="bShuf" class="tog" aria-label="셔플"><svg class="ic"><use href="#i-shuffle"/></svg></button>
       <button id="bPrev" aria-label="이전 곡"><svg class="ic mid"><use href="#i-prev"/></svg></button>
-      <button id="bPlay" aria-label="재생/일시정지"><svg class="ic big" id="icPlay"><use href="#i-play"/></svg></button>
+      <button id="bPlay" aria-label="재생/일시정지"><svg class="ic big pi"><use href="#i-play"/></svg><svg class="ic big pa"><use href="#i-pause"/></svg></button>
       <button id="bNext" aria-label="다음 곡"><svg class="ic mid"><use href="#i-next"/></svg></button>
       <button id="bRep" class="tog" aria-label="반복"><svg class="ic"><use href="#i-repeat"/></svg><span class="badge" id="repBadge" hidden>1</span></button>
     </div>
-    <div class="vol"><svg class="ic"><use href="#i-vol"/></svg><input type="range" id="vol" min="0" max="100" value="60" aria-label="볼륨"></div>
+    <div class="vol"><svg class="ic"><use href="#i-vol-lo"/></svg><input type="range" id="vol" min="0" max="100" value="60" aria-label="볼륨"><svg class="ic"><use href="#i-vol"/></svg></div>
     <div id="state"></div>
   </div>
 
@@ -378,6 +592,19 @@ function toast(msg, ms = 4200, action){
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms);
 }
 
+/* ---------- 애니메이션 도우미 ---------- */
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function anim(el, frames, opts){
+  if (RM || !el || !el.animate) return;
+  try { el.animate(frames, { easing: 'cubic-bezier(.22,1,.36,1)', ...opts }); } catch {}
+}
+const shuffleArr = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function dedupe(list){
+  const seen = new Set();
+  return list.filter(t => { const k = t.id + '|' + (t.name + t.artists[0]).toLowerCase(); const k2 = (t.name + t.artists[0]).toLowerCase();
+    if (seen.has(t.id) || seen.has(k2)) return false; seen.add(t.id); seen.add(k2); return true; });
+}
+
 /* ---------- 처음 화면: 5초마다 바뀌는 문구 (한국어 ↔ 영어) ---------- */
 const KO = [
   '당신은 무슨 노래를 듣고 싶나요?',
@@ -414,7 +641,8 @@ const API = 'https://api.spotify.com/v1';
 const SCOPES = [
   'streaming', 'user-read-email', 'user-read-private',
   'user-read-playback-state', 'user-modify-playback-state',
-  'playlist-read-private', 'playlist-read-collaborative', 'user-library-read'
+  'playlist-read-private', 'playlist-read-collaborative', 'user-library-read',
+  'user-top-read', 'user-read-recently-played', 'playlist-modify-private', 'playlist-modify-public'
 ].join(' ');
 
 const IS_APP = /LumaApp\//.test(navigator.userAgent);
@@ -428,7 +656,7 @@ const rand = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); retu
 let tok = null;
 try { tok = JSON.parse(LS.get('luma_tok') || 'null'); } catch { tok = null; }
 function saveTok(j){
-  tok = { access: j.access_token, refresh: j.refresh_token || tok?.refresh, exp: Date.now() + (j.expires_in || 3600) * 1000 };
+  tok = { access: j.access_token, refresh: j.refresh_token || tok?.refresh, exp: Date.now() + (j.expires_in || 3600) * 1000, scope: j.scope || tok?.scope || '' };
   LS.set('luma_tok', JSON.stringify(tok));
 }
 async function tokenReq(params){
@@ -519,13 +747,14 @@ function normTrack(t){
   return {
     id: t.id, uri: t.uri, name: t.name,
     artists: (t.artists || []).map(a => a.name),
+    artistIds: (t.artists || []).map(a => a.id),
     album: t.album?.name || '',
     thumb: pickImg(t.album?.images, 64), cover: bigImg(t.album?.images),
     dur: t.duration_ms || 0
   };
 }
-const rowHTML = (t, i) =>
-  `<button class="trk" data-i="${i}" data-uri="${esc(t.uri)}">` +
+const rowHTML = (t, i, k) =>
+  `<button class="trk" data-i="${i}" data-uri="${esc(t.uri)}" style="--i:${k ?? i}">` +
   (t.thumb ? `<img src="${esc(t.thumb)}" alt="" loading="lazy">` : '<div class="ph"></div>') +
   `<div style="min-width:0"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists.join(', '))}</div></div>` +
   `<div class="al">${esc(t.album)}</div><div class="d">${fmt(t.dur)}</div></button>`;
@@ -616,6 +845,7 @@ async function loadLyrics(track){
     el.scrollTop = 0; LY.idx = -2;
     $('lsrc').textContent = '가사 · LRCLIB';
     updateLyrics(curPos(), true);
+    anim(el, [{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 800 });
   } else if (res.plain) {
     el.className = 'plain';
     el.innerHTML = res.plain.split(/\r?\n/).map(s => `<p class="ln">${s.trim() ? esc(s) : '&nbsp;'}</p>`).join('');
@@ -676,14 +906,30 @@ function applyTrack(tr){
   S.track = tr; S.dur = tr.dur || S.dur;
   if (changed) renderTrack();
 }
+let bgFlip = false;
+function setPlayerBg(url){
+  const a = $('pBgA'), b = $('pBgB');
+  const next = bgFlip ? a : b, cur = bgFlip ? b : a;
+  bgFlip = !bgFlip;
+  next.style.backgroundImage = url ? `url("${url}")` : '';
+  next.classList.add('on'); cur.classList.remove('on');
+}
 function renderTrack(){
   const t = S.track;
   const cover = t.cover || t.thumb;
-  $('cover').src = cover || '';
+  const img = $('cover');
+  let shown = false;
+  const reveal = () => { if (shown) return; shown = true;
+    anim($('coverWrap'), [{ opacity: 0, transform: 'translateY(10px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 750 }); };
+  img.onload = reveal; setTimeout(reveal, 700);
+  img.src = cover || '';
   $('pTitle').textContent = t.name;
   $('pArtist').textContent = t.artists.join(', ');
-  $('pBg').style.backgroundImage = cover ? `url("${cover}")` : '';
+  anim($('pMeta'), [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 650, delay: 90 });
+  anim($('miniBar').querySelector('.m'), [{ opacity: 0, transform: 'translateX(10px)' }, { opacity: 1, transform: 'none' }], { duration: 550 });
+  setPlayerBg(cover);
   $('coverBg').style.backgroundImage = cover ? `url("${cover}")` : '';
+  anim($('coverBg'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1400, easing: 'ease' });
   document.body.classList.toggle('has-cover', !!cover);
   $('miniImg').src = t.thumb || cover || '';
   $('miniT').textContent = t.name;
@@ -694,9 +940,9 @@ function renderTrack(){
   markPlaying();
 }
 function syncUI(){
-  const icon = S.paused ? '#i-play' : '#i-pause';
-  $('icPlay').firstElementChild.setAttribute('href', icon);
-  $('miniPP').firstElementChild.firstElementChild.setAttribute('href', icon);
+  $('bPlay').classList.toggle('is-playing', !S.paused);
+  $('miniPP').classList.toggle('is-playing', !S.paused);
+  $('player').classList.toggle('paused', !!S.track && S.paused);
   $('bShuf').classList.toggle('on', !!S.shuffle);
   $('bRep').classList.toggle('on', S.repeat > 0);
   $('repBadge').hidden = S.repeat !== 2;
@@ -927,10 +1173,12 @@ async function cycleRepeat(){
 function openPlayer(){
   if (!S.track) return;
   $('player').classList.add('open'); document.body.style.overflow = 'hidden';
+  document.body.classList.add('player-open');
   LY.idx = -2; updateLyrics(curPos(), true);
 }
 function closePlayer(){
   $('player').classList.remove('open'); $('devMenu').hidden = true; document.body.style.overflow = '';
+  document.body.classList.remove('player-open');
 }
 
 /* 화면 갱신 루프 (진행바 · 가사) */
@@ -956,15 +1204,17 @@ function loop(){
 let sSeq = 0, sQ = '', sTracks = [], sArtists = [], sOffset = 0, sMore = false;
 function resetHome(){
   $('results').hidden = true; $('results').innerHTML = '';
-  $('plDetail').hidden = true; detail = null;
   $('plSec').hidden = false;
+  anim($('plSec'), [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 600 });
   document.body.classList.remove('compact');
 }
 async function doSearch(q){
   q = q.trim(); const seq = ++sSeq;
   if (!q) { sQ = ''; resetHome(); return; }
   document.body.classList.add('compact');
-  $('plSec').hidden = true; $('plDetail').hidden = true; detail = null;
+  if (curView !== 'home') showView('home');
+  setTab('search');
+  $('plSec').hidden = true;
   $('results').hidden = false; $('results').innerHTML = '<div class="spin"></div>';
   try {
     const j = await api('/search?' + new URLSearchParams({ q, type: 'track,artist', limit: 10 }));
@@ -987,7 +1237,7 @@ function renderResults(){
   }
   h += '<h2 class="sec">곡</h2>';
   h += sTracks.length
-    ? '<div class="tracks">' + sTracks.map(rowHTML).join('') + '</div>' + (sMore ? '<button class="more" id="moreBtn">더 보기</button>' : '')
+    ? '<div class="tracks">' + sTracks.map((t, i) => rowHTML(t, i)).join('') + '</div>' + (sMore ? '<button class="more" id="moreBtn">더 보기</button>' : '')
     : '<div class="empty">검색 결과가 없어요</div>';
   $('results').innerHTML = h;
   markPlaying();
@@ -1006,15 +1256,23 @@ async function searchMore(){
 
 /* ---------- 상세 화면 (아티스트 · 플레이리스트 · 좋아요) ---------- */
 let detail = null;
+let detailFrom = 'home';
 async function openDetail(opts){
   const me = detail = { tracks: [], offset: 0, hasMore: false, ...opts };
-  $('results').hidden = true; $('plSec').hidden = true;
-  const d = $('plDetail'); d.hidden = false;
+  if (curView !== 'detail') detailFrom = curView;
+  const d = $('plDetail');
+  const art = opts.img ? `<img src="${esc(opts.img)}" alt="">`
+    : opts.grad ? `<div class="ph grad" style="background:linear-gradient(135deg,${opts.grad[0]},${opts.grad[1]})">${esc(opts.title)}</div>`
+    : '<div class="ph"></div>';
   d.innerHTML =
     `<button class="back" id="backBtn"><svg class="ic" style="width:20px;height:20px"><use href="#i-back"/></svg>뒤로</button>` +
-    `<div class="plhead">${opts.img ? `<img src="${esc(opts.img)}" alt="">` : '<div class="ph"></div>'}` +
-    `<div><h2>${esc(opts.title)}</h2><p>${esc(opts.sub || '')}</p>${opts.playAll ? '<button class="playall" id="playAllBtn">전체 재생</button>' : ''}</div></div>` +
+    `<div class="plhead">${art}` +
+    `<div><h2>${esc(opts.title)}</h2><p>${esc(opts.sub || '')}</p><div class="dActs">` +
+    (opts.playAll ? '<button class="playall" id="playAllBtn"><svg class="ic"><use href="#i-play"/></svg>전체 재생</button>' : '') +
+    (opts.saveable ? '<button class="saveBtn" id="saveBtn"><svg><use href="#i-add"/></svg>Spotify에 저장</button>' : '') +
+    `</div></div></div>` +
     `<div class="tracks" id="dTracks"><div class="spin"></div></div><div id="dMore"></div>`;
+  showView('detail');
   window.scrollTo({ top: 0 });
   await detailMore(me);
 }
@@ -1022,8 +1280,10 @@ async function detailMore(me){
   try {
     const r = await me.loadPage(me.offset);
     if (detail !== me) return;
+    const start = me.tracks.length;
     me.tracks.push(...r.tracks); me.offset = r.nextOffset; me.hasMore = r.hasMore;
-    $('dTracks').innerHTML = me.tracks.length ? me.tracks.map(rowHTML).join('') : '<div class="empty">곡이 없어요</div>';
+    if (start === 0) $('dTracks').innerHTML = me.tracks.length ? me.tracks.map((t, i) => rowHTML(t, i)).join('') : '<div class="empty">곡이 없어요</div>';
+    else $('dTracks').insertAdjacentHTML('beforeend', r.tracks.map((t, k) => rowHTML(t, start + k, k)).join(''));
     $('dMore').innerHTML = me.hasMore ? '<button class="more" id="dMoreBtn">더 보기</button>' : '';
     markPlaying();
   } catch (e) {
@@ -1033,9 +1293,8 @@ async function detailMore(me){
   }
 }
 function backFromDetail(){
-  detail = null; $('plDetail').hidden = true;
-  if (sQ && $('q').value.trim()) { $('results').hidden = false; }
-  else { $('plSec').hidden = false; document.body.classList.remove('compact'); }
+  detail = null;
+  showView(detailFrom);
 }
 function openArtist(a){
   const q = `artist:"${a.name.replace(/"/g, '')}"`;
@@ -1101,7 +1360,7 @@ async function loadPlaylists(){
   if (hasLiked) h += `<button class="pl" data-liked="1"><div class="ph"><svg class="ic" style="width:40px;height:40px"><use href="#i-note"/></svg></div><div class="n">좋아요 표시한 곡</div><div class="c">내 라이브러리</div></button>`;
   h += myPlaylists.map((p, i) => {
     const img = pickImg(p.images, 300), total = p.items?.total ?? p.tracks?.total;
-    return `<button class="pl" data-p="${i}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<div class="ph"><svg class="ic" style="width:40px;height:40px"><use href="#i-note"/></svg></div>'}` +
+    return `<button class="pl" data-p="${i}" style="--i:${i + (hasLiked ? 1 : 0)}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<div class="ph"><svg class="ic" style="width:40px;height:40px"><use href="#i-note"/></svg></div>'}` +
       `<div class="n">${esc(p.name)}</div><div class="c">${total != null ? total + '곡' : ''}${mine(p) ? '' : ' · 저장한 목록'}</div></button>`;
   }).join('') + '</div>';
   if (!items.length && !hasLiked) h = '<h2 class="sec">내 플레이리스트</h2><div class="empty">아직 플레이리스트가 없어요</div>';
@@ -1129,6 +1388,246 @@ async function pickDevice(id){
     S.devId = id; S.devSeenAt = Date.now(); S.web = id === deviceId; S.dev = devName(id); syncUI();
     if (!S.web) pollSoon();
   } catch (e) { handleErr(e); }
+}
+
+/* ---------- 화면(뷰) · 아래 탭바 ---------- */
+let curView = 'home', curTab = 'home';
+function showView(v){
+  const map = { home: $('vHome'), spot: $('vSpot'), detail: $('plDetail') };
+  for (const [k, el] of Object.entries(map)) el.hidden = k !== v;
+  const el = map[v];
+  el.classList.remove('view-in'); void el.offsetWidth; el.classList.add('view-in');
+  curView = v;
+  document.body.dataset.view = v;
+  const spotMode = v === 'spot' || (v === 'detail' && detailFrom === 'spot');
+  document.body.dataset.mode = spotMode ? 'spot' : 'luma';
+  $('spotBtn').classList.toggle('on', spotMode);
+  if (v !== 'detail') setTab(v === 'spot' ? 'spot' : (sQ && $('q').value.trim() ? 'search' : 'home'));
+}
+function setTab(t){
+  curTab = t;
+  document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('tabbar').classList.toggle('spot', t === 'spot');
+  moveInd();
+}
+function moveInd(){
+  const b = document.querySelector('#tabbar button.on'), ind = $('tabInd');
+  if (!b || $('tabbar').hidden) return;
+  ind.style.width = b.offsetWidth + 'px';
+  ind.style.transform = `translateX(${b.offsetLeft}px)`;
+}
+function goTab(t){
+  if (t === 'home') {
+    $('q').value = ''; sSeq++; sQ = ''; detail = null;
+    resetHome(); showView('home'); setTab('home');
+    window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
+  } else if (t === 'search') {
+    if (curView !== 'home') showView('home');
+    setTab('search');
+    window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' });
+    setTimeout(() => $('q').focus(), 200);
+  } else if (t === 'spot') {
+    detail = null; showView('spot'); window.scrollTo({ top: 0 });
+    loadSpot();
+  }
+}
+function placeSeg(seg){
+  const on = seg.querySelector('button.on'), ind = seg.querySelector('.ind');
+  if (!on || !seg.offsetWidth) return;
+  ind.style.width = on.offsetWidth + 'px';
+  ind.style.transform = `translateX(${on.offsetLeft}px)`;
+}
+
+/* ---------- Spotify 모드 ---------- */
+const NEED_SPOT = ['user-top-read', 'user-read-recently-played'];
+const NEED_SAVE = ['playlist-modify-private'];
+const hasScopes = list => { const g = ((tok && tok.scope) || '').split(' '); return list.every(x => g.includes(x)); };
+const MOODS = [
+  { n: '잔잔한', q: 'genre:acoustic', k: 'acoustic chill', c: ['#7fa7c9', '#2d4a6b'] },
+  { n: '신나는', q: 'genre:"dance pop"', k: 'dance pop', c: ['#ff8a5c', '#d6336c'] },
+  { n: '집중', q: 'genre:"lo-fi"', k: 'lofi beats', c: ['#8c7ae6', '#3c2f7a'] },
+  { n: '새벽 감성', q: 'genre:"k-indie"', k: 'korean indie', c: ['#4a5bab', '#141c40'] },
+  { n: '운동', q: 'genre:edm', k: 'workout edm', c: ['#f6c343', '#e8590c'] },
+  { n: '드라이브', q: 'genre:synthpop', k: 'synthpop drive', c: ['#22b8cf', '#1c4f8a'] },
+  { n: 'K-POP', q: 'genre:k-pop', k: 'k-pop', c: ['#f783ac', '#9c36b5'] },
+  { n: '힙합', q: 'genre:"hip hop"', k: 'hip hop', c: ['#5c636a', '#16181b'] },
+  { n: 'R&B', q: 'genre:r&b', k: 'r&b soul', c: ['#d6336c', '#5f0f40'] },
+  { n: '발라드', q: 'genre:"k-ballad"', k: 'korean ballad', c: ['#e0b089', '#7a4b2a'] },
+  { n: '재즈', q: 'genre:jazz', k: 'jazz', c: ['#c4a26a', '#3d2b1f'] },
+  { n: '록', q: 'genre:rock', k: 'rock', c: ['#e03131', '#5c0a0a'] }
+];
+const MIX_COLORS = ['#1ed760', '#ffd9a0', '#7fd3ff', '#ff9ec4'];
+const RANGE_LABEL = { short_term: '최근 4주', medium_term: '최근 6개월', long_term: '전체 기간' };
+const SP = { at: 0, range: 'short_term', kind: 'tracks', recent: [], mixes: [], topList: [], topArtists: [], cacheT: {}, cacheA: {} };
+let topSeq = 0;
+
+function greet(){
+  const h = new Date().getHours();
+  const g = h < 5 ? '늦은 밤이에요' : h < 11 ? '좋은 아침이에요' : h < 17 ? '좋은 오후예요' : h < 22 ? '좋은 저녁이에요' : '늦은 밤이에요';
+  $('spGreet').textContent = me && me.display_name ? `${g}, ${me.display_name}님` : g;
+}
+const skelBlocks = (n, style) => Array.from({ length: n }, () => `<div class="skel" style="${style}"></div>`).join('');
+const errBox = e => `<div class="empty">불러오지 못했어요<br>${esc(e && e.message || '')}</div>`;
+async function getTopTracks(range){
+  if (!SP.cacheT[range]) SP.cacheT[range] = (await api(`/me/top/tracks?limit=50&time_range=${range}`)).items.filter(Boolean).map(normTrack);
+  return SP.cacheT[range];
+}
+async function getTopArtists(range){
+  if (!SP.cacheA[range]) SP.cacheA[range] = (await api(`/me/top/artists?limit=30&time_range=${range}`)).items.filter(Boolean);
+  return SP.cacheA[range];
+}
+
+async function loadSpot(force){
+  greet();
+  if (!hasScopes(NEED_SPOT)) { $('spPerm').hidden = false; $('spBody').hidden = true; return; }
+  $('spPerm').hidden = true; $('spBody').hidden = false;
+  requestAnimationFrame(() => { placeSeg($('segKind')); placeSeg($('segRange')); });
+  if (!force && SP.at && Date.now() - SP.at < 10 * 60 * 1000) return;
+  SP.at = Date.now(); SP.cacheT = {}; SP.cacheA = {};
+  renderMoods();
+  await Promise.allSettled([loadMixes(), loadRecent(), loadTop()]);
+}
+function spPermIssue(e){
+  if (e && e.status === 403 && /scope/i.test(e.message)) { if (tok) tok.scope = ''; $('spPerm').hidden = false; $('spBody').hidden = true; return true; }
+  return false;
+}
+
+function mixCardHTML(m, i){
+  const imgs = m.artists.map(a => pickImg(a.images, 300)).filter(Boolean).slice(0, 4);
+  const cls = imgs.length >= 4 ? '' : imgs.length === 3 ? 'three' : 'one';
+  const pics = (cls === 'one' ? imgs.slice(0, 1) : imgs).map(u => `<img src="${esc(u)}" alt="" loading="lazy">`).join('');
+  return `<button class="mix" data-m="${i}" style="--i:${i};--mc:${MIX_COLORS[i % MIX_COLORS.length]}">` +
+    `<div class="art ${cls}">${pics}<div class="lbl"><small>MIX ${i + 1}</small>${esc(m.artists[0].name)} 믹스</div><span class="bar"></span></div>` +
+    `<div class="who">${esc(m.artists.map(a => a.name).join(', '))} 외</div></button>`;
+}
+async function loadMixes(){
+  const box = $('spMixes');
+  box.innerHTML = skelBlocks(4, 'aspect-ratio:1');
+  try {
+    let arts = await getTopArtists('medium_term');
+    if (arts.length < 6) {
+      const more = await getTopArtists('long_term').catch(() => []);
+      const ids = new Set(arts.map(a => a.id));
+      arts = arts.concat(more.filter(a => !ids.has(a.id)));
+    }
+    if (!arts.length) { box.innerHTML = '<div class="empty">아직 들은 기록이 부족해요.<br>노래를 더 들으면 믹스가 만들어져요.</div>'; return; }
+    SP.mixes = [];
+    for (let g = 0; g < 4 && g * 3 < arts.length; g++) SP.mixes.push({ artists: arts.slice(g * 3, g * 3 + 3), tracks: null });
+    box.innerHTML = SP.mixes.map(mixCardHTML).join('');
+  } catch (e) { if (!spPermIssue(e)) box.innerHTML = errBox(e); }
+}
+async function buildMix(m){
+  if (m.tracks) return m.tracks;
+  const favs = await getTopTracks('medium_term').catch(() => []);
+  const per = await Promise.all(m.artists.map(async a => {
+    const q = `artist:"${a.name.replace(/"/g, '')}"`;
+    const pages = await Promise.all([0, 10].map(off =>
+      api('/search?' + new URLSearchParams({ q, type: 'track', limit: 10, offset: off })).then(j => j.tracks?.items || []).catch(() => [])));
+    const found = pages.flat().filter(t => t && t.artists?.some(x => x.id === a.id)).map(normTrack);
+    const mine = favs.filter(t => t.artistIds.includes(a.id));
+    return dedupe([...shuffleArr(mine).slice(0, 3), ...shuffleArr(found).slice(0, 9)]);
+  }));
+  const out = []; let k = 0;
+  while (per.some(l => l.length) && out.length < 40) { const l = per[k++ % per.length]; if (l.length) out.push(l.shift()); }
+  m.tracks = dedupe(out).slice(0, 30);
+  return m.tracks;
+}
+function openMix(i){
+  const m = SP.mixes[i]; if (!m) return;
+  openDetail({
+    title: `${m.artists[0].name} 믹스`, sub: '나를 위한 믹스 · ' + m.artists.map(a => a.name).join(', ') + ' 중심으로 Luma가 골랐어요',
+    img: pickImg(m.artists[0].images, 300),
+    loadPage: async () => ({ tracks: await buildMix(m), nextOffset: 0, hasMore: false }),
+    play(j){ playList(detail.tracks, j); }, playAll: true, playAllFn(){ if (detail.tracks.length) playList(detail.tracks, 0); },
+    saveable: true
+  });
+}
+function rcHTML(t, i){
+  return `<button class="rc" data-i="${i}" data-uri="${esc(t.uri)}" style="--i:${i}">` +
+    (t.cover || t.thumb ? `<img src="${esc(pickImgUrl(t))}" alt="" loading="lazy">` : '<div class="ph"></div>') +
+    `<div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists.join(', '))}</div></button>`;
+}
+const pickImgUrl = t => t.cover || t.thumb;
+async function loadRecent(){
+  const box = $('spRecent');
+  box.innerHTML = skelBlocks(6, 'flex:0 0 150px;height:190px');
+  try {
+    const j = await api('/me/player/recently-played?limit=50');
+    const seen = new Set(); SP.recent = [];
+    for (const it of j.items || []) { const t = it && it.track; if (!t || !t.uri || seen.has(t.id)) continue; seen.add(t.id); SP.recent.push(normTrack(t)); }
+    box.innerHTML = SP.recent.length ? SP.recent.slice(0, 20).map(rcHTML).join('') : '<div class="empty">최근 재생 기록이 없어요</div>';
+  } catch (e) { if (!spPermIssue(e)) box.innerHTML = errBox(e); }
+}
+const rankRowHTML = (t, i) =>
+  `<button class="trk" data-i="${i}" data-uri="${esc(t.uri)}" style="--i:${i}"><span class="rk-n">${i + 1}</span>` +
+  (t.thumb ? `<img src="${esc(t.thumb)}" alt="" loading="lazy">` : '<div class="ph"></div>') +
+  `<div style="min-width:0"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists.join(', '))}</div></div><div class="d">${fmt(t.dur)}</div></button>`;
+async function loadTop(){
+  const box = $('spTop'), seq = ++topSeq;
+  box.innerHTML = skelBlocks(5, 'height:56px;margin-bottom:8px');
+  try {
+    if (SP.kind === 'tracks') {
+      const list = await getTopTracks(SP.range);
+      if (seq !== topSeq) return;
+      SP.topList = list;
+      box.innerHTML = list.length ? `<div class="tracks rkList">${list.slice(0, 10).map(rankRowHTML).join('')}</div>` : '<div class="empty">아직 기록이 부족해요</div>';
+    } else {
+      const arts = await getTopArtists(SP.range);
+      if (seq !== topSeq) return;
+      SP.topArtists = arts;
+      box.innerHTML = arts.length ? `<div class="rkArtists">${arts.slice(0, 18).map((a, i) =>
+        `<button class="artist" data-ta="${i}" style="--i:${i}">${pickImg(a.images, 200) ? `<img src="${esc(pickImg(a.images, 200))}" alt="" loading="lazy">` : '<div class="ph"></div>'}` +
+        `<span><b class="num">${i + 1}</b>${esc(a.name)}</span></button>`).join('')}</div>` : '<div class="empty">아직 기록이 부족해요</div>';
+    }
+  } catch (e) { if (seq === topSeq && !spPermIssue(e)) box.innerHTML = errBox(e); }
+}
+function renderMoods(){
+  $('spMoods').innerHTML = MOODS.map((m, i) =>
+    `<button class="mood" data-mood="${i}" style="--i:${i};--c1:${m.c[0]};--c2:${m.c[1]}"><span>${esc(m.n)}</span></button>`).join('');
+}
+function openMood(i){
+  const m = MOODS[i]; let useK = false;
+  const page = async off => {
+    const q = useK ? m.k : m.q;
+    const get = o => api('/search?' + new URLSearchParams({ q, type: 'track', limit: 10, offset: o }));
+    const [a, b] = await Promise.all([get(off), get(off + 10).catch(() => ({}))]);
+    const items = [...(a.tracks?.items || []), ...(b.tracks?.items || [])].filter(t => t && t.uri);
+    if (!items.length && off === 0 && !useK) { useK = true; return page(0); }
+    return { tracks: dedupe(items.map(normTrack)), nextOffset: off + 20, hasMore: !!(b.tracks && b.tracks.next) && off < 80 };
+  };
+  openDetail({
+    title: m.n, sub: '기분·장르 추천', grad: m.c, loadPage: page,
+    play(j){ playList(detail.tracks, j); }, playAll: true, playAllFn(){ if (detail.tracks.length) playList(detail.tracks, 0); },
+    saveable: true
+  });
+}
+function openList(title, sub, list){
+  openDetail({
+    title, sub, img: list[0] ? pickImgUrl(list[0]) : '',
+    loadPage: async () => ({ tracks: list.slice(), nextOffset: 0, hasMore: false }),
+    play(j){ playList(detail.tracks, j); }, playAll: true, playAllFn(){ if (detail.tracks.length) playList(detail.tracks, 0); },
+    saveable: true
+  });
+}
+async function saveToSpotify(d){
+  if (!d || !d.tracks.length) return;
+  if (!hasScopes(NEED_SAVE)) {
+    return toast('저장하려면 권한을 한 번 더 받아야 해요', 8000, { label: '다시 로그인', fn: () => { LS.set('luma_after', 'spot'); login(false); } });
+  }
+  const btn = $('saveBtn'); const label = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = '저장하는 중…'; }
+  try {
+    const pl = await api('/me/playlists', { method: 'POST', body: { name: `${d.title} · Luma`, description: 'Luma에서 만든 추천 목록이에요', public: false } });
+    const uris = d.tracks.map(t => t.uri);
+    for (let k = 0; k < uris.length; k += 100) await api(`/playlists/${pl.id}/items`, { method: 'POST', body: { uris: uris.slice(k, k + 100) } });
+    if (btn && detail === d) { btn.textContent = '✓ 저장했어요'; anim(btn, [{ transform: 'scale(.9)' }, { transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 500 }); }
+    toast('내 Spotify 플레이리스트에 저장했어요');
+    loadPlaylists();
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.innerHTML = label; }
+    if (e.status === 403 || e.status === 401) toast('Spotify가 저장을 허용하지 않았어요. 다시 로그인해 보세요', 8000, { label: '다시 로그인', fn: () => { LS.set('luma_after', 'spot'); login(false); } });
+    else handleErr(e);
+  }
 }
 
 /* ---------- 시작 ---------- */
@@ -1174,6 +1673,7 @@ async function sendReq(){
 function showBlocked(){
   $('appBody').hidden = true; $('loginBox').hidden = false;
   $('loginHint').innerHTML = '이 계정은 아직 등록되지 않았어요.<br>아래 <b>등록 요청</b>으로 이름과 이메일을 보내 주세요. 등록되면 다시 로그인할 수 있어요.';
+  $('tabbar').hidden = true; $('spotBtn').hidden = true; document.body.classList.remove('has-tabs');
   $('loginBtn').textContent = '다른 계정으로 로그인';
   $('loginBtn').onclick = () => { forgetTokens(); login(true); };
   $('userBox').hidden = false; $('userName').textContent = ''; $('userImg').hidden = true;
@@ -1181,6 +1681,9 @@ function showBlocked(){
 async function startApp(){
   $('loginBox').hidden = true; $('setup').hidden = true;
   $('appBody').hidden = false; $('userBox').hidden = false;
+  $('tabbar').hidden = false; $('spotBtn').hidden = false; document.body.classList.add('has-tabs');
+  showView('home'); requestAnimationFrame(moveInd);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInd);
   try { me = await api('/me'); }
   catch (e) {
     if (e.status === 403) return showBlocked();
@@ -1194,6 +1697,7 @@ async function startApp(){
   }
   if (USE_SDK) initSDK();
   loadPlaylists();
+  if (LS.get('luma_after') === 'spot') { LS.del('luma_after'); goTab('spot'); }
   pollRemote();
   setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
 }
@@ -1225,6 +1729,7 @@ function bind(){
   });
   $('plDetail').addEventListener('click', e => {
     if (e.target.closest('#backBtn')) return backFromDetail();
+    if (e.target.closest('#saveBtn')) return saveToSpotify(detail);
     if (e.target.closest('#playAllBtn')) return detail && detail.playAllFn && detail.playAllFn();
     if (e.target.closest('#dMoreBtn')) { const b = $('dMoreBtn'); b.textContent = '불러오는 중…'; return detailMore(detail); }
     const row = e.target.closest('.trk'); if (row && detail) detail.play(+row.dataset.i);
@@ -1234,13 +1739,45 @@ function bind(){
     if (c.dataset.liked) openLiked(); else openPlaylist(myPlaylists[+c.dataset.p]);
   });
 
+  /* 아래 탭바 · 왼쪽 위 Spotify 버튼 */
+  $('tabbar').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(b.dataset.tab); });
+  $('spotBtn').onclick = () => goTab(curView === 'spot' ? 'home' : 'spot');
+  $('q').addEventListener('focus', () => { if (curView === 'home') setTab('search'); });
+  window.addEventListener('resize', () => { moveInd(); placeSeg($('segKind')); placeSeg($('segRange')); });
+
+  /* Spotify 모드 */
+  $('spPermBtn').onclick = () => { LS.set('luma_after', 'spot'); login(false); };
+  $('vSpot').addEventListener('click', e => {
+    const mix = e.target.closest('.mix'); if (mix) return openMix(+mix.dataset.m);
+    const rc = e.target.closest('.rc'); if (rc) return playList(SP.recent, +rc.dataset.i);
+    const rk = e.target.closest('.rkList .trk'); if (rk) return playList(SP.topList, +rk.dataset.i);
+    const ta = e.target.closest('[data-ta]'); if (ta) return openArtist(SP.topArtists[+ta.dataset.ta]);
+    const mood = e.target.closest('.mood'); if (mood) return openMood(+mood.dataset.mood);
+    const act = e.target.closest('[data-act]');
+    if (act && act.dataset.act === 'recentAll' && SP.recent.length) return openList('최근 재생한 곡', '최근에 들은 순서', SP.recent);
+    if (act && act.dataset.act === 'topAll') {
+      if (SP.kind === 'tracks' && SP.topList.length) return openList('많이 들은 곡', RANGE_LABEL[SP.range] + ' 순위', SP.topList);
+      if (SP.kind === 'artists') { SP.kind = 'tracks'; document.querySelectorAll('#segKind button').forEach(b => b.classList.toggle('on', b.dataset.kind === 'tracks')); placeSeg($('segKind')); return loadTop(); }
+    }
+    const seg = e.target.closest('.seg button');
+    if (seg) {
+      const box = seg.parentElement;
+      box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg));
+      placeSeg(box);
+      if (seg.dataset.kind) SP.kind = seg.dataset.kind;
+      if (seg.dataset.range) SP.range = seg.dataset.range;
+      loadTop();
+    }
+  });
+
   /* 플레이어 */
   $('miniBar').onclick = openPlayer;
   $('miniPP').onclick = e => { e.stopPropagation(); togglePlay(); };
   $('closeP').onclick = closePlayer;
   $('bPlay').onclick = togglePlay;
-  $('bNext').onclick = () => skip(1);
-  $('bPrev').onclick = () => { if (curPos() > 4000) seekTo(0); else skip(-1); };
+  const nudge = (btn, dx) => anim(btn.querySelector('svg'), [{ transform: 'none' }, { transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: 380 });
+  $('bNext').onclick = () => { nudge($('bNext'), 7); skip(1); };
+  $('bPrev').onclick = () => { nudge($('bPrev'), -7); if (curPos() > 4000) seekTo(0); else skip(-1); };
   $('bShuf').onclick = toggleShuffle;
   $('bRep').onclick = cycleRepeat;
   const seek = $('seek');
