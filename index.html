@@ -278,6 +278,10 @@ body.player-open main,body.player-open .topbar{transform:scale(.96);opacity:.35}
 #devMenu button{display:block;width:100%;text-align:left;padding:10px;border-radius:9px;font-size:14px}
 #devMenu button:hover{background:rgba(255,255,255,.1)}
 #devMenu button.cur{color:var(--accent)}
+#devMenu button b{display:block;font-weight:600}
+#devMenu button small{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+#devMenu button:disabled{opacity:.5;cursor:default}
+#devMenu button.cur b::after{content:"  ✓"}
 
 .pl-left{position:relative;z-index:2;width:100%;max-width:520px;justify-self:end}
 #coverWrap{position:relative}
@@ -885,11 +889,16 @@ const S = {
   holdUntil: 0,              // 이 시각까지는 Spotify의 옛 상태로 화면을 되돌리지 않음
   expectUri: null,           // 방금 틀라고 한 곡
   avoidUri: null,            // 방금 넘긴(건너뛴) 곡
-  ctlUntil: 0                // 재생/일시정지를 누른 직후 잠깐 동안 상태 유지
+  ctlUntil: 0,               // 재생/일시정지를 누른 직후 잠깐 동안 상태 유지
+  lastCtl: 0                 // 마지막으로 재생/일시정지를 누른 시각
 };
-// 앱(APK, 웹뷰)에서는 Spotify 웹 재생이 소리를 못 내서, 웹 플레이어를 쓰지 않고 Spotify 앱을 조작해요.
-const USE_SDK = !IS_APP;
-let player = null, deviceId = null, pickedDevice = null, dragging = false, volDrag = false, sdkFailed = false;
+// Luma 자체 재생(Spotify Web Playback SDK)은 브라우저와 앱(APK) 모두에서 켜요.
+// 기기가 지원하지 않으면(sdkFailed / sdkBroken) 자동으로 Spotify 앱 재생으로 넘어가요.
+const USE_SDK = true;
+// 재생 위치: 'luma' = Luma에서 직접 재생, 'remote' = 지금 재생 중인 기기(Spotify 앱 등)를 조작
+const outPref = () => LS.get('luma_out') === 'remote' ? 'remote' : 'luma';
+let player = null, deviceId = null, pickedDevice = null, dragging = false, volDrag = false, sdkFailed = false, sdkBroken = false;
+const webOK = () => USE_SDK && !sdkFailed && !sdkBroken;
 let playSeq = 0, devCache = { at: 0, list: [] }, pollTimers = [];
 const devWaiters = [];
 
@@ -939,7 +948,18 @@ function renderTrack(){
   loadLyrics(t);
   markPlaying();
 }
+function updateMediaSession(){
+  if (!('mediaSession' in navigator) || !S.track) return;
+  try {
+    const t = S.track;
+    if (navigator.mediaSession.metadata?.title !== t.name)
+      navigator.mediaSession.metadata = new MediaMetadata({ title: t.name, artist: t.artists.join(', '), album: t.album || '',
+        artwork: t.cover ? [{ src: t.cover, sizes: '640x640' }] : [] });
+    navigator.mediaSession.playbackState = S.paused ? 'paused' : 'playing';
+  } catch {}
+}
 function syncUI(){
+  updateMediaSession();
   $('bPlay').classList.toggle('is-playing', !S.paused);
   $('miniPP').classList.toggle('is-playing', !S.paused);
   $('player').classList.toggle('paused', !!S.track && S.paused);
@@ -952,7 +972,7 @@ function syncUI(){
 function applySdkState(st){
   const c = st.track_window && st.track_window.current_track;
   if (!c) return;
-  S.web = true; S.devId = deviceId; S.dev = '이 브라우저'; S.devSeenAt = Date.now();
+  S.web = true; S.devId = deviceId; S.dev = 'Luma'; S.devSeenAt = Date.now();
   setPos(st.position || 0, !!st.paused);
   S.shuffle = !!st.shuffle; S.repeat = st.repeat_mode || 0;
   applyTrack({
@@ -1001,7 +1021,7 @@ function pollSoon(){
 function initSDK(){
   window.onSpotifyWebPlaybackSDKReady = () => {
     player = new Spotify.Player({
-      name: 'Luma 웹 플레이어',
+      name: 'Luma',
       getOAuthToken: cb => { getToken().then(cb).catch(() => {}); },
       volume: S.vol / 100
     });
@@ -1016,7 +1036,8 @@ function initSDK(){
     });
     player.addListener('account_error', () => { sdkFailed = true; toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
     player.addListener('authentication_error', () => toast('Spotify 인증에 문제가 생겼어요. 다시 로그인해 주세요'));
-    player.addListener('initialization_error', () => { sdkFailed = true; deviceId = null; });
+    player.addListener('initialization_error', () => { sdkFailed = true; deviceId = null; devWaiters.splice(0).forEach(f => f(null)); });
+    player.addListener('playback_error', () => { if (S.web) webFallback(); });
     player.connect();
   };
   const s = document.createElement('script');
@@ -1041,22 +1062,51 @@ async function getDevices(){
   devCache = { at: Date.now(), list };
   return list;
 }
-/* 어디서 재생할지 고르기: 내가 고른 기기 → 지금 재생 중인 기기(예: Spotify 앱) → Luma 웹 플레이어 → 켜져 있는 다른 기기 */
+/* 어디서 재생할지 고르기
+   - 재생 위치가 'Luma'면: Luma 자체 재생 (준비 중이면 잠깐 기다림)
+   - 아니면: 내가 고른 기기 → 지금 재생 중인 기기(Spotify 앱 등) → Luma → 켜져 있는 다른 기기 */
 async function chooseDevice(fresh){
+  if (outPref() === 'luma' && webOK()) {
+    const d = deviceId || await waitDevice(3500);
+    if (d && webOK()) return d;
+  }
   if (pickedDevice && !fresh) return pickedDevice;
-  if (!fresh && S.devId && Date.now() - S.devSeenAt < 10000) return S.devId;
+  if (!fresh && S.devId && Date.now() - S.devSeenAt < 10000 && !(S.devId === deviceId && !webOK())) return S.devId;
   let list = [];
   try { list = await getDevices(); } catch {}
-  const usable = list.filter(d => !d.is_restricted);
+  const usable = list.filter(d => !d.is_restricted && !(d.id === deviceId && !webOK()));
   const active = usable.find(d => d.is_active);
   if (active) return active.id;
-  if (deviceId) return deviceId;
-  if (USE_SDK && !sdkFailed && !list.length) { const d = await waitDevice(1500); if (d) return d; }
-  const pref = usable.find(d => IS_APP && /tablet|smartphone/i.test(d.type)) || usable[0];
+  if (deviceId && webOK()) return deviceId;
+  if (webOK() && !list.length) { const d = await waitDevice(1500); if (d) return d; }
+  const pref = usable.find(d => /tablet|smartphone/i.test(d.type) && d.id !== deviceId) || usable.find(d => d.id !== deviceId) || usable[0];
   return pref ? pref.id : null;
 }
+/* Luma에서 재생을 시작했는데 소리가 안 나면(기기가 지원 안 함) Spotify 앱으로 넘겨요 */
+function watchWebStart(seq, body, hint){
+  const t0 = Date.now();
+  const check = async () => {
+    if (seq !== playSeq || !S.web || S.lastCtl > t0) return;
+    let st = null;
+    try { st = player && await player.getCurrentState(); } catch {}
+    if (st && st.position > 0) return;                       // 재생이 시작됐어요
+    if (Date.now() - t0 < 7000) { setTimeout(check, 1000); return; }
+    webFallback(body, hint);
+  };
+  setTimeout(check, 1500);
+}
+let fallingBack = false;
+async function webFallback(body, hint){
+  if (fallingBack || sdkBroken) return;
+  fallingBack = true; sdkBroken = true;
+  toast('이 기기에서는 Luma 재생이 되지 않아서 Spotify 앱으로 재생할게요', 6500);
+  try {
+    if (body) await startPlayback(body, hint);
+    else if (S.track) await startPlayback({ uris: [S.track.uri], position_ms: Math.round(curPos()) }, S.track);
+  } finally { fallingBack = false; }
+}
 function devName(id){
-  if (id && id === deviceId) return '이 브라우저';
+  if (id && id === deviceId) return 'Luma';
   const d = devCache.list.find(x => x.id === id);
   return d ? d.name : S.dev;
 }
@@ -1113,6 +1163,7 @@ async function startPlayback(body, hint){
   S.devId = dev; S.devSeenAt = Date.now(); S.web = dev === deviceId; S.dev = devName(dev);
   syncUI();
   if (!S.web) pollSoon();
+  else watchWebStart(seq, body, hint);
 }
 function playList(list, i){
   const from = Math.max(0, i - 50), slice = list.slice(from, from + 100);
@@ -1126,7 +1177,7 @@ async function togglePlay(){
   if (!S.track) return;
   player && player.activateElement && player.activateElement();
   setPos(curPos(), !S.paused); syncUI();
-  S.ctlUntil = Date.now() + 2000;
+  S.ctlUntil = Date.now() + 2000; S.lastCtl = Date.now();
   try {
     if (S.web && player) await player.togglePlay();
     else { await api(withDev(S.paused ? '/me/player/pause' : '/me/player/play'), { method: 'PUT' }); afterRemote(); }
@@ -1372,20 +1423,30 @@ async function openDevMenu(){
   const m = $('devMenu');
   if (!m.hidden) { m.hidden = true; return; }
   m.hidden = false;
-  m.innerHTML = '<h4>재생 기기</h4><div class="spin" style="width:20px;height:20px;margin:14px auto"></div>';
-  try {
-    const ds = await listDevices();
-    m.innerHTML = '<h4>재생 기기</h4>' + (ds.length
-      ? ds.map(d => `<button data-id="${esc(d.id)}" class="${d.id === S.devId ? 'cur' : ''}">${esc(d.name)}${d.id === deviceId ? ' (이 브라우저)' : ''}</button>`).join('')
-      : '<h4>사용할 수 있는 기기가 없어요.<br>Spotify 앱을 켠 뒤 다시 열어 보세요.</h4>');
-  } catch (e) { m.innerHTML = `<h4>기기를 불러오지 못했어요<br>${esc(e.message)}</h4>`; }
+  m.innerHTML = '<h4>재생 위치</h4><div class="spin" style="width:20px;height:20px;margin:14px auto"></div>';
+  let ds = [];
+  try { ds = await getDevices(); } catch {}
+  const lumaRow = deviceId && webOK()
+    ? `<button data-id="luma" class="${S.web ? 'cur' : ''}"><b>Luma에서 재생</b><small>이 기기에서 바로 소리가 나요</small></button>`
+    : `<button disabled><b>Luma에서 재생</b><small>${sdkBroken || sdkFailed ? '이 기기에서는 지원되지 않아요' : '준비 중이에요…'}</small></button>`;
+  const others = ds.filter(d => d.id !== deviceId);
+  m.innerHTML = '<h4>재생 위치</h4>' + lumaRow +
+    (others.length ? '<h4>Spotify 기기 조작</h4>' + others.map(d =>
+      `<button data-id="${esc(d.id)}" class="${!S.web && d.id === S.devId ? 'cur' : ''}"${d.is_restricted ? ' disabled' : ''}><b>${esc(d.name)}</b><small>${d.is_active ? '지금 재생 중' : 'Spotify 앱'}</small></button>`).join('')
+      : '<h4>다른 기기가 없어요. Spotify 앱을 켜면 여기에 나와요.</h4>');
 }
 async function pickDevice(id){
   $('devMenu').hidden = true;
-  pickedDevice = id;
+  if (id === 'luma') {
+    LS.set('luma_out', 'luma'); pickedDevice = null; sdkBroken = false;
+    id = deviceId; if (!id) return;
+  } else {
+    LS.set('luma_out', 'remote'); pickedDevice = id;
+  }
   try {
     await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: !!S.track && !S.paused } });
     S.devId = id; S.devSeenAt = Date.now(); S.web = id === deviceId; S.dev = devName(id); syncUI();
+    toast(S.web ? '이제 Luma에서 바로 재생해요' : `이제 ${S.dev}에서 재생해요`);
     if (!S.web) pollSoon();
   } catch (e) { handleErr(e); }
 }
@@ -1738,6 +1799,14 @@ function bind(){
     const c = e.target.closest('.pl'); if (!c) return;
     if (c.dataset.liked) openLiked(); else openPlaylist(myPlaylists[+c.dataset.p]);
   });
+
+  if ('mediaSession' in navigator) {
+    const ms = navigator.mediaSession, set = (a, f) => { try { ms.setActionHandler(a, f); } catch {} };
+    set('play', () => { if (S.paused) togglePlay(); });
+    set('pause', () => { if (!S.paused) togglePlay(); });
+    set('nexttrack', () => skip(1));
+    set('previoustrack', () => skip(-1));
+  }
 
   /* 아래 탭바 · 왼쪽 위 Spotify 버튼 */
   $('tabbar').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(b.dataset.tab); });

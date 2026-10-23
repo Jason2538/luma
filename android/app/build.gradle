@@ -10,8 +10,8 @@ android {
         applicationId 'app.luma.player'
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        versionCode 2
+        versionName '1.1'
     }
 
     // 개인용 앱이라 저장소에 함께 있는 키로 서명해요. (업데이트 설치가 계속 되도록 항상 같은 키를 씀)

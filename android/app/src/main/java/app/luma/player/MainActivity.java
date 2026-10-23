@@ -25,16 +25,27 @@ public class MainActivity extends Activity {
             "jason2538.github.io"
     };
 
+    // Luma 자체 재생에 쓰는 Spotify 재생기(sdk.scdn.co)가 DRM(보호된 음원) 재생 권한을 요청해요.
+    private static final String[] MEDIA_HOSTS = {
+            "jason2538.github.io",
+            "scdn.co",
+            "spotify.com"
+    };
+
     private WebView web;
 
-    private static boolean isInternal(Uri uri) {
+    private static boolean hostIn(Uri uri, String[] hosts) {
         String scheme = uri.getScheme();
         String host = uri.getHost();
         if (host == null || !"https".equals(scheme)) return false;
-        for (String h : INTERNAL_HOSTS) {
+        for (String h : hosts) {
             if (host.equals(h) || host.endsWith("." + h)) return true;
         }
         return false;
+    }
+
+    private static boolean isInternal(Uri uri) {
+        return hostIn(uri, INTERNAL_HOSTS);
     }
 
     @Override
@@ -70,8 +81,8 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
-                // 음악 재생용 보호 미디어(DRM) 요청만 우리 사이트에 허용해요.
-                if (!isInternal(request.getOrigin())) {
+                // 음악 재생용 보호 미디어(DRM) 요청만 Luma와 Spotify 재생기에 허용해요.
+                if (!hostIn(request.getOrigin(), MEDIA_HOSTS)) {
                     request.deny();
                     return;
                 }
