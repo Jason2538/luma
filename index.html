@@ -216,6 +216,8 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   background:rgba(250,246,240,.96);color:#1a1814;padding:11px 18px;border-radius:12px;font-size:14px;max-width:88vw;text-align:center;
   opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;line-height:1.5}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.has-act.show{pointer-events:auto}
+#toast .tact{display:block;margin:9px auto 0;padding:8px 16px;border-radius:999px;background:#1a1814;color:#fff;font-weight:700;font-size:13px}
 .spin{width:26px;height:26px;border:3px solid var(--faint);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:30px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
@@ -363,8 +365,16 @@ const LS = {
   del(k){ try { localStorage.removeItem(k); } catch {} }
 };
 let toastT;
-function toast(msg, ms = 4200){
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+function toast(msg, ms = 4200, action){
+  const t = $('toast'); t.textContent = msg;
+  if (action) {
+    const b = document.createElement('button');
+    b.className = 'tact'; b.textContent = action.label;
+    b.onclick = () => { t.classList.remove('show'); action.fn(); };
+    t.appendChild(b);
+  }
+  t.classList.toggle('has-act', !!action);
+  t.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms);
 }
 
@@ -640,9 +650,17 @@ function scrollToLine(i, smooth){
 const S = {
   track: null, paused: true, pos: 0, ts: 0, dur: 0,
   shuffle: false, repeat: 0, vol: Math.min(100, Math.max(0, +(LS.get('luma_vol') || 60))),
-  dev: '', devId: null, web: false
+  dev: '', devId: null, web: false,
+  devSeenAt: 0,              // 마지막으로 그 기기가 재생 중인 걸 확인한 시각
+  holdUntil: 0,              // 이 시각까지는 Spotify의 옛 상태로 화면을 되돌리지 않음
+  expectUri: null,           // 방금 틀라고 한 곡
+  avoidUri: null,            // 방금 넘긴(건너뛴) 곡
+  ctlUntil: 0                // 재생/일시정지를 누른 직후 잠깐 동안 상태 유지
 };
-let player = null, deviceId = null, pickedDevice = null, dragging = false, volDrag = false;
+// 앱(APK, 웹뷰)에서는 Spotify 웹 재생이 소리를 못 내서, 웹 플레이어를 쓰지 않고 Spotify 앱을 조작해요.
+const USE_SDK = !IS_APP;
+let player = null, deviceId = null, pickedDevice = null, dragging = false, volDrag = false, sdkFailed = false;
+let playSeq = 0, devCache = { at: 0, list: [] }, pollTimers = [];
 const devWaiters = [];
 
 function curPos(){
@@ -688,7 +706,7 @@ function syncUI(){
 function applySdkState(st){
   const c = st.track_window && st.track_window.current_track;
   if (!c) return;
-  S.web = true; S.devId = deviceId; S.dev = '이 브라우저';
+  S.web = true; S.devId = deviceId; S.dev = '이 브라우저'; S.devSeenAt = Date.now();
   setPos(st.position || 0, !!st.paused);
   S.shuffle = !!st.shuffle; S.repeat = st.repeat_mode || 0;
   applyTrack({
@@ -701,20 +719,36 @@ function applySdkState(st){
   syncUI();
 }
 async function pollRemote(){
+  const seq = playSeq;
   try {
     const j = await api('/me/player');
+    if (seq !== playSeq) return;            // 그 사이 새 곡을 눌렀으면 이 결과는 버려요
     if (!j || !j.device) return;
     if (j.device.id === deviceId) { S.web = true; return; }
     S.web = false; S.devId = j.device.id; S.dev = j.device.name;
-    if (typeof j.device.volume_percent === 'number') S.vol = j.device.volume_percent;
+    if (j.device.is_active) S.devSeenAt = Date.now();
+    if (typeof j.device.volume_percent === 'number' && !volDrag) S.vol = j.device.volume_percent;
     if (j.item && j.item.type === 'track') {
-      setPos(j.progress_ms || 0, !j.is_playing);
+      const now = Date.now();
+      if (now < S.holdUntil) {
+        // Spotify가 아직 이전 곡을 알려주면 화면을 되돌리지 않고 기다려요
+        if (S.expectUri && j.item.uri !== S.expectUri && j.item.linked_from?.uri !== S.expectUri) return;
+        if (S.avoidUri && j.item.uri === S.avoidUri) return;
+        S.holdUntil = 0;
+      }
+      S.expectUri = S.avoidUri = null;
+      setPos(j.progress_ms || 0, now < S.ctlUntil ? undefined : !j.is_playing);
       S.shuffle = !!j.shuffle_state;
       S.repeat = { off: 0, context: 1, track: 2 }[j.repeat_state] || 0;
       applyTrack(normTrack(j.item));
       syncUI();
     }
   } catch {}
+}
+/* 명령을 보낸 직후에는 짧은 간격으로 여러 번 확인해서 바로 반영해요 */
+function pollSoon(){
+  pollTimers.forEach(clearTimeout);
+  pollTimers = [350, 1000, 2000, 3500].map(ms => setTimeout(pollRemote, ms));
 }
 
 /* ---------- Web Playback SDK ---------- */
@@ -729,14 +763,14 @@ function initSDK(){
       deviceId = device_id;
       devWaiters.splice(0).forEach(f => f(device_id));
     });
+    player.addListener('not_ready', () => { deviceId = null; });
     player.addListener('player_state_changed', st => {
       if (!st) { S.web = false; return; }
       applySdkState(st);
     });
-    player.addListener('account_error', () => toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'));
+    player.addListener('account_error', () => { sdkFailed = true; toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
     player.addListener('authentication_error', () => toast('Spotify 인증에 문제가 생겼어요. 다시 로그인해 주세요'));
-    player.addListener('initialization_error', () =>
-      toast('이 브라우저는 웹 재생을 지원하지 않아요. 오른쪽 위 기기 버튼에서 Spotify 앱을 골라 조작할 수 있어요', 6500));
+    player.addListener('initialization_error', () => { sdkFailed = true; deviceId = null; });
     player.connect();
   };
   const s = document.createElement('script');
@@ -756,30 +790,83 @@ function handleErr(e){
   toast(e.message || '문제가 생겼어요');
 }
 
+async function getDevices(){
+  const list = await listDevices();
+  devCache = { at: Date.now(), list };
+  return list;
+}
+/* 어디서 재생할지 고르기: 내가 고른 기기 → 지금 재생 중인 기기(예: Spotify 앱) → Luma 웹 플레이어 → 켜져 있는 다른 기기 */
+async function chooseDevice(fresh){
+  if (pickedDevice && !fresh) return pickedDevice;
+  if (!fresh && S.devId && Date.now() - S.devSeenAt < 10000) return S.devId;
+  let list = [];
+  try { list = await getDevices(); } catch {}
+  const usable = list.filter(d => !d.is_restricted);
+  const active = usable.find(d => d.is_active);
+  if (active) return active.id;
+  if (deviceId) return deviceId;
+  if (USE_SDK && !sdkFailed && !list.length) { const d = await waitDevice(1500); if (d) return d; }
+  const pref = usable.find(d => IS_APP && /tablet|smartphone/i.test(d.type)) || usable[0];
+  return pref ? pref.id : null;
+}
+function devName(id){
+  if (id && id === deviceId) return '이 브라우저';
+  const d = devCache.list.find(x => x.id === id);
+  return d ? d.name : S.dev;
+}
+function noDevice(hint){
+  const uri = (hint && hint.uri) || 'spotify:';
+  toast('재생할 기기가 없어요. Spotify 앱을 한 번 열어 두면 Luma에서 바로 조작할 수 있어요.', 9000,
+    { label: 'Spotify 앱 열기', fn: () => { location.href = uri; } });
+}
+function revertTo(prev){
+  S.holdUntil = 0; S.expectUri = S.avoidUri = null;
+  if (prev.track) {
+    if (!S.track || S.track.uri !== prev.track.uri) { S.track = prev.track; S.dur = prev.track.dur; renderTrack(); }
+    setPos(prev.pos, prev.paused); syncUI();
+  } else {
+    S.track = null; closePlayer(); $('miniBar').hidden = true; markPlaying();
+  }
+}
 async function startPlayback(body, hint){
+  const seq = ++playSeq;
   player && player.activateElement && player.activateElement();
-  let dev = pickedDevice || deviceId;
-  if (!dev) dev = await waitDevice(4000);
-  if (!dev) {
-    try { const ds = await listDevices(); dev = (ds.find(d => d.is_active) || ds[0] || {}).id; } catch {}
+  const prev = { track: S.track, pos: curPos(), paused: S.paused };
+
+  // 1) 누르는 즉시 화면부터 바꿔요
+  if (hint) {
+    applyTrack(hint); setPos(0, false); syncUI();
+    S.expectUri = hint.uri; S.avoidUri = null; S.holdUntil = Date.now() + 5000;
+  } else if (S.track) {
+    S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 4000;
   }
-  if (!dev) {
-    toast('재생할 기기가 없어요. 이 브라우저가 웹 재생을 지원하지 않으면 Spotify 앱을 켠 뒤, 플레이어 오른쪽 위 기기 버튼에서 골라 주세요.', 7000);
-    return;
-  }
-  const go = () => api('/me/player/play?device_id=' + encodeURIComponent(dev), { method: 'PUT', body });
-  try { await go(); }
-  catch (e) {
-    if (e.status !== 404) return handleErr(e);
-    try {
-      await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } });
-      await sleep(700); await go();
-    } catch (e2) { return handleErr(e2); }
-  }
-  S.devId = dev; S.web = dev === deviceId;
-  if (!S.web) { setTimeout(pollRemote, 900); setTimeout(pollRemote, 2500); }
-  if (hint) { setPos(0, false); applyTrack(hint); syncUI(); }
   openPlayer();
+
+  // 2) 재생할 기기를 고르고 Spotify에 요청
+  let dev = await chooseDevice(false);
+  if (seq !== playSeq) return;
+  if (!dev) { revertTo(prev); return noDevice(hint); }
+  const go = d => api('/me/player/play?device_id=' + encodeURIComponent(d), { method: 'PUT', body });
+  try { await go(dev); }
+  catch (e) {
+    if (seq !== playSeq) return;
+    if (e.status !== 404) { revertTo(prev); return handleErr(e); }
+    // 기기가 사라졌거나 잠들어 있으면 목록을 새로 받아 한 번 더 시도
+    pickedDevice = null; S.devSeenAt = 0;
+    try {
+      dev = await chooseDevice(true);
+      if (seq !== playSeq) return;
+      if (!dev) { revertTo(prev); return noDevice(hint); }
+      await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } });
+      await sleep(300);
+      if (seq !== playSeq) return;
+      await go(dev);
+    } catch (e2) { if (seq === playSeq) { revertTo(prev); handleErr(e2); } return; }
+  }
+  if (seq !== playSeq) return;
+  S.devId = dev; S.devSeenAt = Date.now(); S.web = dev === deviceId; S.dev = devName(dev);
+  syncUI();
+  if (!S.web) pollSoon();
 }
 function playList(list, i){
   const from = Math.max(0, i - 50), slice = list.slice(from, from + 100);
@@ -788,11 +875,12 @@ function playList(list, i){
 
 /* ---------- 재생 컨트롤 ---------- */
 const withDev = p => S.devId ? p + (p.includes('?') ? '&' : '?') + 'device_id=' + encodeURIComponent(S.devId) : p;
-const afterRemote = () => { if (!S.web) setTimeout(pollRemote, 700); };
+const afterRemote = () => { if (!S.web) pollSoon(); };
 async function togglePlay(){
   if (!S.track) return;
   player && player.activateElement && player.activateElement();
   setPos(curPos(), !S.paused); syncUI();
+  S.ctlUntil = Date.now() + 2000;
   try {
     if (S.web && player) await player.togglePlay();
     else { await api(withDev(S.paused ? '/me/player/pause' : '/me/player/play'), { method: 'PUT' }); afterRemote(); }
@@ -800,6 +888,8 @@ async function togglePlay(){
 }
 async function skip(dir){
   if (!S.track) return;
+  playSeq++;
+  S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 4000;
   try {
     if (S.web && player) await (dir > 0 ? player.nextTrack() : player.previousTrack());
     else { await api(withDev(dir > 0 ? '/me/player/next' : '/me/player/previous'), { method: 'POST' }); afterRemote(); }
@@ -844,12 +934,13 @@ function closePlayer(){
 }
 
 /* 화면 갱신 루프 (진행바 · 가사) */
-let lastSec = -1;
+let lastSec = -1, lastEndPoll = 0;
 function loop(){
   requestAnimationFrame(loop);
   if (!S.track) return;
   const p = curPos(), pct = S.dur ? p / S.dur : 0;
   $('miniBarFill').style.width = (pct * 100) + '%';
+  if (!S.web && !S.paused && S.dur && p >= S.dur - 100 && Date.now() - lastEndPoll > 1500) { lastEndPoll = Date.now(); pollRemote(); }
   if (!$('player').classList.contains('open')) return;
   if (!dragging) {
     const seek = $('seek');
@@ -1035,8 +1126,8 @@ async function pickDevice(id){
   pickedDevice = id;
   try {
     await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: !!S.track && !S.paused } });
-    S.devId = id; S.web = id === deviceId;
-    if (!S.web) { setTimeout(pollRemote, 900); setTimeout(pollRemote, 2500); }
+    S.devId = id; S.devSeenAt = Date.now(); S.web = id === deviceId; S.dev = devName(id); syncUI();
+    if (!S.web) pollSoon();
   } catch (e) { handleErr(e); }
 }
 
@@ -1101,10 +1192,10 @@ async function startApp(){
     const im = pickImg(me.images, 64);
     if (im) $('userImg').src = im; else $('userImg').hidden = true;
   }
-  initSDK();
+  if (USE_SDK) initSDK();
   loadPlaylists();
   pollRemote();
-  setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 3500);
+  setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
 }
 
 function bind(){
