@@ -20,6 +20,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 브라우저에서 Spotify 로그인을 마친 뒤 luma://callback 으로 앱에 돌아와요 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="luma" android:host="callback" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>

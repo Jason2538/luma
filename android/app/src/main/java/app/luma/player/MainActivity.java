@@ -19,14 +19,10 @@ public class MainActivity extends Activity {
 
     private static final String HOME = "https://jason2538.github.io/luma/";
 
-    // 이 주소들은 앱 안에서 열고, 나머지 링크는 기본 브라우저로 넘겨요.
+    // 이 주소만 앱 안에서 열어요. Spotify·구글 로그인을 포함한 나머지는 기본 브라우저로 넘겨요.
+    // (구글은 앱 안에 들어있는 화면에서 하는 로그인을 막아서, 로그인은 꼭 진짜 브라우저에서 해야 해요.)
     private static final String[] INTERNAL_HOSTS = {
-            "jason2538.github.io",
-            "spotify.com",
-            "accounts.google.com",
-            "facebook.com",
-            "appleid.apple.com",
-            "apple.com"
+            "jason2538.github.io"
     };
 
     private WebView web;
@@ -92,9 +88,27 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState != null) {
             web.restoreState(savedInstanceState);
-        } else {
+        } else if (!handleCallback(getIntent())) {
             web.loadUrl(HOME);
         }
+    }
+
+    /** 브라우저에서 로그인을 마치고 luma://callback?code=... 로 돌아오면, 그 결과를 Luma 화면에 넘겨서 로그인을 끝내요. */
+    private boolean handleCallback(Intent intent) {
+        Uri data = intent == null ? null : intent.getData();
+        if (data == null || !"luma".equals(data.getScheme()) || !"callback".equals(data.getHost())) {
+            return false;
+        }
+        String query = data.getEncodedQuery();
+        web.loadUrl(HOME + (query == null ? "" : "?" + query));
+        return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleCallback(intent);
     }
 
     @Override

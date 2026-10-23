@@ -272,6 +272,13 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
     <button class="mini hint" id="resetCid" style="text-decoration:underline" hidden>Client ID 다시 입력</button>
   </section>
 
+  <section class="login box" id="handoff" hidden>
+    <p class="hint" id="handoffMsg">Luma 앱으로 돌아가는 중이에요…</p>
+    <a class="btn-green" id="handoffBtn" href="#" style="text-decoration:none;display:inline-block">Luma 앱 열기</a>
+    <p class="hint">앱이 자동으로 열리지 않으면 위 버튼을 눌러 주세요.<br>
+      앱 없이 이 브라우저에서 쓰려면 <a id="handoffWeb" href="#" style="color:var(--fg)">여기서 로그인</a></p>
+  </section>
+
   <div id="appBody" hidden>
     <div class="search box" style="max-width:720px">
       <svg class="ic"><use href="#i-search"/></svg>
@@ -400,6 +407,7 @@ const SCOPES = [
   'playlist-read-private', 'playlist-read-collaborative', 'user-library-read'
 ].join(' ');
 
+const IS_APP = /LumaApp\//.test(navigator.userAgent);
 const redirectUri = () => location.origin + location.pathname.replace(/index\.html$/, '');
 const cidFromConfig = () => (LUMA_CONFIG.CLIENT_ID || '').trim();
 const getCid = () => cidFromConfig() || (LS.get('luma_cid') || '').trim();
@@ -439,7 +447,8 @@ function forgetTokens(){ tok = null; LS.del('luma_tok'); }
 
 async function login(showDialog){
   if (!window.crypto || !crypto.subtle) { toast('https 주소(또는 127.0.0.1)에서만 로그인할 수 있어요'); return; }
-  const v = rand(64), state = rand(16);
+  const v = rand(64), state = (IS_APP ? 'app.' : '') + rand(16);
+  if (IS_APP) toast('브라우저에서 로그인한 뒤 자동으로 앱으로 돌아와요', 5000);
   const challenge = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
   LS.set('luma_v', v); LS.set('luma_state', state);
   const p = new URLSearchParams({
@@ -1032,6 +1041,16 @@ async function pickDevice(id){
 }
 
 /* ---------- 시작 ---------- */
+/* 앱에서 시작한 로그인이 브라우저로 돌아온 경우: 받은 결과를 앱(luma://callback)으로 넘겨요 */
+function showHandoff(){
+  const url = 'luma://callback' + location.search;
+  history.replaceState(null, '', redirectUri());
+  $('loginBox').hidden = true; $('setup').hidden = true; $('handoff').hidden = false;
+  $('handoffBtn').href = url;
+  $('handoffWeb').href = redirectUri();
+  document.body.classList.add('compact');
+  setTimeout(() => { try { location.href = url; } catch {} }, 400);
+}
 function showSetup(){
   $('setup').hidden = false;
   $('redirectShow').textContent = redirectUri();
@@ -1180,6 +1199,7 @@ async function init(){
   if (!cidFromConfig()) $('resetCid').hidden = false;
 
   const qs = new URLSearchParams(location.search);
+  if ((qs.has('code') || qs.has('error')) && !IS_APP && (qs.get('state') || '').startsWith('app.')) { showHandoff(); return; }
   if (qs.has('code') || qs.has('error')) await handleCallback();
 
   if (tok) startApp();
