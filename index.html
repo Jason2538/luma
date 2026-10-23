@@ -199,6 +199,19 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   #lyrics{padding:44vh 0}
 }
 
+.reqlink{font-size:12px;color:var(--dim);text-decoration:underline;text-underline-offset:3px;padding:6px 8px;opacity:.85}
+.reqlink:hover{color:var(--fg);opacity:1}
+#reqDlg{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:20px}
+#reqDlg .card{width:min(420px,100%);background:#1c1a18;border:1px solid var(--faint);border-radius:18px;padding:22px}
+#reqDlg h3{font-size:18px;margin-bottom:6px}
+#reqDlg p{font-size:13px;color:var(--dim);line-height:1.65;margin-bottom:14px}
+#reqDlg label{display:block;font-size:12px;color:var(--dim);margin:10px 0 5px}
+#reqDlg input{width:100%;padding:12px 13px;border-radius:10px;border:1px solid var(--faint);background:rgba(0,0,0,.35);outline:none}
+#reqDlg input:focus{border-color:rgba(255,217,160,.6)}
+#reqDlg .acts{display:flex;gap:8px;margin-top:18px}
+#reqDlg .acts button{flex:1;padding:12px;border-radius:10px;font-weight:700;font-size:14px}
+#reqDlg .go{background:var(--accent);color:#2a1d05}
+#reqDlg .no{background:var(--faint)}
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:100;
   background:rgba(250,246,240,.96);color:#1a1814;padding:11px 18px;border-radius:12px;font-size:14px;max-width:88vw;text-align:center;
   opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;line-height:1.5}
@@ -255,6 +268,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   <section class="login box" id="loginBox" hidden>
     <button class="btn-green" id="loginBtn">Spotify로 로그인</button>
     <p class="hint" id="loginHint">로그인하면 노래 검색과 내 플레이리스트를 쓸 수 있어요.<br>재생은 Spotify Premium 계정이 필요해요.</p>
+    <button class="reqlink" id="reqOpen">등록이 필요한가요? 등록 요청</button>
     <button class="mini hint" id="resetCid" style="text-decoration:underline" hidden>Client ID 다시 입력</button>
   </section>
 
@@ -304,6 +318,18 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 
   <div class="pl-right"><div id="lyrics"><div class="lmsg">노래를 재생하면 가사가 여기에 나와요</div></div><span class="lsrc" id="lsrc"></span></div>
 </section>
+
+<div id="reqDlg" hidden role="dialog" aria-modal="true" aria-labelledby="reqTitle">
+  <div class="card">
+    <h3 id="reqTitle">등록 요청</h3>
+    <p>이 앱은 등록된 Spotify 계정만 쓸 수 있어요. 이름과 Spotify 가입 이메일을 보내 주시면 등록한 뒤 알려드릴게요. 등록되면 다시 로그인해 주세요.</p>
+    <label for="reqName">이름</label>
+    <input id="reqName" autocomplete="name" maxlength="40">
+    <label for="reqMail">Spotify 가입 이메일</label>
+    <input id="reqMail" type="email" autocomplete="email" inputmode="email" maxlength="100" spellcheck="false">
+    <div class="acts"><button class="no" id="reqCancel">닫기</button><button class="go" id="reqSend">요청 보내기</button></div>
+  </div>
+</div>
 
 <div id="toast"></div>
 <script>
@@ -1013,9 +1039,31 @@ function showSetup(){
     $('redirectShow').insertAdjacentHTML('afterend', '<p style="color:#ffb4a0">⚠ Spotify는 localhost 주소를 받지 않아요. 주소창의 localhost 를 127.0.0.1 로 바꿔서 열어 주세요.</p>');
   }
 }
+/* ---------- 등록 요청 (카카오톡 등으로 공유 / 복사) ---------- */
+function openReq(){ $('reqDlg').hidden = false; setTimeout(() => $('reqName').focus(), 50); }
+function closeReq(){ $('reqDlg').hidden = true; }
+async function sendReq(){
+  const name = $('reqName').value.trim(), mail = $('reqMail').value.trim();
+  if (!name) { toast('이름을 입력해 주세요'); $('reqName').focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { toast('이메일 형식을 확인해 주세요'); $('reqMail').focus(); return; }
+  const text = `[Luma 등록 요청]\n이름: ${name}\nSpotify 이메일: ${mail}\n${location.origin}${location.pathname}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Luma 등록 요청', text }); closeReq(); toast('요청을 보냈어요. 등록되면 다시 로그인해 주세요'); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  try { await navigator.clipboard.writeText(text); toast('요청 문구를 복사했어요. 카카오톡으로 보내 주세요', 6000); closeReq(); }
+  catch {
+    const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch {}
+    t.remove();
+    toast(ok ? '요청 문구를 복사했어요. 카카오톡으로 보내 주세요' : '복사하지 못했어요. 이름과 이메일을 직접 보내 주세요', 6000);
+    if (ok) closeReq();
+  }
+}
+
 function showBlocked(){
   $('appBody').hidden = true; $('loginBox').hidden = false;
-  $('loginHint').innerHTML = '이 계정은 아직 사용할 수 없어요.<br>Spotify 개발 모드 앱은 개발자 대시보드의 <b>User Management</b>에 등록한 계정(최대 5명)만 쓸 수 있어요.';
+  $('loginHint').innerHTML = '이 계정은 아직 등록되지 않았어요.<br>아래 <b>등록 요청</b>으로 이름과 이메일을 보내 주세요. 등록되면 다시 로그인할 수 있어요.';
   $('loginBtn').textContent = '다른 계정으로 로그인';
   $('loginBtn').onclick = () => { forgetTokens(); login(true); };
   $('userBox').hidden = false; $('userName').textContent = ''; $('userImg').hidden = true;
@@ -1044,6 +1092,11 @@ function bind(){
   /* 로그인 · 설정 */
   $('loginBtn').onclick = () => login(false);
   $('logoutBtn').onclick = logout;
+  $('reqOpen').onclick = openReq;
+  $('reqCancel').onclick = closeReq;
+  $('reqSend').onclick = sendReq;
+  $('reqDlg').addEventListener('click', e => { if (e.target === $('reqDlg')) closeReq(); });
+  $('reqMail').addEventListener('keydown', e => { if (e.key === 'Enter') sendReq(); });
   $('cidSave').onclick = () => {
     const v = $('cidInput').value.trim();
     if (!/^[0-9a-f]{32}$/i.test(v)) { toast('Client ID는 영문·숫자 32자리예요. 다시 확인해 주세요'); return; }
@@ -1107,7 +1160,8 @@ function bind(){
   document.addEventListener('keydown', e => {
     if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== 'range') return;
     const open = $('player').classList.contains('open');
-    if (e.key === 'Escape' && open) closePlayer();
+    if (e.key === 'Escape' && !$('reqDlg').hidden) closeReq();
+    else if (e.key === 'Escape' && open) closePlayer();
     else if (open && e.code === 'Space') { e.preventDefault(); togglePlay(); }
     else if (open && e.key === 'ArrowRight') seekTo(curPos() + 5000);
     else if (open && e.key === 'ArrowLeft') seekTo(curPos() - 5000);

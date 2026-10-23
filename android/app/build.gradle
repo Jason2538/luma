@@ -1,0 +1,38 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.luma.player'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'app.luma.player'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // 개인용 앱이라 저장소에 함께 있는 키로 서명해요. (업데이트 설치가 계속 되도록 항상 같은 키를 씀)
+    signingConfigs {
+        release {
+            storeFile file('../luma.keystore')
+            storePassword 'android'
+            keyAlias 'luma'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
