@@ -453,6 +453,7 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .stTile .lbl{display:block;font-size:12.5px;color:var(--dim)}
 .stTile b{display:block;font-size:22px;font-weight:700;margin-top:6px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stTile .sub{display:block;font-size:12px;color:var(--dim);margin-top:3px}
+.stTile.wrap b{white-space:normal;font-size:19px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .stTile.big b{font-size:clamp(34px,4.2vw,50px);margin-top:4px}
 .chartCard{position:relative;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:16px 16px 8px;margin-bottom:14px}
 .chHead{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--dim);margin:0 4px 6px}
@@ -484,6 +485,34 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .tbl table{width:100%;max-width:420px;border-collapse:collapse;margin-top:8px}
 .tbl td,.tbl th{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
 .tbl td:last-child,.tbl th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.liveBtn{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);
+  font-size:13px;font-weight:600;margin-bottom:14px;transition:background .35s,border-color .35s,color .35s,scale .35s var(--spring)}
+.liveBtn i{width:8px;height:8px;border-radius:50%;background:var(--dim);transition:background .3s}
+.liveBtn:active{scale:.94}
+.liveBtn.on{background:rgba(30,215,96,.15);border-color:rgba(30,215,96,.5);color:#c9f8da}
+.liveBtn.on i{background:var(--spot);box-shadow:0 0 10px var(--spot);animation:pulse 1.6s ease-in-out infinite}
+.liveBtn .when{font-weight:500;color:var(--dim);font-size:12px}
+.nofx *{animation:none!important}
+.dayNav{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+.dayNav b{font-size:16px;min-width:150px;text-align:center}
+.dayNav button{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;transition:background .3s,scale .35s var(--spring)}
+.dayNav button:active{scale:.88}
+.dayNav button:disabled{opacity:.3}
+.dayNav button svg{width:18px;height:18px}
+.dayNav .today{padding:7px 12px;width:auto;height:auto;border-radius:999px;font-size:12px;font-weight:600}
+.tlCard{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:14px 12px 8px;margin-top:14px}
+.tlCard h3{font-size:14px;font-weight:700;margin:2px 6px 8px}
+.tlRow{display:grid;grid-template-columns:52px 44px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;padding:7px 6px;border-radius:12px;
+  transition:background .25s,scale .3s var(--spring);animation:itemIn .55s var(--ease) both;animation-delay:calc(min(var(--i,0),16) * 28ms)}
+.tlRow:hover{background:rgba(255,255,255,.07)}
+.tlRow:active{scale:.985}
+.tlRow .tm{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.tlRow img,.tlRow .ph{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--faint)}
+.tlRow .tt{min-width:0}
+.tlRow .tt b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlRow .tt small{display:block;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tlRow .du{font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.tlRow.now .tm{color:#9be8b6;font-weight:700}
 .statNote{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
 @media (max-width:900px){.stTiles{grid-template-columns:1fr 1fr}.stTiles .big{grid-column:1/-1}.stCols{grid-template-columns:1fr}}
 @media (max-width:600px){.seg button{padding:7px 12px}}
@@ -591,8 +620,8 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
       <div id="spBody">
         <section class="spSec"><h2 class="sec">나를 위한 믹스</h2><div class="mixes" id="spMixes"></div></section>
         <section class="spSec" id="statSec">
-          <h2 class="sec">내 재생 시간</h2>
-          <div class="segs"><div class="seg" id="segPeriod"><span class="ind"></span><button data-p="week" class="on">이번 주</button><button data-p="lastweek">지난 주</button><button data-p="month">이번 달</button><button data-p="30d">최근 30일</button><button data-p="custom">직접 선택</button></div></div>
+          <div class="secHead"><h2 class="sec">내 재생 시간</h2><button class="liveBtn" id="liveBtn" aria-pressed="false"><i></i><span class="lt">실시간 반영</span><span class="when" id="liveWhen"></span></button></div>
+          <div class="segs"><div class="seg" id="segPeriod"><span class="ind"></span><button data-p="day">오늘</button><button data-p="week" class="on">이번 주</button><button data-p="lastweek">지난 주</button><button data-p="month">이번 달</button><button data-p="30d">최근 30일</button><button data-p="custom">직접 선택</button></div></div>
           <div class="dateRow" id="dateRow" hidden><input type="date" id="dFrom" aria-label="시작 날짜"> ~ <input type="date" id="dTo" aria-label="끝 날짜"></div>
           <div id="statBody"></div>
           <p class="statNote">Luma에서 들은 시간과 Spotify 최근 재생 기록(최근 50곡)으로 계산해요. 기록은 이 기기에만 저장돼요.</p>
@@ -1790,11 +1819,22 @@ let H = { d: {}, m: {}, seen: [] }, histDirty = false;
 try { const h = JSON.parse(LS.get('luma_hist') || 'null'); if (h && h.d) H = { d: h.d, m: h.m || {}, seen: h.seen || [] }; } catch {}
 const pad2 = n => String(n).padStart(2, '0');
 const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); };
-function addListen(t, ms, ts){
+function addListen(t, ms, ts, imported){
   if (!t || !t.id || !(ms > 0)) return;
-  const k = dayKey(ts || Date.now());
+  const now = ts || Date.now();
+  const k = dayKey(now);
   const day = H.d[k] || (H.d[k] = { t: 0, tr: {} });
   day.t += ms; day.tr[t.id] = (day.tr[t.id] || 0) + ms;
+  // 시간대별(0~23시) 재생 시간
+  const hr = day.h || (day.h = Array(24).fill(0));
+  hr[new Date(imported ? now : now - ms / 2).getHours()] += ms;
+  // 들은 순서 기록: [곡 id, 시작 시각, 들은 시간, 가져온 기록 여부]
+  const lg = day.lg || (day.lg = []);
+  const last = lg[lg.length - 1];
+  if (imported) lg.push([t.id, now, ms, 1]);
+  else if (last && last[0] === t.id && !last[3] && now - (last[1] + last[2]) < 90000) last[2] += ms;
+  else lg.push([t.id, now - ms, ms]);
+  if (lg.length > 600) lg.splice(0, lg.length - 600);
   H.m[t.id] = [t.name, t.artists.join(', '), t.artists[0] || '', t.thumb || t.cover || ''];
   histDirty = true;
 }
@@ -1815,7 +1855,7 @@ function importRecent(items){
     seen.add(key); H.seen.push(key);
     const ts = Date.parse(it.played_at); const day = H.d[dayKey(ts)];
     if (day && day.tr[t.id]) continue;            // Luma가 이미 기록한 곡
-    addListen(normTrack(t), t.duration_ms || 0, ts);
+    addListen(normTrack(t), t.duration_ms || 0, ts - (t.duration_ms || 0), true);
   }
   saveHist();
 }
@@ -1832,7 +1872,7 @@ function secondTick(){
 }
 
 /* ---------- 재생 시간 통계 화면 ---------- */
-const ST = { p: 'week', from: null, to: null };
+const ST = { p: 'week', from: null, to: null, day: null };
 const WD = ['일', '월', '화', '수', '목', '금', '토'];
 const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -1855,8 +1895,54 @@ function periodRange(){
   if ((b - a) / 864e5 > 730) a = addDays(b, -730);
   return [a, b];
 }
-function renderStats(){
+let chartHover = false;
+function renderStats(quiet){
   const box = $('statBody'); if (!box) return;
+  box.classList.toggle('nofx', !!quiet);
+  if (ST.p === 'day') return renderDay(box);
+  renderPeriod(box);
+}
+const hhmm = ts => { const d = new Date(ts); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+const fmtSec = ms => { const s = Math.round(ms / 1000); return s < 60 ? `${s}초` : `${Math.floor(s / 60)}분 ${s % 60}초`; };
+function renderDay(box){
+  const today = startOfDay(new Date());
+  const d = ST.day || today, isToday = +d === +today;
+  const rec = H.d[dayKey(d)];
+  const nav = `<div class="dayNav"><button data-dnav="-1" aria-label="이전 날"><svg><use href="#i-back"/></svg></button><b>${fmtDay(d)}${isToday ? ' · 오늘' : ''}</b>` +
+    `<button data-dnav="1" aria-label="다음 날"${isToday ? ' disabled' : ''}><svg style="transform:scaleX(-1)"><use href="#i-back"/></svg></button>` +
+    (isToday ? '' : '<button class="today" data-dnav="0">오늘로</button>') + `</div>`;
+  if (!rec || !rec.t) {
+    box.innerHTML = nav + `<div class="stTiles"><div class="stTile big"><span class="lbl">이날 재생 시간</span><b>0분</b><span class="sub">${fmtDay(d)}</span></div></div>` +
+      `<div class="empty">${isToday ? '오늘은 아직 들은 기록이 없어요.<br>음악을 들으면 바로 여기에 쌓여요.' : '이날 들은 기록이 없어요.'}</div>`;
+    return;
+  }
+  const lg = (rec.lg || []).slice().sort((x, y) => x[1] - y[1]);
+  const ids = Object.keys(rec.tr).sort((x, y) => rec.tr[y] - rec.tr[x]);
+  const top = ids[0] && H.m[ids[0]];
+  const playingId = S.track && !S.paused ? S.track.id : null;
+  const tiles = `<div class="stTiles">` +
+    `<div class="stTile big"><span class="lbl">${isToday ? '오늘' : '이날'} 재생 시간</span><b>${fmtDur(rec.t)}</b><span class="sub">${fmtDay(d)}</span></div>` +
+    `<div class="stTile"><span class="lbl">들은 곡</span><b>${ids.length}곡</b><span class="sub">${lg.length ? lg.length + '번 재생' : ''}</span></div>` +
+    `<div class="stTile wrap"><span class="lbl">들은 시간대</span><b>${lg.length ? hhmm(lg[0][1]) + ' ~ ' + hhmm(lg[lg.length - 1][1] + lg[lg.length - 1][2]) : '-'}</b></div>` +
+    `<div class="stTile wrap"><span class="lbl">가장 많이 들은 곡</span><b>${top ? esc(top[0]) : '-'}</b><span class="sub">${top ? esc(top[1]) + ' · ' + fmtDur(rec.tr[ids[0]]) : ''}</span></div>` +
+    `</div>`;
+  let chart = '';
+  if (rec.h) chart = `<div class="chartCard"><div class="chHead"><span>시간대별 재생 시간</span></div><div class="chart" id="chart" role="img" aria-label="${esc(fmtDay(d))} 시간대별 재생 시간"></div><div class="chTip" id="chTip" hidden></div></div>`;
+  const rows = lg.slice().reverse().slice(0, 150).map((e, i) => {
+    const m = H.m[e[0]] || ['알 수 없음', '', '', ''];
+    const live = isToday && i === 0 && e[0] === playingId && Date.now() - (e[1] + e[2]) < 5000;
+    return `<button class="tlRow${live ? ' now' : ''}" data-tid="${esc(e[0])}" style="--i:${i}"><span class="tm">${live ? '지금' : hhmm(e[1])}</span>` +
+      (m[3] ? `<img src="${esc(m[3])}" alt="" loading="lazy">` : '<div class="ph"></div>') +
+      `<span class="tt"><b>${esc(m[0])}</b><small>${esc(m[1])}${e[3] ? ' · Spotify 기록' : ''}</small></span><span class="du">${fmtSec(e[2])}</span></button>`;
+  }).join('');
+  box.innerHTML = nav + tiles + chart +
+    `<div class="tlCard"><h3>${isToday ? '오늘' : '이날'} 들은 곡 (최근 순)</h3>${rows || '<div class="empty">들은 순서 기록이 없는 날이에요</div>'}</div>`;
+  if (rec.h) {
+    const nowH = new Date().getHours();
+    drawChart($('chart'), rec.h.map((ms, hh) => ({ label: `${hh}시`, full: `${hh}시 ~ ${hh + 1}시`, ms, today: isToday && hh === nowH })));
+  }
+}
+function renderPeriod(box){
   const [a, b] = periodRange(), today = startOfDay(new Date());
   const days = [];
   for (let d = a; d <= b; d = addDays(d, 1)) days.push(d);
@@ -1871,7 +1957,7 @@ function renderStats(){
   }
   // 막대 묶음: 62일 이하면 하루 단위, 넘으면 주 단위
   let buckets;
-  if (days.length <= 62) buckets = daily.map(x => ({ label: days.length <= 8 ? WD[x.d.getDay()] : `${x.d.getMonth() + 1}/${x.d.getDate()}`, full: fmtDay(x.d), ms: x.ms, today: +x.d === +today }));
+  if (days.length <= 62) buckets = daily.map(x => ({ label: days.length <= 8 ? WD[x.d.getDay()] : `${x.d.getMonth() + 1}/${x.d.getDate()}`, full: fmtDay(x.d), ms: x.ms, today: +x.d === +today, date: x.d }));
   else {
     buckets = [];
     for (let i = 0; i < daily.length; i += 7) {
@@ -1905,6 +1991,45 @@ function renderStats(){
       buckets.map(x => `<tr><td>${esc(x.full)}</td><td>${fmtDur(x.ms)}</td></tr>`).join('') + `</tbody></table></details>`;
   drawChart($('chart'), buckets);
 }
+function openDay(d){
+  ST.p = 'day'; ST.day = startOfDay(d);
+  const seg = $('segPeriod');
+  seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.p === 'day'));
+  placeSeg(seg); $('dateRow').hidden = true;
+  renderStats();
+  $('statSec').scrollIntoView({ behavior: isCalm() ? 'auto' : 'smooth', block: 'start' });
+}
+
+/* ---------- 실시간 반영 ---------- */
+let liveOn = LS.get('luma_live') === '1', liveImportAt = 0;
+function renderLiveBtn(){
+  const b = $('liveBtn'); if (!b) return;
+  b.classList.toggle('on', liveOn); b.setAttribute('aria-pressed', liveOn ? 'true' : 'false');
+  b.querySelector('.lt').textContent = liveOn ? '실시간 반영 중' : '실시간 반영';
+}
+async function syncRecordsNow(){
+  histDirty = true; saveHist();
+  if (hasScopes(NEED_SPOT)) {
+    try { const j = await api('/me/player/recently-played?limit=50'); importRecent(j.items); } catch {}
+    liveImportAt = Date.now();
+  }
+  $('liveWhen').textContent = hhmm(Date.now()) + ' 반영';
+  renderStats(true);
+}
+function toggleLive(){
+  liveOn = !liveOn; LS.set('luma_live', liveOn ? '1' : '0'); renderLiveBtn();
+  if (liveOn) { syncRecordsNow(); toast('재생 기록을 실시간으로 반영해요'); }
+  else $('liveWhen').textContent = '';
+}
+function liveTick(){
+  if (!liveOn || curView !== 'spot' || document.hidden || chartHover || $('spBody').hidden) return;
+  const r = $('statSec').getBoundingClientRect();
+  if (r.bottom < 0 || r.top > innerHeight) return;           // 통계가 화면에 보일 때만
+  if (Date.now() - liveImportAt > 60000) { syncRecordsNow(); return; }
+  $('liveWhen').textContent = hhmm(Date.now()) + ' 반영';
+  renderStats(true);
+}
+
 function niceStep(maxMin){
   for (const s of [5, 10, 15, 20, 30, 60, 90, 120, 180, 240, 360, 480, 720, 1440, 2880]) if (s * 4 >= maxMin) return s;
   return Math.ceil(maxMin / 4 / 60) * 60;
@@ -1940,16 +2065,24 @@ function drawChart(el, data){
   const show = i => {
     const x = data[i]; if (!x) return;
     svg.querySelectorAll('.bar').forEach(b => { b.classList.toggle('hl', +b.dataset.i === i); b.classList.toggle('dim', +b.dataset.i !== i); });
-    tip.innerHTML = `${esc(x.full)} · <b>${fmtDur(x.ms)}</b>`; tip.hidden = false;
+    tip.innerHTML = `${esc(x.full)} · <b>${fmtDur(x.ms)}</b>${x.date ? ' <span style="opacity:.6">· 눌러서 자세히</span>' : ''}`; tip.hidden = false;
     const r = el.getBoundingClientRect(), pr = el.parentElement.getBoundingClientRect();
     const cx = (ml + slot * i + slot / 2) / W * r.width + (r.left - pr.left);
     const top0 = Math.min(y(x.ms / 60000), mt + ph - 2) / H0 * r.height + (r.top - pr.top) - 10;
     tip.style.left = Math.min(Math.max(cx, 90), pr.width - 90) + 'px'; tip.style.top = top0 + 'px';
   };
   const hide = () => { tip.hidden = true; svg.querySelectorAll('.bar').forEach(b => b.classList.remove('hl', 'dim')); };
-  svg.addEventListener('pointerover', e => { const h = e.target.closest('.hit'); if (h) show(+h.dataset.i); });
-  svg.addEventListener('pointerdown', e => { const h = e.target.closest('.hit'); if (h) show(+h.dataset.i); });
-  svg.addEventListener('pointerleave', hide);
+  let tapped = -1;
+  svg.addEventListener('pointerover', e => { const h = e.target.closest('.hit'); if (h) { chartHover = true; show(+h.dataset.i); } });
+  svg.addEventListener('click', e => {
+    const h = e.target.closest('.hit'); if (!h) return;
+    const i = +h.dataset.i, x = data[i];
+    if (!x || !x.date) return;
+    // 터치: 처음 누르면 값 보기, 한 번 더 누르면 그날 기록 / 마우스: 바로 그날 기록
+    if (e.pointerType === 'touch' && tapped !== i) { tapped = i; show(i); return; }
+    openDay(x.date);
+  });
+  svg.addEventListener('pointerleave', () => { chartHover = false; hide(); });
 }
 
 /* ---------- 설정 화면 ---------- */
@@ -2413,10 +2546,27 @@ function bind(){
       if (SP.kind === 'artists') { SP.kind = 'tracks'; document.querySelectorAll('#segKind button').forEach(b => b.classList.toggle('on', b.dataset.kind === 'tracks')); placeSeg($('segKind')); return loadTop(); }
     }
     const seg = e.target.closest('.seg button');
+    if (e.target.closest('#liveBtn')) return toggleLive();
+    const dn = e.target.closest('[data-dnav]');
+    if (dn) {
+      const t0 = startOfDay(new Date()), step = +dn.dataset.dnav;
+      ST.day = step === 0 ? t0 : addDays(ST.day || t0, step);
+      if (ST.day > t0) ST.day = t0;
+      return renderStats();
+    }
+    const tl = e.target.closest('.tlRow');
+    if (tl) {
+      const rows = [...document.querySelectorAll('#statBody .tlRow')];
+      const list = dedupe(rows.map(r => { const m = H.m[r.dataset.tid] || ['', '', '', ''];
+        return { id: r.dataset.tid, uri: 'spotify:track:' + r.dataset.tid, name: m[0], artists: [m[1] || ''], artistIds: [], album: '', thumb: m[3], cover: m[3], dur: 0 }; }));
+      const i = list.findIndex(t => t.id === tl.dataset.tid);
+      return playList(list, Math.max(0, i));
+    }
     if (seg && seg.dataset.p) {
       seg.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg));
       placeSeg(seg.parentElement);
       ST.p = seg.dataset.p;
+      if (ST.p === 'day') ST.day = startOfDay(new Date());
       $('dateRow').hidden = ST.p !== 'custom';
       if (ST.p === 'custom') {
         const [a, b] = periodRange(), iso = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
@@ -2485,6 +2635,8 @@ async function init(){
   setInterval(crossfadeTick, 200);
   setInterval(secondTick, 1000);
   setInterval(saveHist, 20000);
+  setInterval(liveTick, 3000);
+  renderLiveBtn();
   document.addEventListener('visibilitychange', saveHist);
   window.addEventListener('pagehide', saveHist);
   startPhrases();
