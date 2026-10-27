@@ -500,6 +500,11 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .dayNav button:disabled{opacity:.3}
 .dayNav button svg{width:18px;height:18px}
 .dayNav .today{padding:7px 12px;width:auto;height:auto;border-radius:999px;font-size:12px;font-weight:600}
+.hb.rkT{width:100%;text-align:left;border-radius:10px;padding:2px 4px;margin:8px -4px;width:calc(100% + 8px);transition:background .25s,scale .3s var(--spring)}
+.hb.rkT:hover{background:rgba(255,255,255,.06)}
+.hb.rkT:active{scale:.985}
+.rkN{display:inline-block;min-width:20px;font-weight:800;color:var(--dim);margin-right:6px;font-variant-numeric:tabular-nums}
+.hb:nth-child(-n+4) .rkN{color:#9be8b6}
 .tlCard{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:14px 12px 8px;margin-top:14px}
 .tlCard h3{font-size:14px;font-weight:700;margin:2px 6px 8px}
 .tlRow{display:grid;grid-template-columns:52px 44px 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;padding:7px 6px;border-radius:12px;
@@ -1935,8 +1940,25 @@ function renderDay(box){
       (m[3] ? `<img src="${esc(m[3])}" alt="" loading="lazy">` : '<div class="ph"></div>') +
       `<span class="tt"><b>${esc(m[0])}</b><small>${esc(m[1])}${e[3] ? ' · Spotify 기록' : ''}</small></span><span class="du">${fmtSec(e[2])}</span></button>`;
   }).join('');
-  box.innerHTML = nav + tiles + chart +
-    `<div class="tlCard"><h3>${isToday ? '오늘' : '이날'} 들은 곡 (최근 순)</h3>${rows || '<div class="empty">들은 순서 기록이 없는 날이에요</div>'}</div>`;
+  // 이날 많이 들은 곡·아티스트 순위 (들은 시간 기준, 재생 횟수 함께)
+  const plays = {};
+  for (const e of lg) plays[e[0]] = (plays[e[0]] || 0) + 1;
+  const byArtist = {};
+  for (const id of ids) { const n = (H.m[id] || [])[2] || '알 수 없음'; byArtist[n] = (byArtist[n] || 0) + rec.tr[id]; }
+  const topA = Object.entries(byArtist).sort((x, y) => y[1] - x[1]).slice(0, 5);
+  const topT = ids.slice(0, 10);
+  const maxT = topT.length ? rec.tr[topT[0]] : 1, maxA = topA.length ? topA[0][1] : 1;
+  const word = isToday ? '오늘' : '이날';
+  const rank =
+    `<div class="stCols">` +
+      `<div class="stCard"><h3>${word} 많이 들은 곡</h3>${topT.map((id, i) => { const m = H.m[id] || ['알 수 없음', '', '', ''];
+        return `<button class="hb rkT" data-tid="${esc(id)}" style="--i:${i}"><span class="n"><b class="rkN">${i + 1}</b>${esc(m[0])} <span style="color:var(--dim)">· ${esc(m[1])}</span></span>` +
+          `<span class="v">${plays[id] ? plays[id] + '번 · ' : ''}${fmtDur(rec.tr[id])}</span><span class="trackbar"><i style="width:${Math.max(3, rec.tr[id] / maxT * 100)}%"></i></span></button>`; }).join('')}</div>` +
+      `<div class="stCard"><h3>${word} 많이 들은 아티스트</h3>${topA.map(([n, v], i) =>
+        `<div class="hb" style="--i:${i}"><span class="n"><b class="rkN">${i + 1}</b>${esc(n)}</span><span class="v">${fmtDur(v)}</span><span class="trackbar"><i style="width:${Math.max(3, v / maxA * 100)}%"></i></span></div>`).join('')}</div>` +
+    `</div>`;
+  box.innerHTML = nav + tiles + chart + rank +
+    `<div class="tlCard"><h3>${word} 들은 곡 (최근 순)</h3>${rows || '<div class="empty">들은 순서 기록이 없는 날이에요</div>'}</div>`;
   if (rec.h) {
     const nowH = new Date().getHours();
     drawChart($('chart'), rec.h.map((ms, hh) => ({ label: `${hh}시`, full: `${hh}시 ~ ${hh + 1}시`, ms, today: isToday && hh === nowH })));
@@ -2554,9 +2576,9 @@ function bind(){
       if (ST.day > t0) ST.day = t0;
       return renderStats();
     }
-    const tl = e.target.closest('.tlRow');
+    const tl = e.target.closest('.tlRow, .rkT');
     if (tl) {
-      const rows = [...document.querySelectorAll('#statBody .tlRow')];
+      const rows = [...document.querySelectorAll(tl.classList.contains('rkT') ? '#statBody .rkT' : '#statBody .tlRow')];
       const list = dedupe(rows.map(r => { const m = H.m[r.dataset.tid] || ['', '', '', ''];
         return { id: r.dataset.tid, uri: 'spotify:track:' + r.dataset.tid, name: m[0], artists: [m[1] || ''], artistIds: [], album: '', thumb: m[3], cover: m[3], dur: 0 }; }));
       const i = list.findIndex(t => t.id === tl.dataset.tid);
