@@ -336,6 +336,8 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 .ln:hover{filter:none;opacity:.85}
 .ln.gap{opacity:.4;letter-spacing:.3em}
 #lyrics.plain .ln{filter:none;opacity:.85;cursor:default;font-size:clamp(20px,2.2vw,30px);font-weight:700;transform:none}
+.lretry{margin-top:14px;padding:9px 18px;border:0;border-radius:999px;background:rgba(255,255,255,.16);color:var(--fg,#fff);font:600 14px inherit;font-family:inherit;cursor:pointer;transition:transform .2s var(--spring,ease),background .2s}
+.lretry:hover{background:rgba(255,255,255,.26)}.lretry:active{transform:scale(.94)}
 .lmsg{height:100%;display:grid;place-items:center;color:var(--dim);font-size:16px;text-align:center;line-height:1.7;padding:0 6vw 0 0}
 .lsrc{position:absolute;right:14px;bottom:14px;font-size:11px;color:var(--dim);opacity:.7}
 
@@ -983,17 +985,29 @@ function cleanTitle(s){
   return c || String(s);
 }
 async function lrc(path, params){
-  const r = await fetch('https://lrclib.net/api/' + path + '?' + new URLSearchParams(params));
-  if (r.status === 404) return null;
-  if (!r.ok) throw new Error('lrclib ' + r.status);
-  return r.json();
+  let lastErr;
+  for (let n = 0; n < 2; n++) {
+    const ac = new AbortController(), to = setTimeout(() => ac.abort(), 6000 + n * 3000);
+    try {
+      const r = await fetch('https://lrclib.net/api/' + path + '?' + new URLSearchParams(params), { signal: ac.signal });
+      clearTimeout(to);
+      if (r.status === 404) return null;
+      if (r.status === 429 || r.status >= 500) throw new Error('lrclib ' + r.status);
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) {
+      clearTimeout(to); lastErr = e;
+      if (n < 1) await new Promise(res => setTimeout(res, 400));
+    }
+  }
+  throw lastErr || new Error('lrclib');
 }
 async function fetchLyrics(t){
   const artist = t.artists[0] || '', title = cleanTitle(t.name), dur = Math.round(t.dur / 1000);
   let hit = null;
   try {
     hit = await lrc('get', { track_name: t.name, artist_name: artist, album_name: t.album, duration: dur });
-  } catch {}
+  } catch {}   // 실패하면 아래 검색으로 다시 시도해요 (거기서도 실패하면 오류로 처리)
   if (!hit || (!hit.syncedLyrics && !hit.plainLyrics && !hit.instrumental)) {
     let list = await lrc('search', { track_name: title, artist_name: artist }) || [];
     if (!list.length) list = await lrc('search', { q: (title + ' ' + artist).trim() }) || [];
@@ -1019,9 +1033,12 @@ function setLyMsg(html){
   el.innerHTML = `<div class="lmsg">${html}</div>`;
   $('lsrc').textContent = ''; LY.lines = null; LY.els = [];
 }
-async function loadLyrics(track){
-  const seq = ++LY.seq; LY.idx = -2;
+let lyRetryT = 0;
+const RETRY_BTN = '<br><button class="lretry" type="button" data-act="lyretry">↻ 새로고침</button>';
+async function loadLyrics(track, force, auto){
+  const seq = ++LY.seq; LY.idx = -2; clearTimeout(lyRetryT);
   setLyMsg('가사를 찾는 중…');
+  if (force) lyCache.delete(track.id);
   let res = lyCache.get(track.id);
   if (res === undefined) {
     try { res = await fetchLyrics(track); lyCache.set(track.id, res); }
@@ -1029,8 +1046,12 @@ async function loadLyrics(track){
   }
   if (seq !== LY.seq) return;
   const el = $('lyrics');
-  if (res === 'err') return setLyMsg('가사를 불러오지 못했어요.<br>네트워크를 확인해 주세요.');
-  if (!res) return setLyMsg('이 곡의 가사를 찾지 못했어요');
+  if (res === 'err') {
+    setLyMsg('가사를 불러오지 못했어요.<br>네트워크가 불안정해요.' + RETRY_BTN);
+    if (!auto) lyRetryT = setTimeout(() => { if (seq === LY.seq && S.track && S.track.id === track.id) loadLyrics(track, true, true); }, 4000);
+    return;
+  }
+  if (!res) return setLyMsg('이 곡의 가사를 찾지 못했어요' + RETRY_BTN);
   if (res.instr) return setLyMsg('♪ 연주곡이에요');
   if (res.synced && res.synced.length) {
     LY.lines = res.synced;
@@ -1049,6 +1070,10 @@ async function loadLyrics(track){
     $('lsrc').textContent = '시간 정보 없는 가사 · LRCLIB';
   } else setLyMsg('이 곡의 가사를 찾지 못했어요');
 }
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-act="lyretry"]') && S.track) loadLyrics(S.track, true);
+});
+addEventListener('online', () => { if (S.track && document.querySelector('[data-act="lyretry"]')) loadLyrics(S.track, true); });
 function updateLyrics(p, jump){
   if (!LY.lines) return;
   const L = LY.lines; let lo = 0, hi = L.length - 1, idx = -1;
@@ -1104,7 +1129,12 @@ function setPos(ms, paused){ S.pos = ms; S.ts = performance.now(); if (paused !=
 function applyTrack(tr){
   if (!tr) return;
   const changed = !S.track || S.track.uri !== tr.uri;
+  const prevT = S.track;
+  if (!changed && prevT) {          // 같은 곡: 이미 있던 정보(커버 등)를 잃지 않게 합쳐요
+    tr = { ...prevT, ...tr, cover: tr.cover || prevT.cover, thumb: tr.thumb || prevT.thumb, artistIds: tr.artistIds || prevT.artistIds };
+  }
   S.track = tr; S.dur = tr.dur || S.dur;
+  if (!changed && prevT && (tr.cover || tr.thumb) !== (prevT.cover || prevT.thumb)) setCover(tr);
   if (changed) {
     if (sleepT.end && sleepT.uri && sleepT.uri !== tr.uri && !S.paused) { clearSleep(); setTimeout(pauseNow, 50); toast('수면 타이머: 재생을 멈췄어요'); }
     sessionPlayed.add(tr.uri);
@@ -1119,24 +1149,38 @@ function setPlayerBg(url){
   next.style.backgroundImage = url ? `url("${url}")` : '';
   next.classList.add('on'); cur.classList.remove('on');
 }
+function setCover(t, fresh){
+  const cover = t.cover || t.thumb || '';
+  const img = $('cover');
+  const wrap = $('coverWrap');
+  const my = img._seq = (img._seq || 0) + 1;
+  let shown = false;
+  const reveal = () => { if (shown || my !== img._seq) return; shown = true;
+    if (fresh) anim(wrap, [{ opacity: 0, transform: 'translateY(10px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 750 }); };
+  let tries = 0;
+  const srcs = [t.cover, t.thumb].filter(Boolean).filter((u, i, a) => a.indexOf(u) === i);
+  const load = k => {
+    if (my !== img._seq) return;
+    if (k >= srcs.length) { if (tries++ < 2) setTimeout(() => load(0), 1500); return; }
+    img.onload = reveal;
+    img.onerror = () => load(k + 1);
+    img.src = srcs[k];
+  };
+  setTimeout(reveal, 700);
+  if (srcs.length) load(0); else img.removeAttribute('src');
+  setPlayerBg(cover);
+  $('coverBg').style.backgroundImage = cover ? `url("${cover}")` : '';
+  if (fresh) anim($('coverBg'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1400, easing: 'ease' });
+  document.body.classList.toggle('has-cover', !!cover);
+}
 function renderTrack(){
   const t = S.track;
-  const cover = t.cover || t.thumb;
-  const img = $('cover');
-  let shown = false;
-  const reveal = () => { if (shown) return; shown = true;
-    anim($('coverWrap'), [{ opacity: 0, transform: 'translateY(10px) scale(.94)' }, { opacity: 1, transform: 'none' }], { duration: 750 }); };
-  img.onload = reveal; setTimeout(reveal, 700);
-  img.src = cover || '';
+  setCover(t, true);
   $('pTitle').textContent = t.name;
   $('pArtist').textContent = t.artists.join(', ');
   anim($('pMeta'), [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 650, delay: 90 });
   anim($('miniBar').querySelector('.m'), [{ opacity: 0, transform: 'translateX(10px)' }, { opacity: 1, transform: 'none' }], { duration: 550 });
-  setPlayerBg(cover);
-  $('coverBg').style.backgroundImage = cover ? `url("${cover}")` : '';
-  anim($('coverBg'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1400, easing: 'ease' });
-  document.body.classList.toggle('has-cover', !!cover);
-  $('miniImg').src = t.thumb || cover || '';
+  $('miniImg').src = t.thumb || t.cover || '';
   $('miniT').textContent = t.name;
   $('miniA').textContent = t.artists.join(', ');
   $('miniBar').hidden = false;
@@ -2678,7 +2722,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { parseLRC, cleanTitle };
+window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S };
 init();
 })();
 </script>
