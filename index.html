@@ -341,6 +341,41 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 .lmsg{height:100%;display:grid;place-items:center;color:var(--dim);font-size:16px;text-align:center;line-height:1.7;padding:0 6vw 0 0}
 .lsrc{position:absolute;right:14px;bottom:14px;font-size:11px;color:var(--dim);opacity:.7}
 
+/* 오른쪽: 가사 · 재생 목록 · 플레이리스트 */
+#rTabs{position:absolute;z-index:4;top:22px;left:50%;transform:translateX(-50%);display:flex;padding:3px;border-radius:999px;
+  background:rgba(0,0,0,.22);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+#rTabs button{position:relative;z-index:1;border:0;background:none;color:var(--dim);font:600 13px var(--font);padding:7px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;transition:color .3s,scale .3s var(--spring)}
+#rTabs button.on{color:var(--fg)}
+#rTabs button:active{scale:.94}
+#rTabs .rInd{position:absolute;z-index:0;top:3px;bottom:3px;left:0;width:0;border-radius:999px;background:rgba(255,255,255,.16);transition:left .45s var(--ease),width .45s var(--ease)}
+#rList{position:absolute;inset:70px 0 0;overflow-y:auto;scrollbar-width:thin;padding:6px 4vw 40px 0;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22px,#000 94%,transparent);mask-image:linear-gradient(to bottom,transparent,#000 22px,#000 94%,transparent)}
+#rList .rHead{display:flex;align-items:flex-end;gap:12px;justify-content:space-between;margin:10px 4px 10px}
+#rList .rT{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+#rList .rS{font-size:13px;color:var(--dim);margin-top:3px}
+#rList .rSub{font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.02em;margin:18px 6px 6px}
+#rList .rBtn{flex:none;border:0;border-radius:999px;background:rgba(255,255,255,.16);color:var(--fg);font:600 13px var(--font);padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s,scale .3s var(--spring)}
+#rList .rBtn:hover{background:rgba(255,255,255,.26)}#rList .rBtn:active{scale:.94}
+#rList .rBtn .ic{width:16px;height:16px}
+#rList .rBack{display:inline-flex;align-items:center;gap:2px;border:0;background:none;color:var(--dim);font:600 14px var(--font);padding:4px 2px;cursor:pointer}
+#rList .rBack .ic{width:18px;height:18px}
+#rList .trk{grid-template-columns:44px 1fr 44px;gap:12px;padding:7px 8px;animation:itemIn .5s var(--ease) both;animation-delay:calc(min(var(--k,0),14) * 22ms)}
+#rList .trk img,#rList .trk .ph{width:44px;height:44px;border-radius:7px}
+#rList .trk .al{display:none}
+#rList .trk.on{background:rgba(255,255,255,.14)}
+#rList .trk.past{opacity:.45}
+#rList .trk.on .t::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:7px;vertical-align:2px;animation:pulse 1.6s ease-in-out infinite}
+#rList .rPl{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:none;color:inherit;padding:7px 8px;border-radius:12px;cursor:pointer;
+  animation:itemIn .5s var(--ease) both;animation-delay:calc(min(var(--k,0),14) * 22ms);transition:background .3s,scale .35s var(--spring)}
+#rList .rPl:hover{background:rgba(255,255,255,.08)}#rList .rPl:active{scale:.985}
+#rList .rPl img,#rList .rPl .ph{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--faint);display:grid;place-items:center}
+#rList .rPl .ph .ic{width:24px;height:24px}
+#rList .rPl .n{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rList .rPl .c{font-size:13px;color:var(--dim);margin-top:2px}
+#rList .rMsg{color:var(--dim);text-align:center;padding:40px 10px;line-height:1.7}
+#rList.static .trk,#rList.static .rPl{animation:none}
+.pl-right.list .lsrc{display:none}
+
 /* 좁은 화면 / 세로 화면: 위아래로 쌓기 */
 @media (max-width:900px),(orientation:portrait){
   #player{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-items:stretch;gap:10px;padding:calc(68px + env(safe-area-inset-top)) 20px 0}
@@ -354,6 +389,9 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   .ctrls .ic.big{width:40px;height:40px}
   .vol{display:none}
   #lyrics{padding:24vh 0 30vh;}
+  #rTabs{top:8px}
+  #rTabs button{padding:6px 12px;font-size:12.5px}
+  #rList{inset:52px 0 0;padding:4px 0 calc(24px + env(safe-area-inset-bottom))}
   .ln{font-size:calc(clamp(22px,6vw,32px) * var(--lys,1))}
   .lmsg{padding:0}
   .pl-right{height:auto;min-height:0}
@@ -726,7 +764,11 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
     <div id="state"></div>
   </div>
 
-  <div class="pl-right"><div id="lyrics"><div class="lmsg">노래를 재생하면 가사가 여기에 나와요</div></div><span class="lsrc" id="lsrc"></span></div>
+  <div class="pl-right">
+    <div id="rTabs" role="tablist" aria-label="오른쪽 화면"><i class="rInd"></i><button data-r="ly" class="on" role="tab">가사</button><button data-r="q" role="tab">재생 목록</button><button data-r="pl" role="tab">플레이리스트</button></div>
+    <div id="lyrics"><div class="lmsg">노래를 재생하면 가사가 여기에 나와요</div></div><span class="lsrc" id="lsrc"></span>
+    <div id="rList" hidden></div>
+  </div>
 </section>
 
 <div id="reqDlg" hidden role="dialog" aria-modal="true" aria-labelledby="reqTitle">
@@ -1254,12 +1296,20 @@ function setCover(t, fresh){
   const load = k => {
     if (my !== img._seq) return;
     if (k >= srcs.length) { if (tries++ < 2) setTimeout(() => load(0), 1500); return; }
+    if (!fresh) {                       // 같은 곡: 새 커버를 다 받은 다음에만 바꿔요
+      const pre = new Image();
+      pre.onload = () => { if (my !== img._seq) return; img.onload = img.onerror = null; img.src = srcs[k]; setPlayerBg(srcs[k]); };
+      pre.onerror = () => load(k + 1);
+      pre.src = srcs[k];
+      return;
+    }
     img.onload = reveal;
     img.onerror = () => load(k + 1);
     img.src = srcs[k];
   };
   setTimeout(reveal, 700);
-  if (srcs.length) load(0); else img.removeAttribute('src');
+  if (srcs.length) load(0); else if (fresh) img.removeAttribute('src');
+  if (!fresh) return;
   setPlayerBg(cover);
   $('coverBg').style.backgroundImage = cover ? `url("${cover}")` : '';
   if (fresh) anim($('coverBg'), [{ opacity: 0 }, { opacity: 1 }], { duration: 1400, easing: 'ease' });
@@ -1279,6 +1329,7 @@ function renderTrack(){
   document.title = `${t.name} · Luma`;
   loadLyrics(t);
   markPlaying();
+  if (RP.mode === 'q') renderQueue(); else if (RP.mode === 'pl' && RP.pl) renderPlTracks();
 }
 function updateMediaSession(){
   if (!('mediaSession' in navigator) || !S.track) return;
@@ -1305,6 +1356,14 @@ function syncUI(){
 function applySdkState(st){
   const c = st.track_window && st.track_window.current_track;
   if (!c) return;
+  if (Date.now() < S.holdUntil) {
+    // 방금 다른 곡을 눌렀는데 SDK가 아직 이전 곡을 알려주면 화면을 되돌리지 않아요
+    const us = [c.uri, c.linked_from && c.linked_from.uri].filter(Boolean);
+    if (S.expectUri && !us.includes(S.expectUri)) return;
+    if (S.avoidUri && us.includes(S.avoidUri)) return;
+    S.holdUntil = 0;
+  }
+  S.expectUri = S.avoidUri = null;
   markNearEnd();
   S.web = true; S.devId = deviceId; S.dev = 'Luma'; S.devSeenAt = Date.now();
   setPos(st.position || 0, !!st.paused);
@@ -1461,17 +1520,62 @@ function revertTo(prev){
     S.track = null; closePlayer(); $('miniBar').hidden = true; markPlaying();
   }
 }
-async function startPlayback(body, hint){
+/* 지금 그 기기에서 실제로 틀고 있는 곡 (relink된 원래 주소 포함) */
+async function nowUris(dev){
+  try {
+    if (dev && dev === deviceId && player) {
+      const st = await player.getCurrentState();
+      const c = st && st.track_window && st.track_window.current_track;
+      return c ? [c.uri, c.linked_from && c.linked_from.uri].filter(Boolean) : [];
+    }
+    const j = await api('/me/player');
+    if (!j || !j.item || (dev && j.device && j.device.id !== dev)) return [];
+    return [j.item.uri, j.item.linked_from && j.item.linked_from.uri].filter(Boolean);
+  } catch { return []; }
+}
+/* 재생 요청이 받아들여졌어도 곡이 안 바뀌는 경우가 있어서, 실제로 바뀌었는지 확인하고 안 바뀌었으면 다시 보내요 */
+async function verifyStart(seq, dev, body, hint, opts, prevUri){
+  const expect = hint && hint.uri;
+  const ok = l => expect ? l.includes(expect) : (l.length > 0 && !l.includes(prevUri));
+  if (!expect && !prevUri) return;
+  const t0 = Date.now();
+  let retried = 0;
+  while (Date.now() - t0 < 9500) {
+    await sleep(900);
+    if (seq !== playSeq || S.lastCtl > t0) return;
+    const l = await nowUris(dev);
+    if (seq !== playSeq || S.lastCtl > t0) return;
+    if (ok(l)) return;
+    if ((retried === 0 && Date.now() - t0 > 2400) || (retried === 1 && Date.now() - t0 > 5600)) {
+      retried++;
+      try {
+        // 기기를 확실히 깨운 다음 같은 요청을 다시 보내요 (두 번째는 곡 주소 목록으로)
+        await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } }).catch(() => {});
+        await sleep(350);
+        if (seq !== playSeq) return;
+        const b2 = retried === 2 && opts && opts.alt ? opts.alt() : body;
+        await api('/me/player/play?device_id=' + encodeURIComponent(dev), { method: 'PUT', body: b2 });
+      } catch {}
+    }
+  }
+  if (seq !== playSeq) return;
+  S.holdUntil = 0; S.expectUri = S.avoidUri = null;
+  if (dev === deviceId && player) { try { const st = await player.getCurrentState(); if (st) applySdkState(st); } catch {} }
+  else pollSoon();
+  toast('곡이 바뀌지 않았어요. 한 번 더 시도해 볼까요?', 8000, { label: '다시 시도', fn: () => startPlayback(body, hint, opts) });
+}
+async function startPlayback(body, hint, opts){
   const seq = ++playSeq;
   player && player.activateElement && player.activateElement();
   const prev = { track: S.track, pos: curPos(), paused: S.paused };
+  const prevUri = S.track && S.track.uri;
 
   // 1) 누르는 즉시 화면부터 바꿔요
   if (hint) {
     applyTrack(hint); setPos(0, false); syncUI();
-    S.expectUri = hint.uri; S.avoidUri = null; S.holdUntil = Date.now() + 5000;
+    S.expectUri = hint.uri; S.avoidUri = null; S.holdUntil = Date.now() + 9000;
   } else if (S.track) {
-    S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 4000;
+    S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 6000;
   }
   openPlayer();
 
@@ -1479,30 +1583,56 @@ async function startPlayback(body, hint){
   let dev = await chooseDevice(false);
   if (seq !== playSeq) return;
   if (!dev) { revertTo(prev); return noDevice(hint); }
-  const go = d => api('/me/player/play?device_id=' + encodeURIComponent(d), { method: 'PUT', body });
+  const send = d => api('/me/player/play?device_id=' + encodeURIComponent(d), { method: 'PUT', body });
+  // 네트워크 오류·Spotify 서버 오류(5xx)는 잠깐 뒤 한 번 더 보내요
+  const go = async d => {
+    try { return await send(d); }
+    catch (e) {
+      if (e.status && e.status < 500) throw e;
+      await sleep(700);
+      if (seq !== playSeq) throw e;
+      return send(d);
+    }
+  };
   try { await go(dev); }
   catch (e) {
     if (seq !== playSeq) return;
-    if (e.status !== 404) { revertTo(prev); return handleErr(e); }
-    // 기기가 사라졌거나 잠들어 있으면 목록을 새로 받아 한 번 더 시도
-    pickedDevice = null; S.devSeenAt = 0;
-    try {
-      dev = await chooseDevice(true);
-      if (seq !== playSeq) return;
-      if (!dev) { revertTo(prev); return noDevice(hint); }
-      await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } });
-      await sleep(300);
-      if (seq !== playSeq) return;
-      await go(dev);
-    } catch (e2) { if (seq === playSeq) { revertTo(prev); handleErr(e2); } return; }
+    // 플레이리스트 안 위치 지정이 거절되면 곡 주소 목록으로 바꿔서 다시
+    if (opts && opts.alt && e.status !== 404 && e.status !== 403) {
+      body = opts.alt(); opts = null;
+      try { await go(dev); } catch (e3) { if (seq === playSeq) { revertTo(prev); handleErr(e3); } return; }
+    } else {
+      if (e.status !== 404) { revertTo(prev); return handleErr(e); }
+      // 기기가 사라졌거나 잠들어 있으면 목록을 새로 받아 깨운 다음 한 번 더 시도
+      pickedDevice = null; S.devSeenAt = 0;
+      try {
+        dev = await chooseDevice(true);
+        if (seq !== playSeq) return;
+        if (!dev) { revertTo(prev); return noDevice(hint); }
+        await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } });
+        await sleep(400);
+        if (seq !== playSeq) return;
+        try { await go(dev); }
+        catch (e4) { if (opts && opts.alt) { body = opts.alt(); opts = null; await go(dev); } else throw e4; }
+      } catch (e2) { if (seq === playSeq) { revertTo(prev); handleErr(e2); } return; }
+    }
   }
   if (seq !== playSeq) return;
   S.devId = dev; S.devSeenAt = Date.now(); S.web = dev === deviceId; S.dev = devName(dev);
   syncUI();
   if (!S.web) pollSoon();
   else watchWebStart(seq, body, hint);
+  verifyStart(seq, dev, body, hint, opts, prevUri);
 }
-function playList(list, i){
+/* 지금 듣고 있는 목록 (플레이어의 "재생 목록"에 보여요) */
+const Q = { list: [], name: '', ctx: null };
+function setQueue(list, name, ctx){
+  Q.list = list || []; Q.name = name || '재생 목록'; Q.ctx = ctx || null;
+  if (RP.mode === 'q') renderRight();
+}
+function playList(list, i, name){
+  if (!list || !list[i]) return;
+  setQueue(list, name || (detail && detail.tracks === list ? detail.title : '재생 목록'));
   const from = Math.max(0, i - 50), slice = list.slice(from, from + 100);
   startPlayback({ uris: slice.map(t => t.uri), offset: { position: i - from } }, list[i]);
 }
@@ -1522,12 +1652,31 @@ async function togglePlay(){
 }
 async function skip(dir){
   if (!S.track) return;
-  playSeq++;
-  S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 4000;
+  const seq = ++playSeq, from = S.track.uri, dev = S.devId;
+  // 목록 안의 곡이면 화면을 먼저 다음 곡으로 바꿔요
+  const qi = Q.list.findIndex(t => t.uri === from);
+  const nx = qi >= 0 && !S.shuffle && S.repeat !== 2 ? Q.list[qi + dir] : null;
+  if (nx && (dir > 0 || curPos() < 3000)) { applyTrack(nx); setPos(0, false); syncUI(); S.expectUri = nx.uri; S.avoidUri = null; }
+  else { S.expectUri = null; S.avoidUri = from; }
+  S.holdUntil = Date.now() + 5000;
+  if (dir < 0 && curPos() >= 3000) { S.avoidUri = S.expectUri = null; S.holdUntil = 0; }   // 3초 넘게 들었으면 '이전'은 처음으로
+  const viaApi = () => api(withDev(dir > 0 ? '/me/player/next' : '/me/player/previous'), { method: 'POST' });
   try {
     if (S.web && player) await (dir > 0 ? player.nextTrack() : player.previousTrack());
-    else { await api(withDev(dir > 0 ? '/me/player/next' : '/me/player/previous'), { method: 'POST' }); afterRemote(); }
-  } catch (e) { handleErr(e); }
+    else { await viaApi(); afterRemote(); }
+  } catch (e) {
+    try { await viaApi(); afterRemote(); } catch (e2) { handleErr(e2); }
+  }
+  if (!(dir < 0 && S.holdUntil === 0)) setTimeout(async () => {
+    if (seq !== playSeq) return;
+    const l = await nowUris(dev);
+    if (seq !== playSeq || !l.length) return;
+    if (l.includes(from)) {               // 아직 그대로면 한 번 더
+      try { await viaApi(); } catch {}
+      setTimeout(() => { if (seq !== playSeq) return; S.holdUntil = 0; S.expectUri = S.avoidUri = null; pollSoon();
+        if (S.web && player) player.getCurrentState().then(st => st && applySdkState(st)).catch(() => {}); }, 2500);
+    }
+  }, 1800);
 }
 async function seekTo(ms){
   if (!S.track) return;
@@ -1563,10 +1712,147 @@ function openPlayer(){
   $('player').classList.add('open'); document.body.style.overflow = 'hidden';
   document.body.classList.add('player-open');
   LY.idx = -2; updateLyrics(curPos(), true);
+  requestAnimationFrame(placeRTab); setTimeout(placeRTab, 400);
+  if (RP.mode !== 'ly') renderRight();
 }
 function closePlayer(){
   $('player').classList.remove('open'); $('devMenu').hidden = true; document.body.style.overflow = '';
   document.body.classList.remove('player-open');
+}
+
+/* ---------- 플레이어 오른쪽: 가사 · 재생 목록 · 플레이리스트 ---------- */
+const RP = { mode: 'ly', pl: null, plTracks: null, plMore: false, plErr: null, plSeq: 0, sq: [] };
+function placeRTab(){
+  const on = $('rTabs').querySelector('button.on'), ind = $('rTabs').querySelector('.rInd');
+  if (on && on.offsetWidth) { ind.style.left = on.offsetLeft + 'px'; ind.style.width = on.offsetWidth + 'px'; }
+}
+function setRight(m){
+  RP.mode = m; LS.set('luma_rp', m);
+  $('rTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.r === m));
+  placeRTab();
+  const list = m !== 'ly';
+  $('lyrics').hidden = list; $('rList').hidden = !list;
+  document.querySelector('.pl-right').classList.toggle('list', list);
+  if (!list) { LY.idx = -2; updateLyrics(curPos(), true); anim($('lyrics'), [{ opacity: 0 }, { opacity: 1 }], { duration: 450 }); }
+  else { renderRight(); anim($('rList'), [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 450 }); }
+}
+function rKey(k){ const box = $('rList'); box.classList.toggle('static', box.dataset.key === k); box.dataset.key = k; }
+function renderRight(){ if (RP.mode === 'q') renderQueue(); else if (RP.mode === 'pl') renderPls(); }
+const rRows = (list, cur, past) => list.map((t, i) => rowHTML(t, i, i)
+  .replace('class="trk"', `class="trk${past && i < cur ? ' past' : ''}"`)
+  .replace(/style="--i:\d+"/, `style="--k:${Math.abs(i - Math.max(cur, 0))}"`)).join('');
+function scrollRCur(){
+  const box = $('rList'), el = box.querySelector('.trk.on');
+  if (el) box.scrollTop = Math.max(0, el.offsetTop - 120);
+}
+let rqSeq = 0;
+async function renderQueue(){
+  const box = $('rList'), seq = ++rqSeq;
+  const cur = S.track && S.track.uri;
+  const qi = cur ? Q.list.findIndex(t => t.uri === cur) : -1;
+  if (qi >= 0 && !S.shuffle) {
+    box.dataset.src = 'q'; rKey('q|' + Q.name + '|' + Q.list.length);
+    box.innerHTML = `<div class="rHead"><div><div class="rT">${esc(Q.name)}</div><div class="rS">${qi + 1} / ${Q.list.length}곡 · 이어서 재생돼요</div></div></div>` +
+      rRows(Q.list, qi, true);
+    markPlaying(); scrollRCur();
+    return;
+  }
+  // 목록 밖의 곡이거나 셔플 중이면 Spotify가 알려주는 실제 다음 곡을 보여 줘요
+  box.dataset.src = 'sq';
+  if (!box.querySelector('.trk')) box.innerHTML = '<div class="rMsg"><div class="spin"></div></div>';
+  let j = null;
+  try { j = await api('/me/player/queue'); } catch {}
+  if (seq !== rqSeq || RP.mode !== 'q') return;
+  const now = j && j.currently_playing && j.currently_playing.type === 'track' ? [normTrack(j.currently_playing)] : (S.track ? [S.track] : []);
+  const next = ((j && j.queue) || []).filter(t => t && t.type === 'track' && t.uri).map(normTrack);
+  RP.sq = dedupe(now.concat(next)); rKey('sq|' + RP.sq.map(t => t.uri).join(','));
+  if (!RP.sq.length) { box.innerHTML = '<div class="rMsg">재생 목록이 비어 있어요.<br>플레이리스트에서 곡을 골라 보세요.</div>'; return; }
+  box.innerHTML = `<div class="rHead"><div><div class="rT">다음 곡</div><div class="rS">${S.shuffle ? '셔플 순서 · ' : ''}Spotify 대기열 ${Math.max(0, RP.sq.length - 1)}곡</div></div></div>` +
+    rRows(RP.sq, 0, false);
+  markPlaying();
+}
+const plRow = (img, name, sub, attr, k) =>
+  `<button class="rPl" ${attr} style="--k:${k}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<div class="ph"><svg class="ic"><use href="#i-note"/></svg></div>'}` +
+  `<div style="min-width:0"><div class="n">${esc(name)}</div><div class="c">${esc(sub)}</div></div></button>`;
+function renderPls(){
+  const box = $('rList');
+  if (RP.pl) return renderPlTracks();
+  box.dataset.src = 'pls'; rKey('pls|' + myPlaylists.length);
+  let h = '<div class="rHead"><div><div class="rT">플레이리스트</div><div class="rS">눌러서 곡을 고르면 바로 재생돼요</div></div></div>';
+  let k = 0;
+  if (hasLiked) h += plRow('', '좋아요 표시한 곡', '내 라이브러리', 'data-liked="1"', k++);
+  h += myPlaylists.map((p, i) => { const total = p.items?.total ?? p.tracks?.total;
+    return plRow(pickImg(p.images, 120), p.name, (total != null ? total + '곡' : '') + (p.owner?.id === me?.id || p.collaborative ? '' : ' · 저장한 목록'), `data-p="${i}"`, k++); }).join('');
+  if (!k) h += '<div class="rMsg">플레이리스트가 없어요</div>';
+  box.innerHTML = h; box.scrollTop = 0;
+}
+function renderPlTracks(){
+  const box = $('rList'), p = RP.pl;
+  box.dataset.src = 'plt';
+  const cur = S.track ? (RP.plTracks || []).findIndex(t => t.uri === S.track.uri) : -1;
+  let h = `<button class="rBack" data-act="rback"><svg class="ic"><use href="#i-back"/></svg>플레이리스트</button>` +
+    `<div class="rHead"><div style="min-width:0"><div class="rT">${esc(p.name)}</div><div class="rS">${RP.plTracks ? RP.plTracks.length + '곡' : ''}${RP.plMore ? ' · 불러오는 중…' : ''}</div></div>` +
+    `<button class="rBtn" data-act="rplay"><svg class="ic"><use href="#i-play"/></svg>전체 재생</button></div>`;
+  if (RP.plErr) h += `<div class="rMsg">${esc(RP.plErr)}</div>`;
+  else if (!RP.plTracks) h += '<div class="rMsg"><div class="spin"></div></div>';
+  else if (!RP.plTracks.length) h += '<div class="rMsg">곡이 없어요</div>';
+  else h += RP.plTracks.map((t, i) => rowHTML(t, i, i).replace(/style="--i:\d+"/, `style="--k:${i}"`)).join('');
+  const keep = box.dataset.src === 'plt' && box.dataset.pid === (p.id || 'liked') ? box.scrollTop : 0;
+  box.dataset.pid = p.id || 'liked';
+  rKey('plt|' + (p.id || 'liked') + '|' + (RP.plTracks ? 1 : 0));
+  box.innerHTML = h;
+  if (box.classList.contains('static') && RP.plTracks) box.querySelectorAll('.trk').forEach((r, i) => { if (i >= (box._shown || 0)) r.style.animation = 'itemIn .5s var(--ease) both'; });
+  box._shown = RP.plTracks ? RP.plTracks.length : 0; box.scrollTop = keep;
+  if (!keep && cur > 5) scrollRCur();
+  markPlaying();
+}
+async function openRightPl(p){
+  const seq = ++RP.plSeq;
+  RP.pl = p; RP.plTracks = null; RP.plErr = null; RP.plMore = true;
+  $('rList').dataset.pid = ''; renderPlTracks();
+  const tracks = [];
+  let off = 0;
+  try {
+    for (let n = 0; n < 60; n++) {
+      const j = await api(p.liked ? `/me/tracks?limit=50&offset=${off}` : `/playlists/${p.id}/items?limit=50&offset=${off}`);
+      if (seq !== RP.plSeq) return;
+      const its = (j.items || []).map(e => e && (e.item || e.track)).filter(t => t && t.type === 'track' && !t.is_local && t.uri);
+      tracks.push(...its.map(normTrack)); off += (j.items || []).length;
+      RP.plTracks = tracks; RP.plMore = !!j.next;
+      if (RP.mode === 'pl' && RP.pl === p) renderPlTracks();
+      if (!j.next) break;
+    }
+  } catch (e) {
+    if (seq !== RP.plSeq) return;
+    RP.plMore = false;
+    if (!tracks.length) RP.plErr = e.status === 403
+      ? 'Spotify 정책상 내가 만들지 않은 플레이리스트는 곡 목록을 볼 수 없어요. "전체 재생"으로는 들을 수 있어요.'
+      : '곡 목록을 불러오지 못했어요';
+    if (RP.mode === 'pl' && RP.pl === p) renderPlTracks();
+  }
+}
+function bindRight(){
+  $('rTabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.r !== RP.mode) setRight(b.dataset.r); });
+  $('rList').addEventListener('click', e => {
+    const box = $('rList');
+    if (e.target.closest('[data-act="rback"]')) { RP.pl = null; RP.plSeq++; return renderPls(); }
+    if (e.target.closest('[data-act="rplay"]')) {
+      const p = RP.pl; if (!p) return;
+      if (RP.plTracks && RP.plTracks.length) return p.liked ? playList(RP.plTracks, 0, p.name) : playPlaylistAt(p, RP.plTracks, 0);
+      if (!p.liked) { setQueue([], p.name, p); startPlayback({ context_uri: p.uri }); }
+      return;
+    }
+    const pl = e.target.closest('.rPl');
+    if (pl) return openRightPl(pl.dataset.liked ? { liked: true, name: '좋아요 표시한 곡' } : myPlaylists[+pl.dataset.p]);
+    const row = e.target.closest('.trk'); if (!row) return;
+    const i = +row.dataset.i, src = box.dataset.src;
+    if (src === 'q') return Q.ctx ? playPlaylistAt(Q.ctx, Q.list, i) : playList(Q.list, i, Q.name);
+    if (src === 'sq') return playList(RP.sq, i, '다음 곡');
+    if (src === 'plt' && RP.pl) return RP.pl.liked ? playList(RP.plTracks, i, RP.pl.name) : playPlaylistAt(RP.pl, RP.plTracks, i);
+  });
+  addEventListener('resize', placeRTab);
+  const m = LS.get('luma_rp');
+  if (m === 'q' || m === 'pl') setRight(m);
 }
 
 /* 화면 갱신 루프 (진행바 · 가사) */
@@ -1717,9 +2003,16 @@ function openPlaylist(p){
     errMsg: e => e.status === 403
       ? 'Spotify 정책상 내가 만들지 않은 플레이리스트는 곡 목록을 불러올 수 없어요. 위의 "전체 재생"으로는 들을 수 있어요.'
       : null,
-    play(i){ startPlayback({ context_uri: p.uri, offset: { uri: detail.tracks[i].uri } }, detail.tracks[i]); },
-    playAll: true, playAllFn(){ startPlayback({ context_uri: p.uri }); }
+    play(i){ playPlaylistAt(p, detail.tracks, i); },
+    playAll: true, playAllFn(){ if (detail.tracks.length) playPlaylistAt(p, detail.tracks, 0); else { setQueue([], p.name, p); startPlayback({ context_uri: p.uri }); } }
   });
+}
+function playPlaylistAt(p, tracks, i){
+  const t = tracks[i]; if (!t) return;
+  setQueue(tracks, p.name, p);
+  const from = Math.max(0, i - 50), slice = tracks.slice(from, from + 100);
+  startPlayback({ context_uri: p.uri, offset: { uri: t.uri } }, t,
+    { alt: () => { Q.ctx = null; return { uris: slice.map(x => x.uri), offset: { position: i - from } }; } });
 }
 function openLiked(){
   openDetail({
@@ -1934,9 +2227,15 @@ function markNearEnd(){
   if (S.track && !S.paused && S.dur && curPos() >= S.dur - 4000) nearEnd = { uri: S.track.uri, at: Date.now() };
 }
 function checkQueueEnd(){
-  if (!SET.autoplay || !S.track || !S.paused || S.repeat > 0 || autoplayBusy) return;
+  if (!S.track || !S.paused || S.repeat > 0 || autoplayBusy) return;
   if (!nearEnd.uri || nearEnd.uri !== S.track.uri || Date.now() - nearEnd.at > 8000 || Date.now() - S.lastCtl < 3000) return;
   if (sleepT.end || (sleepT.until && sleepT.until <= Date.now())) return;
+  const qi = Q.list.findIndex(t => t.uri === S.track.uri);
+  if (qi >= 0 && qi < Q.list.length - 1 && !Q.ctx) {      // 아직 남은 곡이 있으면 이어서
+    nearEnd = { uri: null, at: 0 }; autoplayBusy = true; setTimeout(() => { autoplayBusy = false; }, 4000);
+    return playList(Q.list, qi + 1, Q.name);
+  }
+  if (!SET.autoplay) return;
   nearEnd = { uri: null, at: 0 };
   startAutoplay(S.track);
 }
@@ -1951,7 +2250,7 @@ async function startAutoplay(seed){
     pool = dedupe(shuffleArr(pool)).filter(t => !sessionPlayed.has(t.uri) && t.uri !== seed.uri);
     if (!pool.length) return;
     toast(`자동 재생: ${name}와(과) 비슷한 곡을 이어서 틀게요`);
-    playList(pool.slice(0, 25), 0);
+    playList(pool.slice(0, 25), 0, '자동 재생 · ' + name);
   } finally { setTimeout(() => { autoplayBusy = false; }, 4000); }
 }
 
@@ -2641,7 +2940,7 @@ function bind(){
   $('q').addEventListener('input', e => { clearTimeout(dt); dt = setTimeout(() => doSearch(e.target.value), 380); });
   $('q').addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(dt); e.target.blur(); doSearch(e.target.value); } });
   $('results').addEventListener('click', e => {
-    const row = e.target.closest('.trk'); if (row) return playList(sTracks, +row.dataset.i);
+    const row = e.target.closest('.trk'); if (row) return playList(sTracks, +row.dataset.i, '검색 결과');
     const art = e.target.closest('.artist'); if (art) return openArtist(sArtists[+art.dataset.a]);
     if (e.target.closest('#moreBtn')) searchMore();
   });
@@ -2660,9 +2959,9 @@ function bind(){
   $('plSec').addEventListener('click', plClick);
   $('spPls').addEventListener('click', plClick);
   $('recSec').addEventListener('click', e => {
-    if (e.target.closest('#recPlay')) { if (REC.list.length) playList(REC.list, 0); return; }
+    if (e.target.closest('#recPlay')) { if (REC.list.length) playList(REC.list, 0, '오늘의 추천 곡'); return; }
     if (e.target.closest('#recNew')) return loadRecs();
-    const row = e.target.closest('.trk'); if (row) playList(REC.list, +row.dataset.i);
+    const row = e.target.closest('.trk'); if (row) playList(REC.list, +row.dataset.i, '오늘의 추천 곡');
   });
 
   if ('mediaSession' in navigator) {
@@ -2676,6 +2975,7 @@ function bind(){
   /* 설정 */
   $('setBtn').onclick = openSettings;
   bindSettings();
+  bindRight();
   const dateChange = () => {
     const pd = v => { const [y, m, d] = v.split('-').map(Number); return y ? new Date(y, m - 1, d) : null; };
     ST.from = pd($('dFrom').value); ST.to = pd($('dTo').value); renderStats();
@@ -2693,8 +2993,8 @@ function bind(){
   $('spPermBtn').onclick = () => { LS.set('luma_after', 'spot'); login(false); };
   $('vSpot').addEventListener('click', e => {
     const mix = e.target.closest('.mix'); if (mix) return openMix(+mix.dataset.m);
-    const rc = e.target.closest('.rc'); if (rc) return playList(SP.recent, +rc.dataset.i);
-    const rk = e.target.closest('.rkList .trk'); if (rk) return playList(SP.topList, +rk.dataset.i);
+    const rc = e.target.closest('.rc'); if (rc) return playList(SP.recent, +rc.dataset.i, '최근 재생한 곡');
+    const rk = e.target.closest('.rkList .trk'); if (rk) return playList(SP.topList, +rk.dataset.i, '많이 들은 곡');
     const ta = e.target.closest('[data-ta]'); if (ta) return openArtist(SP.topArtists[+ta.dataset.ta]);
     const mood = e.target.closest('.mood'); if (mood) return openMood(+mood.dataset.mood);
     const act = e.target.closest('[data-act]');
@@ -2718,7 +3018,7 @@ function bind(){
       const list = dedupe(rows.map(r => { const m = H.m[r.dataset.tid] || ['', '', '', ''];
         return { id: r.dataset.tid, uri: 'spotify:track:' + r.dataset.tid, name: m[0], artists: [m[1] || ''], artistIds: [], album: '', thumb: m[3], cover: m[3], dur: 0 }; }));
       const i = list.findIndex(t => t.id === tl.dataset.tid);
-      return playList(list, Math.max(0, i));
+      return playList(list, Math.max(0, i), '내 기록');
     }
     if (seg && seg.dataset.p) {
       seg.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === seg));
@@ -2814,7 +3114,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S };
+window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, playList, setRight, skip };
 init();
 })();
 </script>
