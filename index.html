@@ -1002,27 +1002,118 @@ async function lrc(path, params){
   }
   throw lastErr || new Error('lrclib');
 }
-async function fetchLyrics(t){
-  const artist = t.artists[0] || '', title = cleanTitle(t.name), dur = Math.round(t.dur / 1000);
-  let hit = null;
+const normK = x => String(x || '').toLowerCase().replace(/[\s\-_.,'"!?()\[\]&·]+/g, '');
+async function jget(url, ms){
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), ms || 6000);
   try {
-    hit = await lrc('get', { track_name: t.name, artist_name: artist, album_name: t.album, duration: dur });
-  } catch {}   // 실패하면 아래 검색으로 다시 시도해요 (거기서도 실패하면 오류로 처리)
+    const r = await fetch(url, { signal: ac.signal });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error('http ' + r.status);
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch { throw new Error('bad json'); }
+  } finally { clearTimeout(to); }
+}
+/* 1) LRCLIB — 시간 맞춤 가사 (가장 먼저, 빠름) */
+async function fromLrclib(q){
+  let hit = null;
+  try { hit = await lrc('get', { track_name: q.name, artist_name: q.artist, album_name: q.album, duration: q.dur }); } catch {}
   if (!hit || (!hit.syncedLyrics && !hit.plainLyrics && !hit.instrumental)) {
-    let list = await lrc('search', { track_name: title, artist_name: artist }) || [];
-    if (!list.length) list = await lrc('search', { q: (title + ' ' + artist).trim() }) || [];
+    let list = await lrc('search', { track_name: q.title, artist_name: q.artist }) || [];
+    if (!list.length) list = await lrc('search', { q: (q.title + ' ' + q.artist).trim() }) || [];
+    if (!list.length && q.artist2) list = await lrc('search', { track_name: q.title, artist_name: q.artist2 }) || [];
     const cand = list
       .filter(x => x.syncedLyrics || x.plainLyrics || x.instrumental)
-      .map(x => ({ x, sc: Math.abs((x.duration || 0) - dur) + (x.syncedLyrics ? 0 : 3) }))
+      .map(x => ({ x, sc: Math.abs((x.duration || 0) - q.dur) + (x.syncedLyrics ? 0 : 3) }))
       .sort((a, b) => a.sc - b.sc);
     hit = cand.length && cand[0].sc <= 10 ? cand[0].x : null;
   }
   if (!hit) return null;
-  if (hit.instrumental && !hit.syncedLyrics && !hit.plainLyrics) return { instr: true };
-  return {
-    synced: hit.syncedLyrics ? parseLRC(hit.syncedLyrics) : null,
-    plain: hit.plainLyrics || ''
+  if (hit.instrumental && !hit.syncedLyrics && !hit.plainLyrics) return { instr: true, src: 'LRCLIB' };
+  return { raw: hit.syncedLyrics || '', synced: hit.syncedLyrics ? parseLRC(hit.syncedLyrics) : null, plain: hit.plainLyrics || '', src: 'LRCLIB' };
+}
+/* 2) 넷이즈(NetEase) — 한국·일본·중국 곡이 많아요. 브라우저에서 바로는 막혀서 무료 중계 서버를 거쳐요 */
+const NC_PROXIES = [
+  u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  u => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u),
+  u => u
+];
+let ncPref = +(LS.get('luma_ncp') || 0) || 0;
+async function ncFetch(u){
+  let lastErr;
+  for (let k = 0; k < NC_PROXIES.length; k++) {
+    const i = (ncPref + k) % NC_PROXIES.length;
+    try {
+      const j = await jget(NC_PROXIES[i](u), 5500);
+      if (j && typeof j === 'object') { if (i !== ncPref) { ncPref = i; LS.set('luma_ncp', String(i)); } return j; }
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('netease');
+}
+async function fromNetease(q){
+  const tryQ = async kw => {
+    const j = await ncFetch('https://music.163.com/api/search/get?type=1&limit=10&s=' + encodeURIComponent(kw));
+    const songs = (j && j.result && j.result.songs) || [];
+    const mine = (q.artists || []).map(normK).filter(Boolean);
+    return songs.map(sg => {
+      const dd = Math.abs((sg.duration || sg.dt || 0) / 1000 - q.dur);
+      const names = (sg.artists || sg.ar || []).map(a => normK(a.name));
+      const am = names.some(n => mine.some(m => n && m && (n.includes(m) || m.includes(n))));
+      const tm = normK(sg.name).includes(normK(q.title)) || normK(q.title).includes(normK(sg.name));
+      return { id: sg.id, dd, am, tm, sc: dd - (am ? 4 : 0) - (tm ? 2 : 0) };
+    }).filter(c => c.dd <= 3 || (c.dd <= 7 && (c.am || c.tm)))
+      .sort((a, b) => a.sc - b.sc).slice(0, 2);
   };
+  let cands = await tryQ((q.title + ' ' + q.artist).trim());
+  if (!cands.length) cands = await tryQ(q.title);
+  for (const c of cands) {
+    const j = await ncFetch('https://music.163.com/api/song/lyric?lv=1&kv=1&tv=-1&id=' + c.id);
+    const txt = j && j.lrc && j.lrc.lyric;
+    if (txt && /\[\d{1,3}:\d{2}/.test(txt)) {
+      const sy = parseLRC(txt).filter(l => l.s);
+      if (sy.length >= 3) return { raw: txt, synced: parseLRC(txt), plain: '', src: 'NetEase' };
+    }
+  }
+  return null;
+}
+/* 3) lyrics.ovh — 시간 정보 없는 가사 (마지막 수단) */
+async function fromOvh(q){
+  const j = await jget('https://api.lyrics.ovh/v1/' + encodeURIComponent(q.artist) + '/' + encodeURIComponent(q.title), 7000);
+  const txt = j && j.lyrics ? String(j.lyrics).replace(/^Paroles de la chanson[^\n]*\n+/i, '').trim() : '';
+  return txt ? { plain: txt, synced: null, src: 'lyrics.ovh' } : null;
+}
+async function fetchLyrics(t){
+  const q = { name: t.name, title: cleanTitle(t.name), artist: t.artists[0] || '', artist2: t.artists[1] || '',
+              artists: t.artists || [], album: t.album, dur: Math.round(t.dur / 1000) };
+  const pL = fromLrclib(q).catch(e => ({ err: e }));       // 두 곳에 동시에 물어봐요
+  const pN = fromNetease(q).catch(e => ({ err: e }));
+  const L = await pL;
+  if (L && L.synced && L.synced.length) return L;          // LRCLIB 시간 가사가 있으면 바로 사용
+  const N = await pN;
+  if (N && N.synced && N.synced.length) return N;
+  let plain = (L && L.plain && L) || (N && N.plain && N) || null;
+  if (!plain) { const O = await fromOvh(q).catch(() => null); if (O) plain = O; }
+  if (plain) return plain;
+  if (L && L.instr) return L;
+  if (L && L.err) throw L.err;                             // LRCLIB 연결 자체가 실패 → 오류(새로고침 버튼)
+  return null;
+}
+/* 찾은 가사는 이 기기에 저장해 두고(최근 80곡) 다음부터는 바로 불러와요 */
+function lyStoreGet(id){
+  try {
+    const m = JSON.parse(LS.get('luma_lyc') || '{}'), e = m[id];
+    if (!e) return undefined;
+    return { synced: e.r ? parseLRC(e.r) : null, plain: e.p || '', src: e.s };
+  } catch { return undefined; }
+}
+function lyStorePut(id, res){
+  if (!res || res.instr || !(res.raw || res.plain)) return;
+  try {
+    const m = JSON.parse(LS.get('luma_lyc') || '{}');
+    delete m[id]; m[id] = { r: res.raw || '', p: res.synced ? '' : res.plain, s: res.src };
+    const keys = Object.keys(m); while (keys.length > 80) delete m[keys.shift()];
+    LS.set('luma_lyc', JSON.stringify(m));
+  } catch {}
 }
 
 const LY = { seq: 0, lines: null, els: [], idx: -2 };
@@ -1040,8 +1131,9 @@ async function loadLyrics(track, force, auto){
   setLyMsg('가사를 찾는 중…');
   if (force) lyCache.delete(track.id);
   let res = lyCache.get(track.id);
+  if (res === undefined && !force) { res = lyStoreGet(track.id); if (res) lyCache.set(track.id, res); }
   if (res === undefined) {
-    try { res = await fetchLyrics(track); lyCache.set(track.id, res); }
+    try { res = await fetchLyrics(track); lyCache.set(track.id, res); lyStorePut(track.id, res); }
     catch { res = 'err'; }
   }
   if (seq !== LY.seq) return;
@@ -1060,14 +1152,14 @@ async function loadLyrics(track, force, auto){
       `<p class="ln${l.s ? '' : ' gap'}" data-i="${i}">${l.s ? esc(l.s) : '♪'}</p>`).join('');
     LY.els = [...el.children];
     el.scrollTop = 0; LY.idx = -2;
-    $('lsrc').textContent = '가사 · LRCLIB';
+    $('lsrc').textContent = '가사 · ' + (res.src || 'LRCLIB');
     updateLyrics(curPos(), true);
     anim(el, [{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 800 });
   } else if (res.plain) {
     el.className = 'plain';
     el.innerHTML = res.plain.split(/\r?\n/).map(s => `<p class="ln">${s.trim() ? esc(s) : '&nbsp;'}</p>`).join('');
     el.scrollTop = 0; LY.lines = null; LY.els = [];
-    $('lsrc').textContent = '시간 정보 없는 가사 · LRCLIB';
+    $('lsrc').textContent = '시간 정보 없는 가사 · ' + (res.src || 'LRCLIB');
   } else setLyMsg('이 곡의 가사를 찾지 못했어요');
 }
 document.addEventListener('click', e => {
