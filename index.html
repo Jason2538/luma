@@ -1433,7 +1433,12 @@ function initSDK(){
     player.addListener('account_error', () => { sdkFailed = true; toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
     player.addListener('authentication_error', () => toast('Spotify 인증에 문제가 생겼어요. 다시 로그인해 주세요'));
     player.addListener('initialization_error', () => { sdkFailed = true; deviceId = null; devWaiters.splice(0).forEach(f => f(null)); });
-    player.addListener('playback_error', () => { if (S.web) webFallback(); });
+    player.addListener('playback_error', () => {
+      if (!S.web) return;
+      // 한 번은 다시 연결해서 같은 위치부터, 1분 안에 또 나면 Spotify 앱으로
+      if (Date.now() - lastPbErr < 60000) webFallback();
+      else { lastPbErr = Date.now(); resumeFresh(); }
+    });
     player.connect();
   };
   const s = document.createElement('script');
@@ -1491,7 +1496,7 @@ function watchWebStart(seq, body, hint){
   };
   setTimeout(check, 1500);
 }
-let fallingBack = false;
+let fallingBack = false, lastPbErr = 0;
 async function webFallback(body, hint){
   if (fallingBack || sdkBroken) return;
   fallingBack = true; sdkBroken = true;
@@ -1533,36 +1538,60 @@ async function nowUris(dev){
     return [j.item.uri, j.item.linked_from && j.item.linked_from.uri].filter(Boolean);
   } catch { return []; }
 }
-/* 재생 요청이 받아들여졌어도 곡이 안 바뀌는 경우가 있어서, 실제로 바뀌었는지 확인하고 안 바뀌었으면 다시 보내요 */
-async function verifyStart(seq, dev, body, hint, opts, prevUri){
+/* 재생 요청이 받아들여졌어도 곡이 안 바뀌는 경우가 있어서 확인해요.
+   - 기기가 "확실히 다른 곡"을 틀고 있을 때만 같은 요청을 한 번 더 보내요
+   - 상태를 못 읽었을 때(빈 응답)는 아무것도 하지 않아요 (재생을 끊지 않게) */
+async function verifyStart(seq, dev, body, hint, opts){
   const expect = hint && hint.uri;
-  const ok = l => expect ? l.includes(expect) : (l.length > 0 && !l.includes(prevUri));
-  if (!expect && !prevUri) return;
+  if (!expect) return;
   const t0 = Date.now();
-  let retried = 0;
-  while (Date.now() - t0 < 9500) {
-    await sleep(900);
+  let resent = false, wrong = 0;
+  while (Date.now() - t0 < 8000) {
+    await sleep(1000);
     if (seq !== playSeq || S.lastCtl > t0) return;
     const l = await nowUris(dev);
     if (seq !== playSeq || S.lastCtl > t0) return;
-    if (ok(l)) return;
-    if ((retried === 0 && Date.now() - t0 > 2400) || (retried === 1 && Date.now() - t0 > 5600)) {
-      retried++;
-      try {
-        // 기기를 확실히 깨운 다음 같은 요청을 다시 보내요 (두 번째는 곡 주소 목록으로)
-        await api('/me/player', { method: 'PUT', body: { device_ids: [dev], play: false } }).catch(() => {});
-        await sleep(350);
-        if (seq !== playSeq) return;
-        const b2 = retried === 2 && opts && opts.alt ? opts.alt() : body;
-        await api('/me/player/play?device_id=' + encodeURIComponent(dev), { method: 'PUT', body: b2 });
-      } catch {}
+    if (!l.length) { wrong = 0; continue; }  // 모르면 기다려요
+    if (l.includes(expect)) return;         // 잘 바뀌었어요
+    wrong++;
+    // Spotify는 곡을 바꾼 뒤 1~2초 동안 이전 곡을 알려주기도 해서, 3.5초 넘게 3번 연속 다른 곡일 때만 한 번 다시 보내요
+    if (!resent && wrong >= 3 && Date.now() - t0 > 3500) {
+      resent = true;
+      try { await api('/me/player/play?device_id=' + encodeURIComponent(dev), { method: 'PUT', body: opts && opts.alt ? opts.alt() : body }); } catch {}
     }
   }
-  if (seq !== playSeq) return;
+  if (seq !== playSeq || wrong < 2) return;
   S.holdUntil = 0; S.expectUri = S.avoidUri = null;
   if (dev === deviceId && player) { try { const st = await player.getCurrentState(); if (st) applySdkState(st); } catch {} }
   else pollSoon();
   toast('곡이 바뀌지 않았어요. 한 번 더 시도해 볼까요?', 8000, { label: '다시 시도', fn: () => startPlayback(body, hint, opts) });
+}
+/* Luma 재생기(SDK)가 Spotify와 연결이 끊겼을 때 다시 연결해요 */
+let reviving = null;
+function reviveSDK(){
+  if (!player || !webOK()) return Promise.resolve(null);
+  if (reviving) return reviving;
+  reviving = (async () => {
+    deviceId = null;
+    try { player.disconnect(); } catch {}
+    await sleep(400);
+    try { player.connect(); } catch {}
+    const d = await waitDevice(7000);
+    reviving = null;
+    return d;
+  })();
+  return reviving;
+}
+/* 지금 곡을 지금 위치부터 다시 걸어요 (재생기가 끊겼거나 서버 오류일 때) */
+function resumeFresh(){
+  const t = S.track; if (!t) return;
+  const pos = Math.round(curPos());
+  const qi = Q.list.findIndex(x => x.uri === t.uri);
+  let body;
+  if (qi >= 0 && Q.ctx) body = { context_uri: Q.ctx.uri, offset: { uri: t.uri }, position_ms: pos };
+  else if (qi >= 0) { const from = Math.max(0, qi - 50), sl = Q.list.slice(from, from + 100); body = { uris: sl.map(x => x.uri), offset: { position: qi - from }, position_ms: pos }; }
+  else body = { uris: [t.uri], position_ms: pos };
+  return startPlayback(body, t, { pos });
 }
 async function startPlayback(body, hint, opts){
   const seq = ++playSeq;
@@ -1572,8 +1601,8 @@ async function startPlayback(body, hint, opts){
 
   // 1) 누르는 즉시 화면부터 바꿔요
   if (hint) {
-    applyTrack(hint); setPos(0, false); syncUI();
-    S.expectUri = hint.uri; S.avoidUri = null; S.holdUntil = Date.now() + 9000;
+    applyTrack(hint); setPos(opts && opts.pos || 0, false); syncUI();
+    S.expectUri = hint.uri; S.avoidUri = null; S.holdUntil = Date.now() + 8000;
   } else if (S.track) {
     S.expectUri = null; S.avoidUri = S.track.uri; S.holdUntil = Date.now() + 6000;
   }
@@ -1597,8 +1626,27 @@ async function startPlayback(body, hint, opts){
   try { await go(dev); }
   catch (e) {
     if (seq !== playSeq) return;
+    // Luma 재생기가 Spotify 서버와 끊긴 경우(Server error 등): 다시 연결해서 한 번 더
+    if (dev === deviceId && (!e.status || e.status >= 500 || e.status === 404)) {
+      const nd = await reviveSDK();
+      if (seq !== playSeq) return;
+      if (nd) {
+        try { await sleep(500); if (seq !== playSeq) return; await send(dev = nd); e = null; }
+        catch (e5) { e = e5; }
+      }
+      if (e) {                               // 그래도 안 되면 Spotify 앱 기기로
+        sdkBroken = true;
+        setTimeout(() => { sdkBroken = false; }, 60000);   // 1분 뒤에는 다시 Luma 재생을 써요
+        const other = await chooseDevice(true);
+        if (seq !== playSeq) return;
+        if (!other) { revertTo(prev); return toast('Spotify 서버와 연결이 잠깐 끊겼어요. 잠시 후 다시 눌러 주세요', 6000); }
+        try { await send(dev = other); e = null; toast('Luma 재생기 연결이 끊겨서 ' + devName(other) + '에서 재생할게요', 6000); }
+        catch (e6) { revertTo(prev); return handleErr(e6); }
+      }
+    }
+    if (!e) { /* 다시 연결해서 성공 */ }
     // 플레이리스트 안 위치 지정이 거절되면 곡 주소 목록으로 바꿔서 다시
-    if (opts && opts.alt && e.status !== 404 && e.status !== 403) {
+    else if (opts && opts.alt && e.status !== 404 && e.status !== 403) {
       body = opts.alt(); opts = null;
       try { await go(dev); } catch (e3) { if (seq === playSeq) { revertTo(prev); handleErr(e3); } return; }
     } else {
@@ -1625,8 +1673,9 @@ async function startPlayback(body, hint, opts){
   verifyStart(seq, dev, body, hint, opts, prevUri);
 }
 /* 지금 듣고 있는 목록 (플레이어의 "재생 목록"에 보여요) */
-const Q = { list: [], name: '', ctx: null };
+const Q = { list: [], name: '', ctx: null, sentLast: null };
 function setQueue(list, name, ctx){
+  Q.sentLast = null;
   Q.list = list || []; Q.name = name || '재생 목록'; Q.ctx = ctx || null;
   if (RP.mode === 'q') renderRight();
 }
@@ -1634,6 +1683,7 @@ function playList(list, i, name){
   if (!list || !list[i]) return;
   setQueue(list, name || (detail && detail.tracks === list ? detail.title : '재생 목록'));
   const from = Math.max(0, i - 50), slice = list.slice(from, from + 100);
+  Q.sentLast = slice[slice.length - 1].uri;
   startPlayback({ uris: slice.map(t => t.uri), offset: { position: i - from } }, list[i]);
 }
 
@@ -1643,12 +1693,30 @@ const afterRemote = () => { if (!S.web) pollSoon(); };
 async function togglePlay(){
   if (!S.track) return;
   player && player.activateElement && player.activateElement();
+  const wantPlay = S.paused, t0 = Date.now();
   setPos(curPos(), !S.paused); syncUI();
-  S.ctlUntil = Date.now() + 2000; S.lastCtl = Date.now();
+  S.ctlUntil = Date.now() + 2000; S.lastCtl = t0;
+  const sdkDev = player && deviceId && (S.web || S.devId === deviceId);
   try {
-    if (S.web && player) await player.togglePlay();
-    else { await api(withDev(S.paused ? '/me/player/pause' : '/me/player/play'), { method: 'PUT' }); afterRemote(); }
-  } catch (e) { handleErr(e); }
+    if (sdkDev) {
+      // SDK가 연결돼 있는지 먼저 확인: 끊겨 있으면 지금 위치부터 다시 걸어요
+      let st = null; try { st = await player.getCurrentState(); } catch {}
+      if (!st) { if (wantPlay) return resumeFresh(); return; }
+      await (wantPlay ? player.resume() : player.pause());
+      if (wantPlay) setTimeout(async () => {             // 재생이 실제로 시작됐는지 확인
+        if (S.lastCtl !== t0) return;
+        let s2 = null; try { s2 = await player.getCurrentState(); } catch {}
+        if (!s2 || s2.paused) resumeFresh();
+      }, 2500);
+    } else {
+      await api(withDev(wantPlay ? '/me/player/play' : '/me/player/pause'), { method: 'PUT' });
+      afterRemote();
+    }
+  } catch (e) {
+    if (wantPlay) return resumeFresh();      // Server error 등: 같은 위치부터 다시 연결해서 재생
+    if (e.status === 404 || e.status >= 500 || !e.status) { setPos(curPos(), true); syncUI(); return; }   // 멈추려던 건데 기기가 이미 멈춤
+    handleErr(e);
+  }
 }
 async function skip(dir){
   if (!S.track) return;
@@ -1662,7 +1730,14 @@ async function skip(dir){
   if (dir < 0 && curPos() >= 3000) { S.avoidUri = S.expectUri = null; S.holdUntil = 0; }   // 3초 넘게 들었으면 '이전'은 처음으로
   const viaApi = () => api(withDev(dir > 0 ? '/me/player/next' : '/me/player/previous'), { method: 'POST' });
   try {
-    if (S.web && player) await (dir > 0 ? player.nextTrack() : player.previousTrack());
+    if (S.web && player) {
+      let st = null; try { st = await player.getCurrentState(); } catch {}
+      if (!st) {                          // Luma 재생기가 끊겨 있으면 목록에서 직접 다음 곡을 걸어요
+        if (nx) return Q.ctx ? playPlaylistAt(Q.ctx, Q.list, qi + dir) : playList(Q.list, qi + dir, Q.name);
+        return resumeFresh();
+      }
+      await (dir > 0 ? player.nextTrack() : player.previousTrack());
+    }
     else { await viaApi(); afterRemote(); }
   } catch (e) {
     try { await viaApi(); afterRemote(); } catch (e2) { handleErr(e2); }
@@ -1670,13 +1745,13 @@ async function skip(dir){
   if (!(dir < 0 && S.holdUntil === 0)) setTimeout(async () => {
     if (seq !== playSeq) return;
     const l = await nowUris(dev);
-    if (seq !== playSeq || !l.length) return;
+    if (seq !== playSeq || !l.length || S.repeat === 2) return;
     if (l.includes(from)) {               // 아직 그대로면 한 번 더
       try { await viaApi(); } catch {}
       setTimeout(() => { if (seq !== playSeq) return; S.holdUntil = 0; S.expectUri = S.avoidUri = null; pollSoon();
         if (S.web && player) player.getCurrentState().then(st => st && applySdkState(st)).catch(() => {}); }, 2500);
     }
-  }, 1800);
+  }, 2200);
 }
 async function seekTo(ms){
   if (!S.track) return;
@@ -2230,14 +2305,17 @@ function checkQueueEnd(){
   if (!S.track || !S.paused || S.repeat > 0 || autoplayBusy) return;
   if (!nearEnd.uri || nearEnd.uri !== S.track.uri || Date.now() - nearEnd.at > 8000 || Date.now() - S.lastCtl < 3000) return;
   if (sleepT.end || (sleepT.until && sleepT.until <= Date.now())) return;
-  const qi = Q.list.findIndex(t => t.uri === S.track.uri);
-  if (qi >= 0 && qi < Q.list.length - 1 && !Q.ctx) {      // 아직 남은 곡이 있으면 이어서
-    nearEnd = { uri: null, at: 0 }; autoplayBusy = true; setTimeout(() => { autoplayBusy = false; }, 4000);
-    return playList(Q.list, qi + 1, Q.name);
-  }
-  if (!SET.autoplay) return;
-  nearEnd = { uri: null, at: 0 };
-  startAutoplay(S.track);
+  const uri = S.track.uri;
+  const qi = Q.list.findIndex(t => t.uri === uri);
+  const more = qi >= 0 && qi < Q.list.length - 1 && !Q.ctx && Q.sentLast === uri;
+  if (!more && !SET.autoplay) return;
+  nearEnd = { uri: null, at: 0 }; autoplayBusy = true;
+  // Spotify가 다음 곡으로 넘어가는 중일 수 있어서 잠깐 기다렸다가 정말 멈춰 있으면 이어요
+  setTimeout(() => {
+    if (!S.track || S.track.uri !== uri || !S.paused || Date.now() - S.lastCtl < 3000) { autoplayBusy = false; return; }
+    if (more) { setTimeout(() => { autoplayBusy = false; }, 4000); return playList(Q.list, qi + 1, Q.name); }
+    autoplayBusy = false; startAutoplay(S.track);
+  }, 1500);
 }
 async function startAutoplay(seed){
   autoplayBusy = true;
