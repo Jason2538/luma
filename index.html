@@ -375,6 +375,48 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 #rList .rMsg{color:var(--dim);text-align:center;padding:40px 10px;line-height:1.7}
 #rList.static .trk,#rList.static .rPl{animation:none}
 .pl-right.list .lsrc{display:none}
+#lyEditBtn{position:absolute;left:0;bottom:10px;z-index:3;border:0;border-radius:999px;background:rgba(255,255,255,.12);color:var(--dim);font:600 12px var(--font);padding:6px 12px;cursor:pointer;transition:background .2s,color .2s,scale .3s var(--spring)}
+#lyEditBtn:hover{background:rgba(255,255,255,.22);color:var(--fg)}#lyEditBtn:active{scale:.94}
+.pl-right.list #lyEditBtn{display:none}
+.pl-right.editing #rTabs,.pl-right.editing #lyrics,.pl-right.editing .lsrc,.pl-right.editing #lyEditBtn,.pl-right.editing #rList{display:none}
+#lyEd{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;gap:10px;padding:22px 4vw 16px 0;min-height:0}
+#lyEd[hidden]{display:none}
+#cover:not([src]),#cover[src=""]{visibility:hidden}
+#lyEd .edHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+#lyEd .edT{font-size:22px;font-weight:800;letter-spacing:-.02em}
+#lyEd .edS{font-size:13px;color:var(--dim);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lyEd .edHb{display:flex;gap:8px;flex:none}
+#lyEd .edHint{font-size:13px;color:var(--dim);line-height:1.6}
+#lyEd .edHint b{color:var(--fg)}
+#lyEd .edCnt{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.12);color:var(--fg);font-variant-numeric:tabular-nums}
+#lyEd .edWarn{font-size:13px;padding:9px 12px;border-radius:12px;background:rgba(255,180,120,.18);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#lyEd .edWarn button{border:0;border-radius:999px;background:var(--accent);color:#1b1408;font:700 12px var(--font);padding:6px 12px;cursor:pointer}
+#lyEd textarea{flex:1;min-height:120px;resize:none;border:0;border-radius:16px;padding:16px;background:rgba(0,0,0,.24);color:var(--fg);font:500 16px/1.7 var(--font);outline:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#lyEd textarea:focus{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)}
+#lyEd .edBtn{border:0;border-radius:999px;background:rgba(255,255,255,.14);color:var(--fg);font:600 13px var(--font);padding:9px 14px;cursor:pointer;white-space:nowrap;transition:background .2s,scale .3s var(--spring)}
+#lyEd .edBtn:hover{background:rgba(255,255,255,.24)}#lyEd .edBtn:active{scale:.94}
+#lyEd .edBtn.pri{background:var(--accent);color:#1b1408}
+#lyEd .edBtn.del{background:rgba(255,90,90,.18);color:#ffb3b3}
+#lyEd .edBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#lyEd .edBar .sp{flex:1}
+#lyEd .edBar.sync{justify-content:center;gap:6px}
+#lyEd .edBar.sync .edBtn{padding:9px 12px}
+#lyEd .edNudge{display:flex;gap:4px}
+#lyEd .edTap{border:0;border-radius:22px;background:var(--fg);color:#141210;font:800 20px var(--font);padding:12px 34px;min-width:150px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);transition:scale .25s var(--spring),opacity .2s;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#lyEd .edTap small{font-size:11px;font-weight:600;opacity:.6;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lyEd .edTap:active{scale:.92}
+#lyEd .edTap:disabled{opacity:.4}
+#edList{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;border-radius:16px;background:rgba(0,0,0,.18);padding:8px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 16px,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(to bottom,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
+#edList .edL{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:baseline;width:100%;text-align:left;border:0;background:none;color:var(--dim);padding:9px 10px;border-radius:10px;cursor:pointer;font:600 16px/1.4 var(--font);transition:background .25s,color .25s}
+#edList .edL:hover{background:rgba(255,255,255,.07)}
+#edList .edTm{font-size:12px;font-variant-numeric:tabular-nums;opacity:.6}
+#edList .edL.set{color:rgba(244,241,236,.82)}
+#edList .edL.set .edTm{opacity:1;color:var(--accent)}
+#edList .edL.cur{background:rgba(255,255,255,.14);color:var(--fg);box-shadow:inset 3px 0 0 var(--accent)}
+#edList .edL.live .edTx{color:var(--fg);text-shadow:0 0 18px rgba(255,255,255,.35)}
+#edList .edEnd{text-align:center;color:var(--accent);font-size:14px;font-weight:700;padding:14px 0 30px}
 
 /* 좁은 화면 / 세로 화면: 위아래로 쌓기 */
 @media (max-width:900px),(orientation:portrait){
@@ -396,6 +438,13 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
   .lmsg{padding:0}
   .pl-right{height:auto;min-height:0}
   .lsrc{bottom:8px}
+  #lyEditBtn{bottom:6px}
+  #lyEd{padding:6px 0 calc(10px + env(safe-area-inset-bottom));gap:8px}
+  #lyEd .edT{font-size:18px}
+  #lyEd .edHint{font-size:12px}
+  #lyEd .edTap{min-width:120px;padding:10px 24px;font-size:18px}
+  #lyEd .edBtn{padding:8px 11px;font-size:12px}
+  #edList .edL{grid-template-columns:62px 1fr;font-size:15px;padding:7px 8px}
   .trk{grid-template-columns:48px 1fr 44px}
   .trk .al{display:none}
   .rkList .trk{grid-template-columns:26px 48px 1fr 44px}
@@ -767,7 +816,9 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
   <div class="pl-right">
     <div id="rTabs" role="tablist" aria-label="오른쪽 화면"><i class="rInd"></i><button data-r="ly" class="on" role="tab">가사</button><button data-r="q" role="tab">재생 목록</button><button data-r="pl" role="tab">플레이리스트</button></div>
     <div id="lyrics"><div class="lmsg">노래를 재생하면 가사가 여기에 나와요</div></div><span class="lsrc" id="lsrc"></span>
+    <button id="lyEditBtn" type="button" hidden>✎ 가사 넣기</button>
     <div id="rList" hidden></div>
+    <div id="lyEd" hidden></div>
   </div>
 </section>
 
@@ -1168,11 +1219,13 @@ function setLyMsg(html){
 }
 let lyRetryT = 0;
 const RETRY_BTN = '<br><button class="lretry" type="button" data-act="lyretry">↻ 새로고침</button>';
+const ADD_BTN = ' <button class="lretry" type="button" data-act="lyedit">✎ 가사 직접 넣기</button>';
 async function loadLyrics(track, force, auto){
   const seq = ++LY.seq; LY.idx = -2; clearTimeout(lyRetryT);
   setLyMsg('가사를 찾는 중…');
   if (force) lyCache.delete(track.id);
-  let res = lyCache.get(track.id);
+  LY.res = null; LY.trackId = track.id; updLyEditBtn();
+  let res = myLyrGet(track.id) || lyCache.get(track.id);
   if (res === undefined && !force) { res = lyStoreGet(track.id); if (res) lyCache.set(track.id, res); }
   if (res === undefined) {
     try { res = await fetchLyrics(track); lyCache.set(track.id, res); lyStorePut(track.id, res); }
@@ -1180,13 +1233,14 @@ async function loadLyrics(track, force, auto){
   }
   if (seq !== LY.seq) return;
   const el = $('lyrics');
+  LY.res = res && res !== 'err' ? res : null; updLyEditBtn();
   if (res === 'err') {
-    setLyMsg('가사를 불러오지 못했어요.<br>네트워크가 불안정해요.' + RETRY_BTN);
+    setLyMsg('가사를 불러오지 못했어요.<br>네트워크가 불안정해요.' + RETRY_BTN + ADD_BTN);
     if (!auto) lyRetryT = setTimeout(() => { if (seq === LY.seq && S.track && S.track.id === track.id) loadLyrics(track, true, true); }, 4000);
     return;
   }
-  if (!res) return setLyMsg('이 곡의 가사를 찾지 못했어요' + RETRY_BTN);
-  if (res.instr) return setLyMsg('♪ 연주곡이에요');
+  if (!res) return setLyMsg('이 곡의 가사를 찾지 못했어요' + RETRY_BTN + ADD_BTN);
+  if (res.instr) return setLyMsg('♪ 연주곡이에요' + ADD_BTN);
   if (res.synced && res.synced.length) {
     LY.lines = res.synced;
     el.className = '';
@@ -1201,7 +1255,7 @@ async function loadLyrics(track, force, auto){
     el.className = 'plain';
     el.innerHTML = res.plain.split(/\r?\n/).map(s => `<p class="ln">${s.trim() ? esc(s) : '&nbsp;'}</p>`).join('');
     el.scrollTop = 0; LY.lines = null; LY.els = [];
-    $('lsrc').textContent = '시간 정보 없는 가사 · ' + (res.src || 'LRCLIB');
+    $('lsrc').textContent = (res.mine ? '내가 넣은 가사 · 시간 정보 없음' : '시간 정보 없는 가사 · ' + (res.src || 'LRCLIB'));
   } else setLyMsg('이 곡의 가사를 찾지 못했어요');
 }
 document.addEventListener('click', e => {
@@ -1330,6 +1384,7 @@ function renderTrack(){
   loadLyrics(t);
   markPlaying();
   if (RP.mode === 'q') renderQueue(); else if (RP.mode === 'pl' && RP.pl) renderPlTracks();
+  if (ED.on) { const w = $('lyEd').querySelector('.edWarn'); if (!!w !== edOther()) { const ta = $('edText'); if (ta) ED.text = ta.value; renderEd(); } }
 }
 function updateMediaSession(){
   if (!('mediaSession' in navigator) || !S.track) return;
@@ -1795,6 +1850,236 @@ function closePlayer(){
   document.body.classList.remove('player-open');
 }
 
+/* ---------- 내가 넣은 가사 (이 기기에 저장) + 싱크 편집기 ---------- */
+const MYL_KEY = 'luma_mylrc';
+function myLyrAll(){ try { return JSON.parse(LS.get(MYL_KEY) || '{}') || {}; } catch { return {}; } }
+function myLyrGet(id){
+  const e = id && myLyrAll()[id]; if (!e) return null;
+  return { synced: e.lrc ? parseLRC(e.lrc) : null, raw: e.lrc || '', plain: e.plain || '', src: '내가 넣은 가사', mine: true };
+}
+function myLyrPut(id, data){
+  const m = myLyrAll();
+  if (data) m[id] = { ...data, at: Date.now() }; else delete m[id];
+  const txt = JSON.stringify(m);
+  LS.set(MYL_KEY, txt);
+  return LS.get(MYL_KEY) === txt;
+}
+const fmtL = ms => { const t = Math.max(0, Math.round(ms / 10)); const m = Math.floor(t / 6000), sec = Math.floor(t / 100) % 60, cs = t % 100;
+  return m + ':' + String(sec).padStart(2, '0') + '.' + String(cs).padStart(2, '0'); };
+const fmtLrc = ms => { const s = fmtL(ms); return (s.indexOf(':') === 1 ? '0' : '') + s; };
+function updLyEditBtn(){
+  const b = $('lyEditBtn'); if (!b) return;
+  b.hidden = !S.track;
+  const r = LY.res;
+  b.textContent = r && r.mine ? '✎ 내 가사 편집' : r && r.synced && r.synced.length ? '✎ 싱크 고치기' : '✎ 가사 넣기';
+}
+
+const ED = { on: false, step: 'write', track: null, text: '', lines: [], cur: 0, hist: [], live: -2 };
+function openLyEd(){
+  if (!S.track) return;
+  if (RP.mode !== 'ly') setRight('ly');
+  const r = LY.res && LY.trackId === S.track.id ? LY.res : null;
+  ED.track = S.track; ED.hist = []; ED.live = -2; ED.on = true;
+  if (r && r.synced && r.synced.length) {
+    ED.lines = r.synced.map(l => ({ s: l.s || '♪', t: l.t }));
+    ED.step = 'sync';
+    const p = curPos(); ED.cur = Math.max(0, ED.lines.findIndex(l => l.t > p)); if (ED.lines.every(l => l.t <= p)) ED.cur = ED.lines.length;
+  } else {
+    ED.text = r && r.plain ? r.plain : ''; ED.lines = []; ED.step = 'write'; ED.cur = 0;
+  }
+  document.querySelector('.pl-right').classList.add('editing');
+  $('lyEd').hidden = false;
+  renderEd();
+  anim($('lyEd'), [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 450 });
+}
+function closeLyEd(){
+  ED.on = false; $('lyEd').hidden = true;
+  document.querySelector('.pl-right').classList.remove('editing');
+  LY.idx = -2; updateLyrics(curPos(), true);
+}
+const edOther = () => !S.track || !ED.track || S.track.uri !== ED.track.uri;
+function edHead(title, sub, extra){
+  const warn = edOther() ? `<div class="edWarn">지금 다른 곡이 재생 중이에요. <button data-ed="replay">이 곡 다시 틀기</button></div>` : '';
+  return `<div class="edHead"><div style="min-width:0"><div class="edT">${title}</div><div class="edS">${esc(ED.track.name)} · ${esc(ED.track.artists.join(', '))}</div></div>` +
+    `<div class="edHb">${extra || ''}<button class="edBtn" data-ed="close">닫기</button></div></div>` +
+    (sub ? `<div class="edHint">${sub}</div>` : '') + warn;
+}
+function renderEd(){
+  const box = $('lyEd'); if (!ED.on) return;
+  if (ED.step === 'write') {
+    const mine = !!myLyrAll()[ED.track.id];
+    box.innerHTML = edHead('가사 직접 넣기', '가사를 붙여 넣거나 입력하세요. 한 줄이 화면의 한 줄이 돼요. 쉬는 부분은 ♪ 한 줄로 쓰면 돼요.') +
+      `<textarea id="edText" spellcheck="false" placeholder="여기에 가사를 붙여 넣으세요">${esc(ED.text)}</textarea>` +
+      `<div class="edBar">${mine ? '<button class="edBtn del" data-ed="del">내 가사 지우기</button>' : ''}<span class="sp"></span>` +
+      `<button class="edBtn" data-ed="plain">시간 없이 저장</button><button class="edBtn pri" data-ed="tosync">싱크 맞추기 →</button></div>`;
+    return;
+  }
+  const done = ED.lines.filter(l => l.t != null).length;
+  box.innerHTML = edHead('싱크 맞추기',
+      `노래를 들으면서 <b>그 줄이 시작될 때</b> 탭하세요. 키보드는 스페이스바·Enter. 줄을 누르면 그 줄부터 다시 맞출 수 있어요. <span class="edCnt">${done} / ${ED.lines.length}줄</span>`,
+      '<button class="edBtn" data-ed="towrite">가사 고치기</button>') +
+    `<div id="edList">${ED.lines.map((l, i) =>
+      `<button class="edL${i === ED.cur ? ' cur' : ''}${l.t != null ? ' set' : ''}" data-i="${i}"><span class="edTm">${l.t != null ? fmtL(l.t) : '--:--.--'}</span><span class="edTx">${esc(l.s)}</span></button>`).join('')}` +
+    `<div class="edEnd${ED.cur >= ED.lines.length ? ' cur' : ''}">${ED.cur >= ED.lines.length ? '모든 줄을 맞췄어요. 저장을 눌러 주세요.' : ''}</div></div>` +
+    `<div class="edBar sync">` +
+      `<button class="edBtn" data-ed="restart" title="처음부터">⏮ 처음</button>` +
+      `<button class="edBtn" data-ed="undo" title="되돌리기">↶ 되돌리기</button>` +
+      `<button class="edTap" data-ed="tap"${ED.cur >= ED.lines.length ? ' disabled' : ''}>탭<small>${ED.cur < ED.lines.length ? esc(ED.lines[ED.cur].s.slice(0, 18)) : '끝'}</small></button>` +
+      `<span class="edNudge"><button class="edBtn" data-ed="n-">−0.2초</button><button class="edBtn" data-ed="n+">+0.2초</button></span>` +
+      `<button class="edBtn pri" data-ed="save">저장</button>` +
+    `</div>`;
+  ED.live = -2;
+  edScroll(false);
+}
+function edScroll(smooth){
+  const list = $('edList'); if (!list) return;
+  const el = list.querySelector('.edL.cur') || list.querySelector('.edEnd');
+  if (el) list.scrollTo({ top: el.offsetTop - list.clientHeight * 0.4, behavior: smooth ? 'smooth' : 'auto' });
+}
+function edMark(){                      // 줄 상태만 바꿔서 다시 그리기 (빠르게)
+  const list = $('edList'); if (!list) return renderEd();
+  [...list.querySelectorAll('.edL')].forEach((el, i) => {
+    const l = ED.lines[i];
+    el.classList.toggle('cur', i === ED.cur); el.classList.toggle('set', l.t != null);
+    el.querySelector('.edTm').textContent = l.t != null ? fmtL(l.t) : '--:--.--';
+  });
+  const end = list.querySelector('.edEnd');
+  end.classList.toggle('cur', ED.cur >= ED.lines.length);
+  end.textContent = ED.cur >= ED.lines.length ? '모든 줄을 맞췄어요. 저장을 눌러 주세요.' : '';
+  const tap = $('lyEd').querySelector('.edTap');
+  tap.disabled = ED.cur >= ED.lines.length;
+  tap.querySelector('small').textContent = ED.cur < ED.lines.length ? ED.lines[ED.cur].s.slice(0, 18) : '끝';
+  $('lyEd').querySelector('.edCnt').textContent = ED.lines.filter(l => l.t != null).length + ' / ' + ED.lines.length + '줄';
+  edScroll(true);
+}
+function edTextToLines(){
+  const old = ED.lines;
+  const rows = ED.text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  // 고친 줄이 원래 줄과 같으면 맞춰 둔 시간을 그대로 써요
+  let j = 0;
+  ED.lines = rows.map(s => { let t = null;
+    for (let k = j; k < Math.min(old.length, j + 4); k++) if (old[k].s === s) { t = old[k].t; j = k + 1; break; }
+    return { s, t }; });
+  const firstEmpty = ED.lines.findIndex(l => l.t == null);
+  ED.cur = firstEmpty < 0 ? ED.lines.length : firstEmpty;
+}
+function edTap(){
+  if (ED.step !== 'sync' || ED.cur >= ED.lines.length) return;
+  if (edOther()) return toast('지금 다른 곡이 재생 중이에요. "이 곡 다시 틀기"를 눌러 주세요');
+  if (S.paused) toast('노래가 멈춰 있어요. 재생을 누르고 맞춰 주세요', 2500);
+  const t = Math.round(curPos());
+  const i = ED.cur;
+  ED.hist.push({ i, prev: ED.lines.map(l => l.t), cur: ED.cur });
+  ED.lines[i].t = t;
+  for (let k = i + 1; k < ED.lines.length; k++) if (ED.lines[k].t != null && ED.lines[k].t <= t) ED.lines[k].t = null;
+  for (let k = 0; k < i; k++) if (ED.lines[k].t != null && ED.lines[k].t > t) ED.lines[k].t = null;
+  ED.cur = i + 1;
+  const el = $('edList') && $('edList').querySelectorAll('.edL')[i];
+  edMark();
+  if (el) anim(el, [{ background: 'rgba(255,217,160,.35)' }, { background: 'rgba(255,217,160,0)' }], { duration: 600, easing: 'ease-out' });
+}
+function edUndo(){
+  const h = ED.hist.pop(); if (!h) return;
+  h.prev.forEach((t, k) => { if (ED.lines[k]) ED.lines[k].t = t; });
+  ED.cur = h.cur; edMark();
+}
+function edNudge(d){
+  const i = ED.cur - 1 >= 0 && ED.lines[ED.cur - 1] && ED.lines[ED.cur - 1].t != null ? ED.cur - 1 : -1;
+  if (i < 0) return toast('먼저 줄을 하나 맞춰 주세요', 2000);
+  ED.hist.push({ i, prev: ED.lines.map(l => l.t), cur: ED.cur });
+  ED.lines[i].t = Math.max(0, ED.lines[i].t + d);
+  edMark();
+}
+function edPick(i){
+  ED.cur = i;
+  const l = ED.lines[i];
+  const ref = l.t != null ? l.t : (i > 0 ? ED.lines[i - 1].t : 0);
+  if (ref != null && !edOther()) seekTo(Math.max(0, ref - 2500));
+  edMark();
+}
+/* 시간 없는 줄은 앞뒤 줄 사이에 고르게 나눠요 */
+function edFill(lines){
+  const out = lines.map(l => ({ ...l }));
+  const n = out.length, dur = (ED.track && ED.track.dur) || 0;
+  for (let i = 0; i < n; i++) {
+    if (out[i].t != null) continue;
+    let a = i - 1; while (a >= 0 && out[a].t == null) a--;
+    let b = i + 1; while (b < n && out[b].t == null) b++;
+    const ta = a >= 0 ? out[a].t : 0;
+    const tb = b < n ? out[b].t : (dur ? Math.min(ta + (b - a) * 4000, dur - 500) : ta + (b - a) * 4000);   // 뒤에 맞춘 줄이 없으면 4초 간격
+    for (let k = i; k < b; k++) out[k].t = Math.round(ta + (tb - ta) * (k - a) / (b - a));
+    i = b - 1;
+  }
+  return out;
+}
+function edSave(plainOnly){
+  const id = ED.track.id;
+  if (ED.step === 'write') { const ta = $('edText'); if (ta) ED.text = ta.value; }
+  let data;
+  if (plainOnly) {
+    const plain = ED.text.split(/\r?\n/).map(s => s.trimEnd()).join('\n').trim();
+    if (!plain) return toast('가사를 입력해 주세요', 2500);
+    data = { lrc: '', plain };
+  } else {
+    if (!ED.lines.length) return toast('가사를 입력해 주세요', 2500);
+    if (!ED.lines.some(l => l.t != null)) return toast('먼저 탭으로 줄을 하나 이상 맞춰 주세요', 3000);
+    const filled = edFill(ED.lines);
+    data = { lrc: filled.map(l => `[${fmtLrc(l.t)}]${l.s === '♪' ? '' : l.s}`).join('\n'), plain: ED.lines.map(l => l.s === '♪' ? '' : l.s).join('\n') };
+  }
+  data.name = ED.track.name; data.artist = ED.track.artists.join(', ');
+  if (!myLyrPut(id, data)) return toast('저장 공간이 부족해서 저장하지 못했어요', 5000);
+  const left = ED.lines.filter(l => l.t == null).length;
+  lyCache.delete(id);
+  closeLyEd();
+  if (S.track && S.track.id === id) loadLyrics(S.track);
+  toast(plainOnly ? '가사를 저장했어요' : left ? `저장했어요. 시간을 안 맞춘 ${left}줄은 앞뒤 줄 사이에 나눠서 보여요` : '가사를 저장했어요. 이 곡을 틀 때마다 이 가사가 나와요', 5000);
+}
+function bindLyEd(){
+  $('lyEditBtn').addEventListener('click', openLyEd);
+  $('lyrics').addEventListener('click', e => { if (e.target.closest('[data-act="lyedit"]')) openLyEd(); });
+  $('lyEd').addEventListener('input', e => { if (e.target.id === 'edText') ED.text = e.target.value; });
+  $('lyEd').addEventListener('click', e => {
+    const b = e.target.closest('[data-ed]');
+    const row = e.target.closest('.edL');
+    if (row && !b) return edPick(+row.dataset.i);
+    if (!b) return;
+    const a = b.dataset.ed;
+    if (a === 'close') closeLyEd();
+    else if (a === 'replay') { if (ED.track) startPlayback({ uris: [ED.track.uri] }, ED.track); setTimeout(renderEd, 300); }
+    else if (a === 'tosync') {
+      ED.text = $('edText').value;
+      if (!ED.text.trim()) return toast('가사를 먼저 넣어 주세요', 2500);
+      edTextToLines(); ED.step = 'sync'; ED.hist = []; renderEd();
+      if (!edOther() && S.paused && ED.cur === 0) toast('재생을 누르고 첫 줄이 시작될 때 탭하세요', 4000);
+    }
+    else if (a === 'towrite') { ED.text = ED.lines.map(l => l.s).join('\n'); ED.step = 'write'; renderEd(); }
+    else if (a === 'plain') edSave(true);
+    else if (a === 'save') edSave(false);
+    else if (a === 'del') {
+      if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = '한 번 더 누르면 지워져요'; return; }
+      myLyrPut(ED.track.id, null); lyCache.delete(ED.track.id); const id = ED.track.id; closeLyEd();
+      if (S.track && S.track.id === id) loadLyrics(S.track, true);
+      toast('내가 넣은 가사를 지웠어요');
+    }
+    else if (a === 'tap') edTap();
+    else if (a === 'undo') edUndo();
+    else if (a === 'n-') edNudge(-200);
+    else if (a === 'n+') edNudge(200);
+    else if (a === 'restart') { ED.cur = 0; if (!edOther()) { seekTo(0); if (S.paused) togglePlay(); } edMark(); }
+  });
+}
+/* 싱크 맞추는 동안 지금 소리 나는 줄 표시 */
+function edLiveTick(p){
+  if (!ED.on || ED.step !== 'sync' || edOther()) return;
+  let idx = -1;
+  for (let i = 0; i < ED.lines.length; i++) { const t = ED.lines[i].t; if (t != null && t <= p + 150) idx = i; }
+  if (idx === ED.live) return;
+  const els = $('edList') ? $('edList').querySelectorAll('.edL') : [];
+  if (els[ED.live]) els[ED.live].classList.remove('live');
+  if (els[idx]) els[idx].classList.add('live');
+  ED.live = idx;
+}
+
 /* ---------- 플레이어 오른쪽: 가사 · 재생 목록 · 플레이리스트 ---------- */
 const RP = { mode: 'ly', pl: null, plTracks: null, plMore: false, plErr: null, plSeq: 0, sq: [] };
 function placeRTab(){
@@ -1802,6 +2087,7 @@ function placeRTab(){
   if (on && on.offsetWidth) { ind.style.left = on.offsetLeft + 'px'; ind.style.width = on.offsetWidth + 'px'; }
 }
 function setRight(m){
+  if (ED.on && m !== 'ly') closeLyEd();
   RP.mode = m; LS.set('luma_rp', m);
   $('rTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.r === m));
   placeRTab();
@@ -1947,6 +2233,7 @@ function loop(){
     if (sec !== lastSec) { lastSec = sec; $('tCur').textContent = fmt(p); $('tLeft').textContent = '-' + fmt(S.dur - p); }
   }
   updateLyrics(p);
+  edLiveTick(p);
 }
 
 /* ---------- 검색 ---------- */
@@ -3054,6 +3341,7 @@ function bind(){
   $('setBtn').onclick = openSettings;
   bindSettings();
   bindRight();
+  bindLyEd();
   const dateChange = () => {
     const pd = v => { const [y, m, d] = v.split('-').map(Number); return y ? new Date(y, m - 1, d) : null; };
     ST.from = pd($('dFrom').value); ST.to = pd($('dTo').value); renderStats();
@@ -3159,6 +3447,8 @@ function bind(){
     const open = $('player').classList.contains('open');
     if (e.key === 'Escape' && !$('reqDlg').hidden) closeReq();
     else if (e.key === 'Escape' && open) closePlayer();
+    else if (open && ED.on && ED.step === 'sync' && (e.code === 'Space' || e.key === 'Enter')) { e.preventDefault(); edTap(); }
+    else if (open && ED.on && ED.step === 'sync' && (e.key === 'Backspace' || ((e.ctrlKey || e.metaKey) && e.key === 'z'))) { e.preventDefault(); edUndo(); }
     else if (open && e.code === 'Space') { e.preventDefault(); togglePlay(); }
     else if (open && e.key === 'ArrowRight') seekTo(curPos() + 5000);
     else if (open && e.key === 'ArrowLeft') seekTo(curPos() - 5000);
@@ -3192,7 +3482,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, playList, setRight, skip };
+window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos };
 init();
 })();
 </script>
