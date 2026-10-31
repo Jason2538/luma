@@ -381,6 +381,9 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radiu
 .pl-right.editing #rTabs,.pl-right.editing #lyrics,.pl-right.editing .lsrc,.pl-right.editing #lyEditBtn,.pl-right.editing #rList{display:none}
 #lyEd{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;gap:10px;padding:22px 4vw 16px 0;min-height:0}
 #lyEd[hidden]{display:none}
+#diagBox{margin:4px 0 10px}
+#diagBox pre{max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-all;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);background:rgba(255,255,255,.05);border-radius:12px;padding:12px;margin:0 0 8px}
+#diagBox .diagActs{display:flex;gap:8px}
 #cover:not([src]),#cover[src=""]{visibility:hidden}
 #lyEd .edHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 #lyEd .edT{font-size:22px;font-weight:800;letter-spacing:-.02em}
@@ -769,6 +772,8 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
         <div class="row acct"><span id="setAvaBox"></span><div class="rl"><b id="setName"></b><small id="setId"></small></div><button class="pill" id="setLogout">로그아웃</button></div>
         <div class="row"><div class="rl"><b>저장된 데이터 지우기</b><small>재생 시간 기록, 설정, 임시 저장 내용을 지워요. 로그인은 그대로예요.</small></div><button class="pill danger" id="setClear">지우기</button></div>
         <div class="row"><div class="rl"><b>Luma 정보</b><small id="setVer"></small></div></div>
+        <div class="row"><div class="rl"><b>재생 진단 기록</b><small>재생이 이상할 때 이 기록을 복사해서 보내 주시면 원인을 찾기 쉬워요</small></div><button class="pill" id="setDiag">기록 보기</button></div>
+        <div id="diagBox" hidden><pre id="diagTxt"></pre><div class="diagActs"><button class="pill" id="diagCopy">복사</button><button class="pill" id="diagRef">새로 보기</button></div></div>
       </div>
     </section>
   </div>
@@ -1433,12 +1438,20 @@ function applySdkState(st){
   syncUI();
   checkQueueEnd();
 }
+let noDevPolls = 0;
 async function pollRemote(){
   const seq = playSeq;
   try {
     const j = await api('/me/player');
     if (seq !== playSeq) return;            // 그 사이 새 곡을 눌렀으면 이 결과는 버려요
-    if (!j || !j.device) return;
+    if (!j || !j.device) {
+      // 재생 중이던 Spotify 기기가 꺼졌거나 세션이 끝남: 두 번 연속이면 멈춘 걸로 보여줘요
+      if (!S.web && S.track && !S.paused && Date.now() > S.holdUntil && ++noDevPolls >= 2) {
+        dlog('재생 중인 Spotify 기기가 없어짐'); setPos(curPos(), true); syncUI();
+      }
+      return;
+    }
+    noDevPolls = 0;
     if (j.device.id === deviceId) { S.web = true; return; }
     S.web = false; S.devId = j.device.id; S.dev = j.device.name;
     if (j.device.is_active) S.devSeenAt = Date.now();
@@ -1468,27 +1481,46 @@ function pollSoon(){
   pollTimers = [350, 1000, 2000, 3500].map(ms => setTimeout(pollRemote, ms));
 }
 
+/* ---------- 재생 진단 기록 (설정에서 보기·복사) ---------- */
+const DLOG = [];
+function dlog(msg){
+  const d = new Date();
+  DLOG.push(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')} ${msg}`);
+  if (DLOG.length > 120) DLOG.shift();
+}
+const dn = id => !id ? '없음' : id === deviceId ? 'Luma(이 기기)' : (devCache.list.find(x => x.id === id) || {}).name || id.slice(0, 6);
+
 /* ---------- Web Playback SDK ---------- */
 function initSDK(){
   window.onSpotifyWebPlaybackSDKReady = () => {
     player = new Spotify.Player({
-      name: 'Luma',
+      name: IS_APP ? 'Luma (앱)' : 'Luma (웹)',
       getOAuthToken: cb => { getToken().then(cb).catch(() => {}); },
       volume: S.vol / 100
     });
     player.addListener('ready', ({ device_id }) => {
-      deviceId = device_id;
+      deviceId = device_id; dlog('Luma 재생기 준비됨');
       devWaiters.splice(0).forEach(f => f(device_id));
     });
-    player.addListener('not_ready', () => { deviceId = null; });
+    player.addListener('not_ready', () => {
+      deviceId = null; dlog('Luma 재생기 연결 끊김');
+      // 보통 스스로 다시 연결되지만, 8초 안에 안 되면 직접 다시 연결해요
+      setTimeout(() => { if (!deviceId && !reviving && webOK()) { dlog('Luma 재생기 다시 연결 시도'); reviveSDK(); } }, 8000);
+    });
+    player.addListener('autoplay_failed', () => {
+      dlog('브라우저가 자동 재생을 막음');
+      toast('브라우저가 자동 재생을 막았어요. 재생 버튼을 한 번 눌러 주세요', 7000);
+      setPos(curPos(), true); syncUI();
+    });
     player.addListener('player_state_changed', st => {
-      if (!st) { S.web = false; nativeSync(); return; }
+      if (!st) { if (S.web) dlog('Luma 재생기가 재생을 놓음 (다른 기기로 옮겨졌거나 끊김)'); S.web = false; nativeSync(); return; }
       applySdkState(st);
     });
-    player.addListener('account_error', () => { sdkFailed = true; toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
+    player.addListener('account_error', () => { sdkFailed = true; dlog('계정 오류: Premium 필요'); toast('웹에서 재생하려면 Spotify Premium 계정이 필요해요'); });
     player.addListener('authentication_error', () => toast('Spotify 인증에 문제가 생겼어요. 다시 로그인해 주세요'));
-    player.addListener('initialization_error', () => { sdkFailed = true; deviceId = null; devWaiters.splice(0).forEach(f => f(null)); });
-    player.addListener('playback_error', () => {
+    player.addListener('initialization_error', e => { sdkFailed = true; dlog('Luma 재생기 시작 실패: ' + (e && e.message || '')); deviceId = null; devWaiters.splice(0).forEach(f => f(null)); });
+    player.addListener('playback_error', e => {
+      dlog('Luma 재생 오류: ' + (e && e.message || ''));
       if (!S.web) return;
       // 한 번은 다시 연결해서 같은 위치부터, 1분 안에 또 나면 Spotify 앱으로
       if (Date.now() - lastPbErr < 60000) webFallback();
@@ -1508,7 +1540,8 @@ const listDevices = async () => (await api('/me/player/devices')).devices || [];
 
 function handleErr(e){
   if (e.reason === 'PREMIUM_REQUIRED' || /premium/i.test(e.message)) return toast('재생은 Spotify Premium 계정에서만 가능해요');
-  if (e.status === 404) return toast('재생할 기기를 찾지 못했어요');
+  if (e.status === 404) return toast('재생할 기기가 응답하지 않아요. Spotify 앱을 한 번 열어 주세요', 8000, { label: 'Spotify 앱 열기', fn: () => { location.href = (S.track && S.track.uri) || 'spotify:'; } });
+  if (e.status >= 500) return toast('Spotify 서버가 잠깐 응답하지 않아요. 잠시 후 다시 눌러 주세요', 6000);
   if (e.status === 403) return toast('Spotify에서 이 동작을 허용하지 않았어요: ' + e.message);
   toast(e.message || '문제가 생겼어요');
 }
@@ -1522,20 +1555,34 @@ async function getDevices(){
    - 재생 위치가 'Luma'면: Luma 자체 재생 (준비 중이면 잠깐 기다림)
    - 아니면: 내가 고른 기기 → 지금 재생 중인 기기(Spotify 앱 등) → Luma → 켜져 있는 다른 기기 */
 async function chooseDevice(fresh){
-  if (outPref() === 'luma' && webOK()) {
+  const want = outPref();
+  if (want === 'luma' && webOK()) {
     const d = deviceId || await waitDevice(3500);
     if (d && webOK()) return d;
+    dlog('Luma 재생기가 준비되지 않아 다른 기기를 찾아요');
   }
-  if (pickedDevice && !fresh) return pickedDevice;
-  if (!fresh && S.devId && Date.now() - S.devSeenAt < 10000 && !(S.devId === deviceId && !webOK())) return S.devId;
+  const recent = S.devId && Date.now() - S.devSeenAt < 10000;
+  if (want === 'remote') {
+    // 'Spotify 앱 조작'으로 정했으면 Luma(이 기기)는 다른 기기가 없을 때만 써요
+    if (pickedDevice && !fresh) return pickedDevice;
+    if (!fresh && recent && S.devId !== deviceId) return S.devId;
+  } else if (!fresh && recent && !(S.devId === deviceId && !webOK())) return S.devId;
   let list = [];
   try { list = await getDevices(); } catch {}
   const usable = list.filter(d => !d.is_restricted && !(d.id === deviceId && !webOK()));
+  const remote = usable.filter(d => d.id !== deviceId);
+  if (want === 'remote') {
+    if (pickedDevice && remote.some(d => d.id === pickedDevice)) return pickedDevice;
+    const r = remote.find(d => d.is_active) || remote.find(d => /tablet|smartphone/i.test(d.type)) || remote[0];
+    if (r) { if (pickedDevice && r.id !== pickedDevice) dlog('고른 기기가 없어서 ' + r.name + '(으)로'); return r.id; }
+    if (deviceId && webOK()) { toast('켜져 있는 Spotify 앱이 없어서 Luma에서 재생할게요', 5000); return deviceId; }
+    return null;
+  }
   const active = usable.find(d => d.is_active);
   if (active) return active.id;
   if (deviceId && webOK()) return deviceId;
   if (webOK() && !list.length) { const d = await waitDevice(1500); if (d) return d; }
-  const pref = usable.find(d => /tablet|smartphone/i.test(d.type) && d.id !== deviceId) || usable.find(d => d.id !== deviceId) || usable[0];
+  const pref = remote.find(d => /tablet|smartphone/i.test(d.type)) || remote[0] || usable[0];
   return pref ? pref.id : null;
 }
 /* Luma에서 재생을 시작했는데 소리가 안 나면(기기가 지원 안 함) Spotify 앱으로 넘겨요 */
@@ -1546,16 +1593,25 @@ function watchWebStart(seq, body, hint){
     let st = null;
     try { st = player && await player.getCurrentState(); } catch {}
     if (st && st.position > 0) return;                       // 재생이 시작됐어요
-    if (Date.now() - t0 < 7000) { setTimeout(check, 1000); return; }
+    const limit = st && st.loading ? 14000 : 9000;           // 느린 네트워크에서 불러오는 중이면 더 기다려요
+    if (Date.now() - t0 < limit) { setTimeout(check, 1000); return; }
+    dlog('Luma에서 소리가 나지 않음 (' + Math.round((Date.now() - t0) / 1000) + '초)');
     webFallback(body, hint);
   };
   setTimeout(check, 1500);
 }
-let fallingBack = false, lastPbErr = 0;
+let fallingBack = false, lastPbErr = 0, sdkFails = 0, sdkBrokenT = 0;
+/* Luma 재생을 잠깐 끄기: 처음엔 3분, 이번 실행에서 두 번째면 계속 (기기가 지원 안 하는 경우) */
+function breakSDK(){
+  sdkBroken = true; sdkFails++;
+  clearTimeout(sdkBrokenT);
+  if (sdkFails < 2) sdkBrokenT = setTimeout(() => { sdkBroken = false; dlog('Luma 재생 다시 사용'); }, 180000);
+}
 async function webFallback(body, hint){
   if (fallingBack || sdkBroken) return;
-  fallingBack = true; sdkBroken = true;
-  toast('이 기기에서는 Luma 재생이 되지 않아서 Spotify 앱으로 재생할게요', 6500);
+  fallingBack = true; breakSDK();
+  dlog('Spotify 앱 기기로 전환 (Luma 재생 ' + (sdkFails < 2 ? '3분 동안' : '이번에는') + ' 끔)');
+  toast(sdkFails < 2 ? 'Luma 재생이 잘 안 돼서 잠깐 Spotify 앱으로 재생할게요' : '이 기기에서는 Luma 재생이 되지 않아서 Spotify 앱으로 재생할게요', 6500);
   try {
     if (body) await startPlayback(body, hint);
     else if (S.track) await startPlayback({ uris: [S.track.uri], position_ms: Math.round(curPos()) }, S.track);
@@ -1666,6 +1722,7 @@ async function startPlayback(body, hint, opts){
   // 2) 재생할 기기를 고르고 Spotify에 요청
   let dev = await chooseDevice(false);
   if (seq !== playSeq) return;
+  dlog('재생 → ' + dn(dev) + (hint ? ' · ' + hint.name : ''));
   if (!dev) { revertTo(prev); return noDevice(hint); }
   const send = d => api('/me/player/play?device_id=' + encodeURIComponent(d), { method: 'PUT', body });
   // 네트워크 오류·Spotify 서버 오류(5xx)는 잠깐 뒤 한 번 더 보내요
@@ -1681,6 +1738,7 @@ async function startPlayback(body, hint, opts){
   try { await go(dev); }
   catch (e) {
     if (seq !== playSeq) return;
+    dlog('재생 요청 실패 ' + (e.status || '네트워크') + ' ' + (e.message || '').slice(0, 60));
     // Luma 재생기가 Spotify 서버와 끊긴 경우(Server error 등): 다시 연결해서 한 번 더
     if (dev === deviceId && (!e.status || e.status >= 500 || e.status === 404)) {
       const nd = await reviveSDK();
@@ -1690,12 +1748,11 @@ async function startPlayback(body, hint, opts){
         catch (e5) { e = e5; }
       }
       if (e) {                               // 그래도 안 되면 Spotify 앱 기기로
-        sdkBroken = true;
-        setTimeout(() => { sdkBroken = false; }, 60000);   // 1분 뒤에는 다시 Luma 재생을 써요
+        breakSDK(); dlog('Luma 재생기 다시 연결 실패 → 다른 기기');
         const other = await chooseDevice(true);
         if (seq !== playSeq) return;
         if (!other) { revertTo(prev); return toast('Spotify 서버와 연결이 잠깐 끊겼어요. 잠시 후 다시 눌러 주세요', 6000); }
-        try { await send(dev = other); e = null; toast('Luma 재생기 연결이 끊겨서 ' + devName(other) + '에서 재생할게요', 6000); }
+        try { await send(dev = other); e = null; toast('Luma 재생기 연결이 끊겨서 잠깐 ' + devName(other) + '에서 재생할게요', 6000); }
         catch (e6) { revertTo(prev); return handleErr(e6); }
       }
     }
@@ -1768,6 +1825,8 @@ async function togglePlay(){
       afterRemote();
     }
   } catch (e) {
+    dlog((wantPlay ? '재생' : '일시정지') + ' 실패 ' + (e.status || '네트워크') + ' ' + (e.message || '').slice(0, 50));
+    if (e.status === 403) { pollSoon(); return; }  // 이미 그 상태일 때 Spotify가 거절해요 → 실제 상태만 다시 받아요
     if (wantPlay) return resumeFresh();      // Server error 등: 같은 위치부터 다시 연결해서 재생
     if (e.status === 404 || e.status >= 500 || !e.status) { setPos(curPos(), true); syncUI(); return; }   // 멈추려던 건데 기기가 이미 멈춤
     handleErr(e);
@@ -2491,29 +2550,52 @@ async function openDevMenu(){
   m.innerHTML = '<h4>재생 위치</h4><div class="spin" style="width:20px;height:20px;margin:14px auto"></div>';
   let ds = [];
   try { ds = await getDevices(); } catch {}
-  const lumaRow = deviceId && webOK()
-    ? `<button data-id="luma" class="${S.web ? 'cur' : ''}"><b>Luma에서 재생</b><small>이 기기에서 바로 소리가 나요</small></button>`
-    : `<button disabled><b>Luma에서 재생</b><small>${sdkBroken || sdkFailed ? '이 기기에서는 지원되지 않아요' : '준비 중이에요…'}</small></button>`;
+  const lumaRow = deviceId && !sdkFailed
+    ? `<button data-id="luma" class="${S.web ? 'cur' : ''}"><b>Luma에서 재생</b><small>${sdkBroken ? '잠깐 꺼 뒀어요 · 누르면 다시 써요' : '이 기기에서 바로 소리가 나요'}</small></button>`
+    : sdkFailed ? `<button disabled><b>Luma에서 재생</b><small>이 기기·계정에서는 지원되지 않아요</small></button>`
+    : `<button data-id="luma"><b>Luma에서 재생</b><small>연결하는 중이에요 · 누르면 다시 연결해요</small></button>`;
   const others = ds.filter(d => d.id !== deviceId);
   m.innerHTML = '<h4>재생 위치</h4>' + lumaRow +
     (others.length ? '<h4>Spotify 기기 조작</h4>' + others.map(d =>
-      `<button data-id="${esc(d.id)}" class="${!S.web && d.id === S.devId ? 'cur' : ''}"${d.is_restricted ? ' disabled' : ''}><b>${esc(d.name)}</b><small>${d.is_active ? '지금 재생 중' : 'Spotify 앱'}</small></button>`).join('')
+      `<button data-id="${esc(d.id)}" class="${!S.web && d.id === S.devId ? 'cur' : ''}"${d.is_restricted ? ' disabled' : ''}><b>${esc(d.name)}</b><small>${d.is_restricted ? 'Spotify가 조작을 막은 기기예요' : d.is_active ? '지금 재생 중' : /^Luma/.test(d.name) ? '다른 기기의 Luma' : 'Spotify 앱'}</small></button>`).join('')
       : '<h4>다른 기기가 없어요. Spotify 앱을 켜면 여기에 나와요.</h4>');
 }
 async function pickDevice(id){
   $('devMenu').hidden = true;
-  if (id === 'luma') {
-    LS.set('luma_out', 'luma'); pickedDevice = null; sdkBroken = false;
-    id = deviceId; if (!id) return;
+  const toLuma = id === 'luma';
+  if (toLuma) {
+    LS.set('luma_out', 'luma'); pickedDevice = null; sdkBroken = false; sdkFails = 0; clearTimeout(sdkBrokenT);
+    id = deviceId || await reviveSDK();
+    if (!id) return toast('Luma 재생기에 연결하지 못했어요. 잠시 후 다시 골라 주세요', 6000);
   } else {
     LS.set('luma_out', 'remote'); pickedDevice = id;
   }
-  try {
-    await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: !!S.track && !S.paused } });
+  dlog('기기 선택 → ' + dn(id));
+  const playing = !!S.track && !S.paused;
+  const done = () => {
     S.devId = id; S.devSeenAt = Date.now(); S.web = id === deviceId; S.dev = devName(id); syncUI();
     toast(S.web ? '이제 Luma에서 바로 재생해요' : `이제 ${S.dev}에서 재생해요`);
     if (!S.web) pollSoon();
-  } catch (e) { handleErr(e); }
+  };
+  try {
+    await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: playing } });
+    done();
+    // 옮긴 기기가 실제로 재생을 이어받았는지 확인하고, 아니면 지금 곡을 그 기기에서 다시 걸어요
+    if (playing) setTimeout(async () => {
+      if (S.devId !== id) return;
+      const l = await nowUris(id);
+      if (!l.length && S.track) { dlog('기기 전환 후 재생이 이어지지 않아 다시 걸기'); resumeFresh(); }
+    }, 3000);
+  } catch (e) {
+    dlog('기기 전환 실패 ' + (e.status || '네트워크'));
+    if (toLuma && (!e.status || e.status >= 500 || e.status === 404)) {
+      const nd = await reviveSDK();
+      if (nd) { id = nd; try { await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: playing } }); return done(); } catch {} }
+    }
+    if (S.track && e.status !== 404 && playing) { S.devId = id; S.devSeenAt = Date.now(); return resumeFresh(); }   // 듣던 곡을 그 기기에서 바로 걸어요
+    if (S.track && e.status !== 404) { S.devId = id; S.devSeenAt = Date.now(); S.web = id === deviceId; S.dev = devName(id); syncUI(); return toast(`다음에 재생하면 ${S.dev}에서 소리가 나요`); }
+    handleErr(e);
+  }
 }
 
 /* ---------- 앱(APK) 알림창 · 백그라운드 재생 연동 ---------- */
@@ -2914,6 +2996,12 @@ function setSeg(id, v){
   requestAnimationFrame(() => placeSeg(box));
 }
 const setToggle = (id, on) => $(id).setAttribute('aria-checked', on ? 'true' : 'false');
+function diagText(){
+  const head = [`Luma ${IS_APP ? '앱' : '웹'} · 재생 위치 설정: ${outPref() === 'luma' ? 'Luma' : 'Spotify 앱'}${pickedDevice ? ' (' + dn(pickedDevice) + ')' : ''}`,
+    `Luma 재생기: ${sdkFailed ? '지원 안 됨' : sdkBroken ? '잠깐 꺼둠' : deviceId ? '준비됨' : '연결 안 됨'} · 지금 기기: ${S.web ? 'Luma' : (S.dev || '없음')} · ${S.paused ? '멈춤' : '재생 중'}`,
+    `기기 목록: ${devCache.list.map(d => d.name + (d.is_active ? '(재생 중)' : '')).join(', ') || '모름'}`, '---'];
+  return head.concat(DLOG.length ? DLOG : ['(아직 기록이 없어요)']).join('\n');
+}
 function renderSettings(){
   setSeg('setOut', outPref()); setSeg('setLys', SET.lys); setSeg('setStart', SET.start);
   $('setCf').value = SET.cf; $('setCf').style.setProperty('--p', (SET.cf / 12 * 100) + '%');
@@ -2946,6 +3034,13 @@ function bindSettings(){
     const ch = e.target.closest('#setSleep button'); if (ch) return setSleep(ch.dataset.v);
     if (e.target.closest('#openSpApp')) { location.href = 'spotify:'; return; }
     if (e.target.closest('#setLogout')) return logout();
+    if (e.target.closest('#setDiag') || e.target.closest('#diagRef')) { $('diagBox').hidden = false; $('diagTxt').textContent = diagText(); return; }
+    if (e.target.closest('#diagCopy')) {
+      const t = diagText();
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('진단 기록을 복사했어요'), () => {
+        const r = document.createRange(); r.selectNodeContents($('diagTxt')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('글자를 길게 눌러 복사해 주세요'); });
+      return;
+    }
     if (e.target.closest('#setClear')) {
       const b = $('setClear');
       if (Date.now() - clearArm > 4000) { clearArm = Date.now(); b.textContent = '한 번 더 누르면 지워져요'; setTimeout(() => { b.textContent = '지우기'; }, 4000); return; }
@@ -3453,7 +3548,16 @@ function bind(){
     else if (open && e.key === 'ArrowRight') seekTo(curPos() + 5000);
     else if (open && e.key === 'ArrowLeft') seekTo(curPos() - 5000);
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && tok && !S.web) pollRemote(); });
+  document.addEventListener('visibilitychange', async () => {
+    if (document.hidden || !tok) return;
+    if (!S.web) return pollRemote();
+    // Luma에서 재생 중이었으면 재생기 상태를 다시 받아요 (화면이 꺼진 동안 끊겼을 수 있어서)
+    let st = null; try { st = player && await player.getCurrentState(); } catch {}
+    if (st) applySdkState(st);
+    else { dlog('화면 복귀: Luma 재생기 상태 없음'); S.web = false; pollRemote(); if (!deviceId && webOK()) reviveSDK(); }
+  });
+  addEventListener('online', () => { dlog('인터넷 다시 연결됨'); if (player && !deviceId && webOK()) reviveSDK(); if (!S.web) pollRemote(); });
+  addEventListener('offline', () => dlog('인터넷 끊김'));
 }
 
 async function init(){
@@ -3482,7 +3586,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos };
+window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
 init();
 })();
 </script>
