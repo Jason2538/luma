@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 친구 정보: Luma에 로그인한 사람만 읽고 쓸 수 있어요
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    // 같이 만드는 플레이리스트
+    match /lists/{listId} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+  }
+}

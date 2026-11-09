@@ -611,6 +611,171 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .tlRow .du{font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
 .tlRow.now .tm{color:#9be8b6;font-weight:700}
 .statNote{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
+/* ---------- 친구 ---------- */
+#tabbar button[data-tab=fri].on{color:#ffd9b3}
+#tabbar.fri #tabInd{background:rgba(255,170,110,.2)}
+.fk{color:#ffcfa6!important}
+.fk i{background:#ffb27a!important;box-shadow:0 0 10px #ffb27a!important}
+#vFri .seg .ind{background:#ffb27a!important}
+#vFri .seg button.on{color:#1a1814!important}
+#vFri .hb .trackbar{background:rgba(255,178,122,.12)}
+#vFri .hb .trackbar i{background:#ffb27a}
+#vFri .hb:nth-child(-n+4) .rkN{color:#ffcfa6}
+#vFri .link{color:#ffcfa6}
+#vFri [data-fsrc="fav"] .trk .d,#vFri [data-fsrc="fav"] .trk .al{visibility:hidden}
+.fHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.fShare{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);font-size:13px;font-weight:600;margin-bottom:8px;transition:background .3s,scale .35s var(--spring)}
+.fShare:active{scale:.94}
+.fShare i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.fShare i.on{background:#ffb27a;box-shadow:0 0 10px #ffb27a}
+.fEmpty{color:var(--dim);text-align:center;padding:34px 16px;line-height:1.8;font-size:14px;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px}
+.fEmpty b{color:var(--fg)}
+.fEmpty.sm{padding:20px 14px}
+.fEmpty .pill{margin-top:10px}
+.fAva{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;background:var(--faint)}
+.fAva.noimg{display:inline-grid;place-items:center;font-weight:800;font-size:14px;color:var(--fg);background:linear-gradient(135deg,#ff9a6a,#c2557a)}
+.fAva.lg{width:52px;height:52px;font-size:20px}
+.fAva.xl{width:96px;height:96px;font-size:38px;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.fAva.badge{position:absolute;left:10px;bottom:10px;width:36px;height:36px;border:2.5px solid #1a1816;z-index:2}
+/* 지금 듣는 중 */
+.fNow{display:flex;gap:16px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity;scrollbar-width:none}
+.fNow::-webkit-scrollbar{display:none}
+.fNc{flex:0 0 172px;text-align:left;scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;animation:itemIn .6s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms);transition:scale .4s var(--spring)}
+.fNc:active{scale:.97}
+.fNc .art{position:relative;aspect-ratio:1;border-radius:16px;overflow:hidden;background:var(--faint);margin-bottom:8px;box-shadow:0 12px 30px rgba(0,0,0,.3);transition:transform .5s var(--ease),box-shadow .5s}
+.fNc:hover .art{transform:translateY(-4px);box-shadow:0 22px 44px rgba(0,0,0,.45)}
+.fNc .art>img{width:100%;height:100%;object-fit:cover;display:block}
+.fNc .art .ph{display:block;width:100%;height:100%}
+.fNc .art::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6),transparent 50%)}
+.fNc .go{position:absolute;right:10px;bottom:12px;z-index:2;display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.92);color:#1a1814;font-size:12px;font-weight:700;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .4s var(--spring)}
+.fNc .go svg{width:12px;height:12px;fill:currentColor}
+.fNc:hover .go,.fNc.live .go{opacity:1;transform:none}
+.fNc .nm{font-size:13px;font-weight:700;color:#ffcfa6}
+.fNc .tt{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fNc .aa{font-size:13px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fNc .st{font-size:12px;color:var(--dim);margin-top:4px;display:flex;align-items:center;gap:6px}
+.fNc.live .st{color:#ffcfa6}
+.eq{display:inline-flex;align-items:flex-end;gap:2px;height:11px;vertical-align:-1px;margin-right:2px}
+.eq i{width:3px;border-radius:2px;background:#ffb27a;animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(1){height:60%;animation-delay:-.2s}.eq i:nth-child(2){height:100%;animation-delay:-.5s}.eq i:nth-child(3){height:40%;animation-delay:-.8s}
+@keyframes eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+.eq i{transform-origin:bottom}
+/* 순위표 */
+.fRank{display:flex;flex-direction:column;gap:6px}
+.fRk{display:grid;grid-template-columns:30px 34px 1fr auto;grid-template-rows:auto 6px;column-gap:12px;row-gap:6px;align-items:center;text-align:left;padding:10px 12px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid var(--faint);animation:itemIn .6s var(--ease) both;animation-delay:calc(var(--i,0) * 50ms);transition:background .3s,scale .35s var(--spring)}
+.fRk:hover{background:rgba(255,255,255,.07)}.fRk:active{scale:.985}
+.fRk.me{border-color:rgba(255,178,122,.45);background:rgba(255,178,122,.08)}
+.fRk .n{grid-row:1/3;font-weight:800;font-size:16px;text-align:center;color:var(--dim);font-variant-numeric:tabular-nums}
+.fRk .fAva{grid-row:1/3}
+.fRk .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fRk .nm small{font-size:11px;font-weight:700;color:#1a1814;background:#ffb27a;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:2px}
+.fRk .v{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.fRk .bar{grid-column:3/5;height:6px;border-radius:4px;background:rgba(255,178,122,.12);overflow:hidden}
+.fRk .bar i{display:block;height:100%;border-radius:0 4px 4px 0;background:linear-gradient(90deg,#ff9a6a,#ffcf8a);transform-origin:left;animation:barX .9s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms + 150ms)}
+/* 궁합 */
+.fMatch{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.fMc{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--faint);animation:itemIn .6s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms);transition:background .3s,scale .35s var(--spring)}
+.fMc:hover{background:rgba(255,255,255,.07)}.fMc:active{scale:.98}
+.fMc .mi{flex:1;min-width:0}
+.fMc .mi b{display:block;font-size:16px}
+.fMc .mi small{display:block;font-size:12.5px;color:var(--dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pct{--p:0;position:relative;flex:none;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;font-size:12px;color:var(--dim);
+  background:conic-gradient(#ffb27a calc(var(--p) * 1%),rgba(255,255,255,.08) 0);}
+.pct::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#1d1a18}
+.pct>*{position:relative}
+.pct b{font-size:19px;font-weight:800;color:var(--fg);margin-right:1px}
+.pct{display:flex;align-items:center;justify-content:center}
+.pct.big{width:110px;height:110px;flex-direction:column;font-size:13px}
+.pct.big::before{inset:8px}
+.pct.big b{font-size:34px;line-height:1}
+.pct.big small{position:relative;font-size:11px;margin-top:4px}
+/* 플레이리스트 */
+.fLists{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px}
+.fLc,.fNew{text-align:left;display:flex;flex-direction:column;gap:3px;animation:itemIn .6s var(--ease) both;animation-delay:calc(var(--i,0) * 50ms);transition:scale .4s var(--spring)}
+.fLc:active,.fNew:active{scale:.97}
+.fLc .art,.fNew .art{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,154,106,.35),rgba(194,85,122,.35));display:grid;place-items:center;margin-bottom:8px;box-shadow:0 12px 30px rgba(0,0,0,.25);transition:transform .5s var(--ease)}
+.fLc:hover .art,.fNew:hover .art{transform:translateY(-4px)}
+.fLc .art img{width:100%;height:100%;object-fit:cover;display:block}
+.fLc .art.four,.fLHead .art.four{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.fLc .art svg,.fNew .art svg{width:40px;height:40px;fill:rgba(255,255,255,.85);color:rgba(255,255,255,.85)}
+.fNew .art{background:rgba(255,255,255,.05);border:1.5px dashed rgba(255,255,255,.18);box-shadow:none}
+.fLc b,.fNew b{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fLc small,.fNew small{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fLHead .art{width:200px;height:200px;flex:none;border-radius:16px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,rgba(255,154,106,.4),rgba(194,85,122,.4));box-shadow:0 18px 44px rgba(0,0,0,.4)}
+.fLHead .art img{width:100%;height:100%;object-fit:cover;display:block;border-radius:0!important;box-shadow:none!important}
+.fLHead .art svg{width:60px;height:60px;fill:rgba(255,255,255,.85)}
+.fLHead .dActs{flex-wrap:wrap}
+.saveBtn.danger{color:#ffb3b3;background:rgba(255,90,90,.14)}
+a.saveBtn{text-decoration:none}
+.fSpNote{font-size:12.5px;color:var(--dim);margin-top:10px;line-height:1.6;max-width:560px}
+.fLT .trk{grid-template-columns:48px 1fr minmax(0,.5fr) 48px auto auto}
+.fLT .trk .by{font-size:12px;color:#ffcfa6;background:rgba(255,178,122,.12);border-radius:999px;padding:3px 9px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.fLT .trk .fRm{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:var(--dim);font-size:13px;opacity:.55;transition:opacity .2s,background .2s}
+.fLT .trk:hover .fRm{opacity:1}
+.fLT .trk .fRm:hover{background:rgba(255,90,90,.18);color:#ffb3b3}
+.fAdd{margin:6px 0 18px;padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--faint);animation:itemIn .45s var(--ease) both}
+.fAdd .search{max-width:none;margin:0 0 10px}
+.fAddNow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 10px;border-radius:12px;background:rgba(255,178,122,.1);font-size:13.5px;margin-bottom:6px}
+.fAddNow img{width:32px;height:32px;border-radius:6px}
+.fAddRow{display:flex;align-items:center;gap:12px;padding:7px 6px;border-radius:12px}
+.fAddRow:hover{background:rgba(255,255,255,.05)}
+.fAddRow img,.fAddRow .ph{width:42px;height:42px;border-radius:7px;object-fit:cover;background:var(--faint);flex:none}
+.fAddRow .m{flex:1;min-width:0}
+.fAddRow .m b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fAddRow .m small{display:block;font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fPlus{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);transition:background .2s,scale .3s var(--spring)}
+.fPlus svg{width:22px;height:22px}
+.fPlus:hover{background:rgba(255,178,122,.3)}.fPlus:active{scale:.85}
+.fPlus.done{background:rgba(255,178,122,.25);color:#ffcfa6;font-weight:800}
+/* 친구 상세 */
+.fPHead{display:flex;align-items:center;gap:22px;margin:16px 0 8px;flex-wrap:wrap}
+.fPHead>div{flex:1;min-width:200px}
+.fPHead h1{font-size:34px;font-weight:800;letter-spacing:-.03em}
+.fPHead h1 small{font-size:13px;font-weight:700;color:#1a1814;background:#ffb27a;border-radius:999px;padding:2px 9px;vertical-align:8px}
+.fPHead p{color:var(--dim);font-size:14px;margin:6px 0 12px}
+.fCmps{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fCmp{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.fCmp .l{font-size:13px;color:var(--dim)}
+.fCmp .r{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;font-size:13px}
+.fCmp .r em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--dim)}
+.fCmp .r b{font-variant-numeric:tabular-nums;font-size:14px}
+.fCmp .b{height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+.fCmp .b i{display:block;height:100%;border-radius:6px;transform-origin:left;animation:barX .9s var(--ease) both}
+.fCmp .me .b i,.f7 .me,.fLeg .me{background:var(--accent)}
+.fCmp .fr .b i,.f7 .fr,.fLeg .fr{background:#ffb27a}
+.f7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:150px;padding:14px 12px 8px;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px}
+.f7 .c{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.f7 .bars{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px}
+.f7 .bars i{width:min(14px,40%);border-radius:4px 4px 0 0;min-height:2px;transform-origin:bottom;animation:barUp .8s var(--ease) both}
+.f7 span{font-size:11px;color:var(--dim)}
+.fLeg{display:flex;gap:16px;font-size:12px;color:var(--dim);margin-top:8px}
+.fLeg span{display:flex;align-items:center;gap:6px}
+.fLeg i{width:10px;height:10px;border-radius:3px}
+.fChips{display:flex;flex-wrap:wrap;gap:8px}
+.fChips span{padding:7px 13px;border-radius:999px;background:rgba(255,178,122,.12);color:#ffe0c4;font-size:13.5px;font-weight:600;animation:itemIn .5s var(--ease) both}
+.fForm{max-width:560px;margin:16px 0}
+.fForm h2{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.fForm p{color:var(--dim);font-size:14px;margin:8px 0 16px;line-height:1.6}
+.fForm input{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--faint);background:rgba(255,255,255,.06);color:var(--fg);font:500 16px var(--font);outline:none}
+.fForm input:focus{border-color:rgba(255,178,122,.6)}
+.fForm .acts{margin-top:14px}
+.fPick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.fPick button{text-align:left;display:flex;flex-direction:column;gap:3px;transition:scale .35s var(--spring)}
+.fPick button:active{scale:.97}
+.fPick img,.fPick .ph{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:var(--faint);margin-bottom:6px}
+.fPick b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fPick small{font-size:12px;color:var(--dim)}
+@media (max-width:700px){
+  .fCmps{grid-template-columns:1fr}
+  .fLT .trk{grid-template-columns:44px 1fr auto auto}
+  .fLT .trk .al,.fLT .trk .d{display:none}
+  .fLHead .art{width:130px;height:130px}
+  .fPHead h1{font-size:26px}
+  .pct.big{width:86px;height:86px}.pct.big b{font-size:26px}
+  .fNc{flex-basis:150px}
+}
+
 @media (max-width:900px){.stTiles{grid-template-columns:1fr 1fr}.stTiles .big{grid-column:1/-1}.stCols{grid-template-columns:1fr}}
 @media (max-width:600px){.seg button{padding:7px 12px}}
 
@@ -638,6 +803,7 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
   <symbol id="i-spark-f" viewBox="0 0 24 24"><path d="M11 2.5c.7 4.6 2.9 6.8 7.5 7.5-4.6.7-6.8 2.9-7.5 7.5-.7-4.6-2.9-6.8-7.5-7.5 4.6-.7 6.8-2.9 7.5-7.5zM18.5 14.5c.35 1.9 1.1 2.65 3 3-1.9.35-2.65 1.1-3 3-.35-1.9-1.1-2.65-3-3 1.9-.35 2.65-1.1 3-3z"/></symbol>
   <symbol id="i-set" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M18 7h2M4 17h3M11 17h9"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="8.5" cy="17" r="2.5"/></g></symbol>
   <symbol id="i-refresh" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/></g></symbol>
+  <symbol id="i-friends" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 19.5c.6-3.3 3.2-5.5 6.5-5.5s5.9 2.2 6.5 5.5"/><path d="M15.5 5.3a3.5 3.5 0 0 1 0 6.4"/><path d="M18 14.3c1.9.7 3.2 2.6 3.5 5.2"/></g></symbol>
   <symbol id="i-add" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.5v7M8.5 12h7"/></g></symbol>
 </svg>
 
@@ -768,6 +934,15 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
         <div class="row"><div class="rl"><b>시작 화면</b><small>Luma를 열면 처음 보일 화면</small></div>
           <div class="seg" id="setStart"><span class="ind"></span><button data-v="home">홈</button><button data-v="spot">Spotify</button></div></div>
       </div>
+      <div class="setGroup" id="setFriGroup"><h2>친구</h2>
+        <div class="row"><div class="rl"><b>친구 기능</b><small>Luma에 로그인한 친구들과 듣는 곡·재생 기록을 나누고 플레이리스트를 같이 만들어요</small></div>
+          <button class="tg" id="setFriOn" role="switch" aria-checked="true" aria-label="친구 기능"></button></div>
+        <div class="row"><div class="rl"><b>지금 듣는 곡 공유</b><small>친구가 내가 지금 듣는 곡을 보고 같이 들을 수 있어요</small></div>
+          <button class="tg" id="setShNow" role="switch" aria-checked="true" aria-label="지금 듣는 곡 공유"></button></div>
+        <div class="row"><div class="rl"><b>재생 기록 공유</b><small>오늘·이번 주 재생 시간, 많이 들은 곡·아티스트 (순위표와 취향 궁합에 쓰여요)</small></div>
+          <button class="tg" id="setShStats" role="switch" aria-checked="true" aria-label="재생 기록 공유"></button></div>
+        <div class="row"><div class="rl"><b>친구 서버에서 내 정보 지우기</b><small>올라간 내 이름·듣는 곡·기록을 지워요. 친구 기능이 켜져 있으면 다시 올라가요.</small></div><button class="pill danger" id="setFriForget">지우기</button></div>
+      </div>
       <div class="setGroup"><h2>계정</h2>
         <div class="row acct"><span id="setAvaBox"></span><div class="rl"><b id="setName"></b><small id="setId"></small></div><button class="pill" id="setLogout">로그아웃</button></div>
         <div class="row"><div class="rl"><b>저장된 데이터 지우기</b><small>재생 시간 기록, 설정, 임시 저장 내용을 지워요. 로그인은 그대로예요.</small></div><button class="pill danger" id="setClear">지우기</button></div>
@@ -776,6 +951,9 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
         <div id="diagBox" hidden><pre id="diagTxt"></pre><div class="diagActs"><button class="pill" id="diagCopy">복사</button><button class="pill" id="diagRef">새로 보기</button></div></div>
       </div>
     </section>
+
+    <!-- 친구 -->
+    <section id="vFri" hidden></section>
   </div>
 </main>
 
@@ -784,6 +962,7 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
   <button data-tab="home" class="on"><svg><use href="#i-home"/></svg>홈</button>
   <button data-tab="search"><svg><use href="#i-search"/></svg>검색</button>
   <button data-tab="spot"><svg><use href="#i-spark"/></svg>Spotify</button>
+  <button data-tab="fri"><svg><use href="#i-friends"/></svg>친구</button>
 </nav>
 
 <button id="miniBar" hidden aria-label="플레이어 열기">
@@ -879,7 +1058,7 @@ function toast(msg, ms = 4200, action){
 
 /* ---------- 애니메이션 도우미 ---------- */
 const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home' };
+const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home', friOn: true, shNow: true, shStats: true };
 let SET = { ...SET_DEF };
 try { SET = { ...SET_DEF, ...JSON.parse(LS.get('luma_set') || '{}') }; } catch {}
 const saveSet = () => LS.set('luma_set', JSON.stringify(SET));
@@ -3007,6 +3186,8 @@ function renderSettings(){
   $('setCf').value = SET.cf; $('setCf').style.setProperty('--p', (SET.cf / 12 * 100) + '%');
   $('setCfV').textContent = SET.cf ? `${SET.cf}초` : '꺼짐';
   setToggle('setAuto', SET.autoplay); setToggle('setLyrics', SET.lyrics); setToggle('setCalm', SET.calm);
+  setToggle('setFriOn', SET.friOn !== false); setToggle('setShNow', SET.shNow); setToggle('setShStats', SET.shStats);
+  $('setFriGroup').hidden = !fbReady();
   renderSleep();
   $('setName').textContent = me ? (me.display_name || me.id) : '';
   $('setId').textContent = me ? `Spotify ID · ${me.id}` : '';
@@ -3028,12 +3209,16 @@ function bindSettings(){
     }
     const tg = e.target.closest('.tg');
     if (tg) {
-      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm' }[tg.id];
-      SET[key] = !SET[key]; saveSet(); applySettings(); setToggle(tg.id, SET[key]); return;
+      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm', setFriOn: 'friOn', setShNow: 'shNow', setShStats: 'shStats' }[tg.id];
+      SET[key] = !(SET[key] !== false); saveSet(); applySettings(); setToggle(tg.id, SET[key]);
+      if (key === 'shNow' || key === 'friOn') { FR.lastNow = 'x'; pushNow(true); }
+      if (key === 'shStats' || key === 'friOn') pushStats(true);
+      return;
     }
     const ch = e.target.closest('#setSleep button'); if (ch) return setSleep(ch.dataset.v);
     if (e.target.closest('#openSpApp')) { location.href = 'spotify:'; return; }
     if (e.target.closest('#setLogout')) return logout();
+    if (e.target.closest('#setFriForget')) return friForgetMe();
     if (e.target.closest('#setDiag') || e.target.closest('#diagRef')) { $('diagBox').hidden = false; $('diagTxt').textContent = diagText(); return; }
     if (e.target.closest('#diagCopy')) {
       const t = diagText();
@@ -3057,7 +3242,7 @@ function bindSettings(){
 /* ---------- 화면(뷰) · 아래 탭바 ---------- */
 let curView = 'home', curTab = 'home';
 function showView(v){
-  const map = { home: $('vHome'), spot: $('vSpot'), detail: $('plDetail'), set: $('vSet') };
+  const map = { home: $('vHome'), spot: $('vSpot'), detail: $('plDetail'), set: $('vSet'), fri: $('vFri') };
   for (const [k, el] of Object.entries(map)) el.hidden = k !== v;
   const el = map[v];
   el.classList.remove('view-in'); void el.offsetWidth; el.classList.add('view-in');
@@ -3067,12 +3252,13 @@ function showView(v){
   document.body.dataset.mode = spotMode ? 'spot' : 'luma';
   $('spotBtn').classList.toggle('on', spotMode);
   $('setBtn').classList.toggle('on', v === 'set');
-  if (v !== 'detail') setTab(v === 'spot' ? 'spot' : v === 'set' ? '' : (sQ && $('q').value.trim() ? 'search' : 'home'));
+  if (v !== 'detail') setTab(v === 'spot' ? 'spot' : v === 'fri' ? 'fri' : v === 'set' ? '' : (sQ && $('q').value.trim() ? 'search' : 'home'));
 }
 function setTab(t){
   curTab = t;
   document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $('tabbar').classList.toggle('spot', t === 'spot');
+  $('tabbar').classList.toggle('fri', t === 'fri');
   moveInd();
 }
 function moveInd(){
@@ -3099,7 +3285,7 @@ function goTab(t){
   } else if (t === 'spot') {
     detail = null; showView('spot'); window.scrollTo({ top: 0 });
     loadSpot();
-  }
+  } else if (t === 'fri') openFri();
 }
 function placeSeg(seg){
   const on = seg.querySelector('button.on'), ind = seg.querySelector('.ind');
@@ -3304,6 +3490,622 @@ async function saveToSpotify(d){
   }
 }
 
+/* =====================================================================
+   친구 (Firebase: 익명 로그인 + Firestore REST — 라이브러리 없이 fetch로)
+   - users/{Spotify ID}: 이름·사진, 지금 듣는 곡, 오늘/이번 주 재생 시간, 많이 들은 곡·아티스트
+   - lists/{자동 ID}:   같이 만드는 플레이리스트 (곡마다 누가 넣었는지)
+   ===================================================================== */
+const FB = { apiKey: '', projectId: '' };   // Firebase 프로젝트를 만든 뒤 채워요
+const fbReady = () => !!(FB.apiKey && FB.projectId);
+
+/* ---------- 연결 ---------- */
+const CL = { tok: null, exp: 0, uid: null, busy: null };
+function cloudErr(status, text){
+  const e = new Error('친구 서버 오류 ' + status); e.status = status;
+  try { const j = JSON.parse(text); e.detail = (j.error && (j.error.message || j.error.status)) || ''; } catch { e.detail = String(text || '').slice(0, 120); }
+  return e;
+}
+async function clAuth(){
+  if (CL.tok && Date.now() < CL.exp - 60000) return CL.tok;
+  if (CL.busy) return CL.busy;
+  CL.busy = (async () => {
+    let j = null, saved = null;
+    try { saved = JSON.parse(LS.get('luma_fb') || 'null'); } catch {}
+    if (saved && saved.refresh) {
+      try {
+        const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + encodeURIComponent(FB.apiKey), {
+          method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(saved.refresh) });
+        if (r.ok) { const k = await r.json(); j = { idToken: k.id_token, refreshToken: k.refresh_token, expiresIn: k.expires_in, localId: k.user_id }; }
+      } catch {}
+    }
+    if (!j) {
+      const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + encodeURIComponent(FB.apiKey), {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnSecureToken: true }) });
+      if (!r.ok) throw cloudErr(r.status, await r.text());
+      j = await r.json();
+    }
+    CL.tok = j.idToken; CL.exp = Date.now() + (+j.expiresIn || 3600) * 1000; CL.uid = j.localId;
+    LS.set('luma_fb', JSON.stringify({ refresh: j.refreshToken, uid: j.localId }));
+    return CL.tok;
+  })();
+  try { return await CL.busy; } finally { CL.busy = null; }
+}
+const fsBase = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+const fsName = path => `projects/${FB.projectId}/databases/(default)/documents/${path}`;
+async function fsReq(path, opts = {}){
+  for (let n = 0; n < 2; n++) {
+    const t = await clAuth();
+    let r;
+    try {
+      r = await fetch(fsBase() + path, { method: opts.method || 'GET',
+        headers: { Authorization: 'Bearer ' + t, ...(opts.body ? { 'Content-Type': 'application/json' } : {}) },
+        body: opts.body ? JSON.stringify(opts.body) : undefined });
+    } catch (e) { if (n) throw e; await sleep(800); continue; }
+    if (r.status === 401 && !n) { CL.tok = null; continue; }
+    if (r.status === 404 && opts.null404) return null;
+    if (!r.ok) throw cloudErr(r.status, await r.text());
+    const txt = await r.text();
+    return txt ? JSON.parse(txt) : null;
+  }
+}
+/* Firestore 값 ↔ JS 값 */
+function fsEnc(v){
+  if (v === null || v === undefined) return { nullValue: null };
+  if (typeof v === 'boolean') return { booleanValue: v };
+  if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+  if (typeof v === 'string') return { stringValue: v };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(fsEnc) } };
+  return { mapValue: { fields: fsEncF(v) } };
+}
+function fsEncF(o){ const f = {}; for (const [k, v] of Object.entries(o)) if (v !== undefined) f[k] = fsEnc(v); return f; }
+function fsDec(v){
+  if (!v) return null;
+  if ('nullValue' in v) return null;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('integerValue' in v) return +v.integerValue;
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('stringValue' in v) return v.stringValue;
+  if ('timestampValue' in v) return Date.parse(v.timestampValue);
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsDec);
+  if ('mapValue' in v) return fsDecF(v.mapValue.fields || {});
+  return null;
+}
+function fsDecF(f){ const o = {}; for (const k in f) o[k] = fsDec(f[k]); return o; }
+const fsDoc = d => ({ id: d.name.split('/').pop(), ...fsDecF(d.fields || {}) });
+async function fsList(coll){
+  const out = []; let tokn = '';
+  for (let n = 0; n < 5; n++) {
+    const j = await fsReq(`/${coll}?pageSize=100${tokn ? '&pageToken=' + encodeURIComponent(tokn) : ''}`);
+    (j && j.documents || []).forEach(d => out.push(fsDoc(d)));
+    tokn = j && j.nextPageToken; if (!tokn) break;
+  }
+  return out;
+}
+const fsGet = async path => { const d = await fsReq('/' + path, { null404: true }); return d ? fsDoc(d) : null; };
+/* 일부 필드만 고치기 (나머지는 그대로) */
+function fsSet(path, obj){
+  const mask = Object.keys(obj).map(k => 'updateMask.fieldPaths=' + encodeURIComponent(k)).join('&');
+  return fsReq('/' + path + '?' + mask, { method: 'PATCH', body: { fields: fsEncF(obj) } });
+}
+const fsCommit = writes => fsReq(':commit', { method: 'POST', body: { writes } });
+
+/* ---------- 내 상태 올리기 ---------- */
+const FR = { users: [], lists: [], loaded: false, err: null, page: 'main', fid: null, lid: null, rank: 'week',
+             lastNow: '', lastNowAt: 0, lastStatsAt: 0, tops: null, topsAt: 0, pollT: 0, add: null, addQ: '', addRes: [] };
+const myName = () => me ? (me.display_name || me.id) : '';
+const myImg = () => me ? pickImg(me.images, 64) || '' : '';
+const friOn = () => fbReady() && !!me && SET.friOn !== false;
+function nowObj(){
+  const t = S.track; if (!t || !SET.shNow) return null;
+  return { uri: t.uri, id: t.id, n: t.name, a: t.artists.join(', '), img: t.thumb || t.cover || '', big: t.cover || t.thumb || '',
+           dur: Math.round(S.dur || t.dur || 0), pos: Math.round(curPos()), playing: !S.paused };
+}
+async function pushNow(force){
+  if (!friOn()) return;
+  const n = nowObj();
+  const sig = n ? n.uri + '|' + n.playing : 'none';
+  const stale = n && n.playing && Date.now() - FR.lastNowAt > 60000;
+  if (!force && sig === FR.lastNow && !stale) return;
+  FR.lastNow = sig; FR.lastNowAt = Date.now();
+  try { await fsSet('users/' + me.id, { name: myName(), img: myImg(), now: n, nowAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
+  catch (e) { FR.lastNow = ''; dlog('친구: 지금 듣는 곡 올리기 실패 ' + (e.status || '')); }
+}
+/* Spotify가 기억하는 많이 들은 아티스트·곡 (궁합 계산용, 세션마다 한 번) */
+async function myTops(){
+  if (FR.tops && Date.now() - FR.topsAt < 6 * 3600e3) return FR.tops;
+  const out = { artists: [], ids: [], meta: {} };
+  if (hasScopes(['user-top-read'])) {
+    try {
+      const [a, t] = await Promise.all([
+        api('/me/top/artists?limit=50&time_range=medium_term'),
+        api('/me/top/tracks?limit=50&time_range=medium_term')]);
+      out.artists = (a.items || []).map(x => x.name);
+      (t.items || []).filter(Boolean).forEach(x => { const n = normTrack(x); out.ids.push(n.id); out.meta[n.id] = n; });
+    } catch {}
+  }
+  FR.tops = out; FR.topsAt = Date.now();
+  return out;
+}
+function weekDays(){
+  const today = startOfDay(new Date());
+  const mon = addDays(today, -((today.getDay() + 6) % 7));
+  const days = []; for (let d = mon; d <= today; d = addDays(d, 1)) days.push(d);
+  return days;
+}
+function aggDays(days){
+  const tr = {}; let ms = 0;
+  for (const d of days) { const r = H.d[dayKey(d)]; if (!r) continue; ms += r.t; for (const [id, v] of Object.entries(r.tr)) tr[id] = (tr[id] || 0) + v; }
+  const ar = {};
+  for (const [id, v] of Object.entries(tr)) { const m = H.m[id]; const a = m ? m[2] : ''; if (a) ar[a] = (ar[a] || 0) + v; }
+  const topT = Object.entries(tr).sort((x, y) => y[1] - x[1]).slice(0, 10).map(([id, v]) => {
+    const m = H.m[id] || []; return { id, uri: 'spotify:track:' + id, n: m[0] || '', a: m[1] || '', img: m[3] || '', ms: Math.round(v) }; });
+  const topA = Object.entries(ar).sort((x, y) => y[1] - x[1]).slice(0, 10).map(([n, v]) => ({ n, ms: Math.round(v) }));
+  return { ms: Math.round(ms), topT, topA };
+}
+/* 내 기록 요약 (친구에게 올리는 것과 같은 모양) */
+async function myStats(){
+  const today = startOfDay(new Date());
+  const tops = await myTops();
+  const w = aggDays(weekDays()), d = aggDays([today]);
+  const days7 = []; for (let k = 6; k >= 0; k--) { const r = H.d[dayKey(addDays(today, -k))]; days7.push(Math.round(r ? r.t : 0)); }
+  const stats = { day: dayKey(today), week: dayKey(weekDays()[0]), todayMs: d.ms, weekMs: w.ms, days7,
+              todayTopT: d.topT.slice(0, 5), weekTopT: w.topT, weekTopA: w.topA,
+              artists: tops.artists, ids: tops.ids,
+              favs: tops.ids.slice(0, 10).map(id => { const t = tops.meta[id]; return { id, uri: t.uri, n: t.name, a: t.artists.join(', '), img: t.thumb }; }) };
+  FR.myStats = stats;
+  return stats;
+}
+async function pushStats(force){
+  if (!friOn()) return;
+  if (!force && Date.now() - FR.lastStatsAt < 120000) return;
+  FR.lastStatsAt = Date.now();
+  const all = await myStats();
+  const stats = SET.shStats ? all : null;
+  try { await fsSet('users/' + me.id, { name: myName(), img: myImg(), stats, statsAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
+  catch (e) { FR.lastStatsAt = 0; dlog('친구: 기록 올리기 실패 ' + (e.status || '')); }
+}
+function friTick(){                         // 5초마다: 바뀐 게 있으면 올리기
+  if (!friOn() || document.hidden && !S.web) return;
+  pushNow(false);
+  if (Date.now() - FR.lastStatsAt > 600000) pushStats(true);
+}
+
+/* ---------- 받아 오기 ---------- */
+async function friLoad(){
+  if (!fbReady()) return;
+  try {
+    const [u, l] = await Promise.all([fsList('users'), fsList('lists')]);
+    FR.users = u; FR.lists = l.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); FR.loaded = true; FR.err = null;
+  } catch (e) { FR.err = e; dlog('친구: 불러오기 실패 ' + (e.status || '') + ' ' + (e.detail || '')); }
+}
+function friPoll(){
+  clearTimeout(FR.pollT);
+  if (curView !== 'fri' || document.hidden) return;
+  const fast = FR.page === 'list' ? 8000 : 15000;
+  FR.pollT = setTimeout(async () => {
+    if (curView !== 'fri') return;
+    if (FR.page === 'list' && FR.lid) await friLoadList(FR.lid); else await friLoad();
+    if (curView === 'fri') renderFri(true);
+    friPoll();
+  }, fast);
+}
+async function friLoadList(id){
+  try {
+    const l = await fsGet('lists/' + id);
+    const i = FR.lists.findIndex(x => x.id === id);
+    if (!l) { if (i >= 0) FR.lists.splice(i, 1); return null; }
+    if (i >= 0) FR.lists[i] = l; else FR.lists.unshift(l);
+    return l;
+  } catch (e) { FR.err = e; return null; }
+}
+
+/* ---------- 계산 ---------- */
+const others = () => FR.users.filter(u => !me || u.id !== me.id);
+const meDoc = () => { const d = FR.users.find(u => me && u.id === me.id) || { id: me ? me.id : '', name: myName(), img: myImg() };
+  return FR.myStats ? { ...d, name: myName(), img: myImg(), stats: FR.myStats } : d; };
+const isLive = u => u.now && u.now.playing && Date.now() - (u.nowAt || 0) < 150000;
+const ago = ts => { const s = Math.max(0, (Date.now() - ts) / 1000);
+  return s < 60 ? '방금' : s < 3600 ? Math.floor(s / 60) + '분 전' : s < 86400 ? Math.floor(s / 3600) + '시간 전' : Math.floor(s / 86400) + '일 전'; };
+function statOf(u, key){             // 오늘/이번 주 값이 지난 날짜 것이면 0
+  const s = u.stats; if (!s) return 0;
+  const today = dayKey(startOfDay(new Date()));
+  if (key === 'todayMs') return s.day === today ? s.todayMs || 0 : 0;
+  if (key === 'weekMs') return s.week === dayKey(weekDays()[0]) ? s.weekMs || 0 : 0;
+  return 0;
+}
+/* 취향 궁합: 많이 들은 아티스트(순위 가중치)와 곡이 얼마나 겹치는지 */
+function match(a, b){
+  const sa = a.stats, sb = b.stats;
+  if (!sa || !sb) return null;
+  const art = s => { const m = new Map();
+    (s.artists || []).forEach((n, i) => m.set(n.toLowerCase(), Math.max(m.get(n.toLowerCase()) || 0, 1 / Math.sqrt(i + 1))));
+    (s.weekTopA || []).forEach((x, i) => m.set(x.n.toLowerCase(), Math.max(m.get(x.n.toLowerCase()) || 0, 0.8 / Math.sqrt(i + 1))));
+    return m; };
+  const A = art(sa), B = art(sb);
+  if (!A.size || !B.size) return null;
+  let dot = 0, na = 0, nb = 0; const shared = [];
+  for (const [k, v] of A) { na += v * v; if (B.has(k)) { dot += v * B.get(k); shared.push([k, v * B.get(k)]); } }
+  for (const v of B.values()) nb += v * v;
+  const cos = dot / Math.sqrt(na * nb);
+  const ia = new Set(sa.ids || []), sharedT = (sb.ids || []).filter(id => ia.has(id));
+  const score = Math.round(Math.min(99, 100 * (1 - Math.pow(1 - Math.min(1, cos * 1.25 + sharedT.length * 0.02), 1.6))));
+  const names = new Map(); [...(sa.artists || []), ...(sb.artists || []), ...(sa.weekTopA || []).map(x => x.n), ...(sb.weekTopA || []).map(x => x.n)].forEach(n => names.set(n.toLowerCase(), n));
+  return { score: Math.max(score, shared.length ? 5 : 0), artists: shared.sort((x, y) => y[1] - x[1]).map(([k]) => names.get(k) || k), ids: sharedT };
+}
+const avatar = (u, cls = '') => u.img ? `<img class="fAva ${cls}" src="${esc(u.img)}" alt="">`
+  : `<span class="fAva ${cls} noimg">${esc((u.name || '?').slice(0, 1))}</span>`;
+const toTrack = x => ({ id: x.id, uri: x.uri || 'spotify:track:' + x.id, name: x.n || x.name || '', artists: (x.a || '').split(', ').filter(Boolean),
+  album: '', thumb: x.img || '', cover: x.big || x.img || '', dur: x.dur || 0 });
+
+/* ---------- 화면 ---------- */
+function openFri(){
+  detail = null; showView('fri'); window.scrollTo({ top: 0 });
+  FR.page = 'main';
+  renderFri();
+  if (!fbReady()) return;
+  pushStats(false); pushNow(true);
+  Promise.all([friLoad(), myStats()]).then(() => { if (curView === 'fri') renderFri(true); friPoll(); });
+}
+function friGo(page, id){
+  FR.page = page;
+  if (page === 'friend') FR.fid = id;
+  if (page === 'list') { FR.lid = id; FR.add = null; }
+  window.scrollTo({ top: 0 });
+  renderFri();
+  if (page === 'list' && id) friLoadList(id).then(() => { if (curView === 'fri' && FR.page === 'list') renderFri(true); });
+  friPoll();
+}
+function renderFri(quiet){
+  const box = $('vFri'); if (!box) return;
+  box.classList.toggle('nofx', !!quiet);
+  if (!fbReady()) { box.innerHTML = friSetupHTML(); return; }
+  if (SET.friOn === false) {
+    box.innerHTML = `<header class="spHead"><p class="spKicker fk"><i></i>Luma 친구</p><h1>친구</h1></header>
+      <div class="fEmpty">친구 기능을 꺼 두었어요.<br><button class="pill" data-fa="on">다시 켜기</button></div>`;
+    return;
+  }
+  const keepAdd = FR.page === 'list' && FR.add && document.activeElement && document.activeElement.id === 'fAddQ';
+  if (keepAdd) { renderFriList(box, true); return; }
+  if (FR.page === 'friend') return renderFriend(box);
+  if (FR.page === 'list') return renderFriList(box);
+  if (FR.page === 'new') return renderFriNew(box);
+  if (FR.page === 'share') return renderFriShare(box);
+  renderFriMain(box);
+}
+function friSetupHTML(){
+  return `<header class="spHead"><p class="spKicker fk"><i></i>Luma 친구</p><h1>친구</h1></header>
+    <div class="fEmpty"><b>친구 기능을 준비하고 있어요</b><br>Luma를 만든 사람이 친구 서버(Firebase)를 연결하면 바로 쓸 수 있어요.</div>`;
+}
+function renderFriMain(box){
+  const us = others();
+  const live = us.filter(u => u.now).sort((a, b) => (isLive(b) - isLive(a)) || ((b.nowAt || 0) - (a.nowAt || 0)));
+  const all = [meDoc(), ...us];
+  const key = FR.rank === 'today' ? 'todayMs' : 'weekMs';
+  const ranked = all.map(u => ({ u, ms: me && u.id === me.id ? (SET.shStats ? (key === 'todayMs' ? aggDays([startOfDay(new Date())]).ms : aggDays(weekDays()).ms) : statOf(u, key)) : statOf(u, key) }))
+    .sort((a, b) => b.ms - a.ms);
+  const maxMs = Math.max(1, ...ranked.map(r => r.ms));
+  const mine = { ...meDoc(), stats: meDoc().stats };
+  const matches = us.map(u => ({ u, m: match(mine, u) })).filter(x => x.m).sort((a, b) => b.m.score - a.m.score);
+  const err = FR.err && !FR.loaded ? `<div class="fEmpty">친구 정보를 불러오지 못했어요 (${esc(String(FR.err.status || '네트워크'))}).<br><button class="pill" data-fa="reload">다시 시도</button></div>` : '';
+  box.innerHTML =
+    `<header class="spHead fHead"><div><p class="spKicker fk"><i></i>Luma 친구 · ${all.length}명</p><h1>친구</h1></div>
+      <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></header>` + err +
+    (!FR.loaded && !err ? '<div class="spin"></div>' : '') +
+    (FR.loaded ? `
+    <section class="spSec"><h2 class="sec">지금 듣는 중</h2>
+      ${live.length ? `<div class="fNow">${live.map((u, i) => friNowCard(u, i)).join('')}</div>`
+        : `<div class="fEmpty sm">${us.length ? '지금 듣고 있는 친구가 없어요' : '아직 친구가 없어요. Luma에 로그인한 친구가 자동으로 여기에 나와요.'}</div>`}
+    </section>
+    <section class="spSec"><div class="secHead"><h2 class="sec">친구 순위표</h2>
+      <div class="seg" id="fRankSeg"><span class="ind"></span><button data-fr="today"${FR.rank === 'today' ? ' class="on"' : ''}>오늘</button><button data-fr="week"${FR.rank === 'week' ? ' class="on"' : ''}>이번 주</button></div></div>
+      <div class="fRank">${ranked.map((r, i) => `<button class="fRk${me && r.u.id === me.id ? ' me' : ''}" data-fu="${esc(r.u.id)}" style="--i:${i}">
+        <span class="n">${i === 0 && r.ms ? '👑' : i + 1}</span>${avatar(r.u)}<span class="nm">${esc(r.u.name || '')}${me && r.u.id === me.id ? ' <small>나</small>' : ''}</span>
+        <span class="v">${r.ms ? fmtDur(r.ms) : '—'}</span><span class="bar"><i style="width:${Math.max(r.ms ? 2 : 0, r.ms / maxMs * 100)}%"></i></span></button>`).join('')}</div>
+    </section>
+    <section class="spSec"><h2 class="sec">취향 궁합</h2>
+      ${matches.length ? `<div class="fMatch">${matches.map((x, i) => `<button class="fMc" data-fu="${esc(x.u.id)}" style="--i:${i}">${avatar(x.u, 'lg')}
+        <div class="mi"><b>${esc(x.u.name)}</b><small>${x.m.artists.length ? '같이 좋아하는: ' + esc(x.m.artists.slice(0, 3).join(', ')) : '겹치는 아티스트가 아직 없어요'}</small></div>
+        <span class="pct" style="--p:${x.m.score}"><b>${x.m.score}</b>%</span></button>`).join('')}</div>`
+        : `<div class="fEmpty sm">${us.length ? '궁합을 계산할 기록이 아직 없어요. 노래를 조금 더 들으면 나와요.' : '친구가 생기면 취향 궁합을 보여 줘요.'}</div>`}
+    </section>
+    <section class="spSec"><div class="secHead"><h2 class="sec">같이 만드는 플레이리스트</h2></div>
+      <div class="fLists">
+        <button class="fNew" data-fa="new"><span class="art"><svg><use href="#i-add"/></svg></span><b>새 플레이리스트</b><small>친구들과 같이 곡을 넣어요</small></button>
+        <button class="fNew" data-fa="share"><span class="art"><svg><use href="#i-note"/></svg></span><b>내 플레이리스트 공유</b><small>Spotify 플리를 친구에게</small></button>
+        ${FR.lists.map((l, i) => friListCard(l, i)).join('')}
+      </div>
+    </section>` : '');
+  requestAnimationFrame(() => { const sg = $('fRankSeg'); if (sg) placeSeg(sg); });
+}
+function friNowCard(u, i){
+  const n = u.now, live = isLive(u);
+  return `<button class="fNc${live ? ' live' : ''}" data-fl="${esc(u.id)}" style="--i:${i}">
+    <span class="art">${n.big || n.img ? `<img src="${esc(n.big || n.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}${avatar(u, 'badge')}
+      <span class="go"><svg><use href="#i-play"/></svg>${live ? '같이 듣기' : '듣기'}</span></span>
+    <b class="nm">${esc(u.name)}</b>
+    <span class="tt">${esc(n.n)}</span><span class="aa">${esc(n.a)}</span>
+    <span class="st">${live ? '<i class="eq"><i></i><i></i><i></i></i>지금 듣는 중' : ago(u.nowAt || 0) + (n.playing ? '' : ' · 멈춤')}</span></button>`;
+}
+function listArt(l, cls = ''){
+  const imgs = []; for (const t of l.tracks || []) { if (t.img && !imgs.includes(t.img)) imgs.push(t.img); if (imgs.length === 4) break; }
+  return `<span class="art ${cls} ${imgs.length >= 4 ? 'four' : ''}">${imgs.length >= 4 ? imgs.map(s => `<img src="${esc(s)}" alt="" loading="lazy">`).join('')
+    : imgs.length ? `<img src="${esc(imgs[0])}" alt="" loading="lazy">` : '<svg><use href="#i-note"/></svg>'}</span>`;
+}
+function listPeople(l){
+  const names = []; for (const t of l.tracks || []) if (t.byName && !names.includes(t.byName)) names.push(t.byName);
+  if (l.ownerName && !names.includes(l.ownerName)) names.unshift(l.ownerName);
+  return names;
+}
+function friListCard(l, i){
+  const ppl = listPeople(l);
+  return `<button class="fLc" data-fli="${esc(l.id)}" style="--i:${i}">${listArt(l)}<b>${esc(l.name)}</b>
+    <small>${(l.tracks || []).length}곡 · ${esc(ppl.slice(0, 3).join(', '))}${ppl.length > 3 ? ` 외 ${ppl.length - 3}명` : ''}</small></button>`;
+}
+function backBar(label){ return `<button class="back" data-fa="back"><svg class="ic" style="width:20px;height:20px"><use href="#i-back"/></svg>${label || '친구'}</button>`; }
+
+/* 친구 한 명과 비교 */
+function renderFriend(box){
+  const u = FR.users.find(x => x.id === FR.fid);
+  if (!u) { FR.page = 'main'; return renderFriMain(box); }
+  const mine = meDoc(), isMe = me && u.id === me.id;
+  const myToday = aggDays([startOfDay(new Date())]).ms, myWeek = aggDays(weekDays()).ms;
+  const fT = statOf(u, 'todayMs'), fW = statOf(u, 'weekMs');
+  const m = isMe ? null : match(mine, u);
+  const s = u.stats || {};
+  const today = startOfDay(new Date());
+  const my7 = []; for (let k = 6; k >= 0; k--) { const r = H.d[dayKey(addDays(today, -k))]; my7.push(r ? r.t : 0); }
+  // 친구 7일: 올린 날 기준으로 오늘까지 밀어 맞춰요
+  let f7 = (s.days7 || []).slice();
+  if (s.day) { const lag = Math.round((today - startOfDay(new Date(s.day + 'T00:00:00'))) / 864e5); if (lag > 0) f7 = f7.slice(lag).concat(Array(Math.min(7, lag)).fill(0)); }
+  while (f7.length < 7) f7.unshift(0);
+  const mx = Math.max(1, ...my7, ...f7);
+  const both = m && m.ids.length ? m.ids.map(id => (FR.tops && FR.tops.meta[id]) || null).filter(Boolean) : [];
+  FR.both = both;
+  const fav = (s.weekTopT && s.weekTopT.length ? s.weekTopT : s.favs || []).map(toTrack);
+  FR.fav = fav;
+  const cmp = (label, a, b) => { const M = Math.max(1, a, b);
+    return `<div class="fCmp"><span class="l">${label}</span>
+      <span class="r me"><em>나</em><span class="b"><i style="width:${a / M * 100}%"></i></span><b>${a ? fmtDur(a) : '—'}</b></span>
+      <span class="r fr"><em>${esc(u.name)}</em><span class="b"><i style="width:${b / M * 100}%"></i></span><b>${b ? fmtDur(b) : '—'}</b></span></div>`; };
+  box.innerHTML = backBar() +
+    `<header class="fPHead">${avatar(u, 'xl')}<div><h1>${esc(u.name)}${isMe ? ' <small>나</small>' : ''}</h1>
+      <p>${u.now ? (isLive(u) ? '<i class="eq"><i></i><i></i><i></i></i>지금 ' : ago(u.nowAt || 0) + ' · ') + esc(u.now.n) + ' — ' + esc(u.now.a) : '최근 들은 곡 정보가 없어요'}</p>
+      ${u.now ? `<button class="playall" data-fl="${esc(u.id)}"><svg class="ic"><use href="#i-play"/></svg>${isLive(u) ? '같이 듣기' : '이 곡 듣기'}</button>` : ''}</div>
+      ${m ? `<span class="pct big" style="--p:${m.score}"><b>${m.score}</b>%<small>취향 궁합</small></span>` : ''}</header>` +
+    (u.stats ? '' : '<div class="fEmpty sm">이 친구는 재생 기록을 공유하지 않고 있어요.</div>') +
+    (isMe ? '' : `<section class="spSec"><h2 class="sec">재생 시간 비교</h2><div class="fCmps">${cmp('오늘', myToday, fT)}${cmp('이번 주', myWeek, fW)}</div>
+      <div class="f7">${my7.map((v, k) => { const d = addDays(today, k - 6);
+        return `<div class="c"><div class="bars"><i class="me" style="height:${v / mx * 100}%" title="나 ${fmtDur(v)}"></i><i class="fr" style="height:${f7[k] / mx * 100}%" title="${esc(u.name)} ${fmtDur(f7[k])}"></i></div><span>${k === 6 ? '오늘' : WD[d.getDay()]}</span></div>`; }).join('')}</div>
+      <div class="fLeg"><span><i class="me"></i>나</span><span><i class="fr"></i>${esc(u.name)}</span></div></section>`) +
+    (m ? `<section class="spSec"><h2 class="sec">같이 좋아하는 아티스트</h2>
+      ${m.artists.length ? `<div class="fChips">${m.artists.slice(0, 16).map(a => `<span>${esc(a)}</span>`).join('')}</div>` : '<div class="fEmpty sm">아직 겹치는 아티스트가 없어요</div>'}</section>` : '') +
+    (both.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">둘 다 많이 듣는 곡</h2><button class="link" data-fa="playboth">전체 재생</button></div>
+      <div class="tracks" data-fsrc="both">${both.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
+    (fav.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">${s.weekTopT && s.weekTopT.length ? (isMe ? '내가' : esc(u.name) + '님이') + ' 이번 주 많이 들은 곡' : (isMe ? '내가' : esc(u.name) + '님이') + ' 요즘 많이 듣는 곡'}</h2><button class="link" data-fa="playfav">전체 재생</button></div>
+      <div class="tracks" data-fsrc="fav">${fav.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
+    (s.weekTopA && s.weekTopA.length ? `<section class="spSec"><h2 class="sec">이번 주 많이 들은 아티스트</h2><div class="stCard">${s.weekTopA.slice(0, 8).map((a, i) =>
+      `<div class="hb" style="--i:${i}"><span class="n"><span class="rkN">${i + 1}</span>${esc(a.n)}</span><span class="v">${fmtDur(a.ms)}</span><span class="trackbar"><i style="width:${a.ms / s.weekTopA[0].ms * 100}%"></i></span></div>`).join('')}</div></section>` : '');
+  markPlaying();
+}
+
+/* 같이 만드는 플레이리스트 */
+function renderFriList(box, onlyResults){
+  const l = FR.lists.find(x => x.id === FR.lid);
+  if (!l) { box.innerHTML = backBar() + '<div class="spin"></div>'; return; }
+  const tracks = (l.tracks || []).map(t => ({ ...toTrack(t), _e: t }));
+  FR.listTracks = tracks;
+  const own = me && l.owner === me.id;
+  const resHTML = () => FR.addRes.map((t, i) => { const has = tracks.some(x => x.uri === t.uri);
+    return `<div class="fAddRow">${t.thumb ? `<img src="${esc(t.thumb)}" alt="">` : '<span class="ph"></span>'}<div class="m"><b>${esc(t.name)}</b><small>${esc(t.artists.join(', '))}</small></div>
+      <button class="fPlus${has ? ' done' : ''}" data-fadd="${i}"${has ? ' disabled' : ''} aria-label="추가">${has ? '✓' : '<svg><use href="#i-add"/></svg>'}</button></div>`; }).join('');
+  if (onlyResults) { const r = $('fAddRes'); if (r) r.innerHTML = resHTML(); return; }
+  const ppl = listPeople(l);
+  const sp = l.spotify;
+  box.innerHTML = backBar() +
+    `<div class="plhead fLHead">${listArt(l, 'big')}<div><h2>${esc(l.name)}</h2>
+      <p>${tracks.length}곡 · 만든 사람 ${esc(l.ownerName || '')}${ppl.length > 1 ? ' · 참여 ' + esc(ppl.filter(n => n !== l.ownerName).join(', ')) : ''}</p>
+      <div class="dActs">
+        <button class="playall" data-fa="lplay"${tracks.length ? '' : ' disabled'}><svg class="ic"><use href="#i-play"/></svg>전체 재생</button>
+        <button class="saveBtn" data-fa="addopen"><svg><use href="#i-add"/></svg>곡 추가</button>
+        ${own ? `<button class="saveBtn" data-fa="spsync"><svg><use href="#i-refresh"/></svg>${sp ? 'Spotify와 맞추기' : 'Spotify 공동 플리로 만들기'}</button>` : ''}
+        ${sp && sp.url ? `<a class="saveBtn" href="${esc(sp.url)}" target="_blank" rel="noopener">Spotify에서 열기</a>` : ''}
+        <button class="saveBtn" data-fa="lsave"${tracks.length ? '' : ' disabled'}>내 Spotify에 저장</button>
+        ${own ? '<button class="saveBtn danger" data-fa="ldel">삭제</button>' : ''}
+      </div>
+      ${sp ? `<p class="fSpNote">Spotify 공동 플레이리스트와 연결돼 있어요${own ? '' : '. 만든 사람이 열면 새 곡이 Spotify에도 반영돼요'}. Spotify 앱에서 고치려면 만든 사람이 Spotify 앱의 "공동 작업자 초대" 링크를 보내 주세요.</p>` : ''}
+    </div></div>` +
+    (FR.add ? `<div class="fAdd"><div class="search box"><svg class="ic"><use href="#i-search"/></svg><input id="fAddQ" type="search" placeholder="넣을 노래를 검색하세요" value="${esc(FR.addQ)}" autocomplete="off"></div>
+      ${S.track ? `<button class="fAddNow" data-fa="addnow">${S.track.thumb ? `<img src="${esc(S.track.thumb)}" alt="">` : ''}<span>지금 듣는 곡 넣기 · <b>${esc(S.track.name)}</b></span></button>` : ''}
+      <div id="fAddRes">${resHTML()}</div></div>` : '') +
+    `<div class="tracks fLT" data-fsrc="list">${tracks.length ? tracks.map((t, i) => {
+      const mineT = me && t._e.by === me.id;
+      return rowHTML(t, i).replace('</button>', '') + `<span class="by">${esc(t._e.byName || '')}</span>` +
+        (own || mineT ? `<span class="fRm" data-frm="${i}" role="button" aria-label="빼기">✕</span>` : '') + '</button>'; }).join('')
+      : '<div class="empty">아직 곡이 없어요. "곡 추가"로 첫 곡을 넣어 보세요.</div>'}</div>`;
+  markPlaying();
+  if (FR.add && FR.add.focus) { const q = $('fAddQ'); if (q) { q.focus(); FR.add.focus = false; } }
+  // 만든 사람이 열었고 Spotify와 연결돼 있으면, 친구가 넣은 곡을 Spotify에도 반영
+  if (own && sp && sp.id && !FR.syncing && (sp.n !== tracks.length || sp.sig !== listSig(l))) spSync(l, true);
+}
+const listSig = l => { let h = 0; for (const t of l.tracks || []) for (const c of t.uri) h = (h * 31 + c.charCodeAt(0)) | 0; return String(h); };
+function renderFriNew(box){
+  box.innerHTML = backBar() + `<div class="fForm"><h2>새 플레이리스트</h2><p>친구들이 같이 곡을 넣고 뺄 수 있어요. 누가 넣었는지도 보여요.</p>
+    <input id="fNewName" maxlength="60" placeholder="플레이리스트 이름" value="">
+    <div class="acts"><button class="playall" data-fa="create">만들기</button></div></div>`;
+  setTimeout(() => { const i = $('fNewName'); if (i) i.focus(); }, 100);
+}
+function renderFriShare(box){
+  box.innerHTML = backBar() + `<div class="fForm"><h2>내 플레이리스트 공유</h2><p>고른 플레이리스트의 곡으로 같이 만드는 플레이리스트를 만들어요. 그다음부터는 친구들이 곡을 더 넣을 수 있어요.</p></div>
+    <div class="fPick">${myPlaylists.length ? myPlaylists.map((p, i) => `<button data-fsh="${i}">${pickImg(p.images, 120) ? `<img src="${esc(pickImg(p.images, 120))}" alt="">` : '<span class="ph"></span>'}<b>${esc(p.name)}</b><small>${p.items?.total ?? p.tracks?.total ?? ''}곡</small></button>`).join('')
+      : '<div class="empty">내 플레이리스트가 없어요</div>'}</div>`;
+}
+
+/* ---------- 동작 ---------- */
+async function friCreate(name, tracks){
+  name = (name || '').trim();
+  if (!name) return toast('이름을 넣어 주세요', 2500);
+  const at = Date.now();
+  const doc = { name, owner: me.id, ownerName: myName(), createdAt: at, updatedAt: at, spotify: null,
+    tracks: (tracks || []).slice(0, 800).map(t => listEntry(t, at)) };
+  try {
+    const d = await fsReq('/lists', { method: 'POST', body: { fields: fsEncF(doc) } });
+    const l = fsDoc(d); FR.lists.unshift(l);
+    toast('플레이리스트를 만들었어요. 친구들도 바로 볼 수 있어요');
+    friGo('list', l.id);
+  } catch (e) { toast('만들지 못했어요: ' + (e.detail || e.message), 6000); }
+}
+const listEntry = (t, at) => ({ uri: t.uri, id: t.id, n: t.name, a: t.artists.join(', '), img: t.thumb || '', big: t.cover || '', dur: Math.round(t.dur || 0),
+  by: me.id, byName: myName(), at });
+async function friAddTrack(t){
+  const l = FR.lists.find(x => x.id === FR.lid); if (!l || !t) return;
+  if ((l.tracks || []).some(x => x.uri === t.uri)) return toast('이미 들어 있는 곡이에요', 2000);
+  const e = listEntry(t, Date.now());
+  l.tracks = [...(l.tracks || []), e];             // 화면에 먼저 반영
+  renderFri(true);
+  try {
+    await fsCommit([{ transform: { document: fsName('lists/' + l.id), fieldTransforms: [
+      { fieldPath: 'tracks', appendMissingElements: { values: [fsEnc(e)] } },
+      { fieldPath: 'updatedAt', setToServerValue: 'REQUEST_TIME' }] } }]);
+    toast(`"${t.name}"을(를) 넣었어요`, 2000);
+    await friLoadList(l.id); if (FR.page === 'list') renderFri(true);
+  } catch (err) {
+    l.tracks = l.tracks.filter(x => x !== e); renderFri(true);
+    toast('넣지 못했어요: ' + (err.detail || err.message), 5000);
+  }
+}
+async function friRemoveTrack(i){
+  const l = FR.lists.find(x => x.id === FR.lid); if (!l) return;
+  const e = (l.tracks || [])[i]; if (!e) return;
+  l.tracks = l.tracks.filter(x => x !== e); renderFri(true);
+  try {
+    await fsCommit([{ transform: { document: fsName('lists/' + l.id), fieldTransforms: [
+      { fieldPath: 'tracks', removeAllFromArray: { values: [fsEnc(e)] } },
+      { fieldPath: 'updatedAt', setToServerValue: 'REQUEST_TIME' }] } }]);
+    await friLoadList(l.id); if (FR.page === 'list') renderFri(true);
+  } catch (err) { toast('빼지 못했어요: ' + (err.detail || err.message), 5000); await friLoadList(l.id); renderFri(true); }
+}
+async function spSync(l, quiet){
+  if (!l || !me || l.owner !== me.id || FR.syncing) return;
+  if (!hasScopes(NEED_SAVE)) return quiet ? null : toast('Spotify에 저장하려면 권한을 한 번 더 받아야 해요', 8000, { label: '다시 로그인', fn: () => { LS.set('luma_after', 'spot'); login(false); } });
+  FR.syncing = true;
+  try {
+    let sp = l.spotify;
+    const uris = (l.tracks || []).map(t => t.uri);
+    if (!sp || !sp.id) {
+      let pl;
+      try { pl = await api('/me/playlists', { method: 'POST', body: { name: `${l.name} · Luma`, description: 'Luma 친구들과 같이 만드는 플레이리스트', public: false, collaborative: true } }); }
+      catch { pl = await api('/me/playlists', { method: 'POST', body: { name: `${l.name} · Luma`, description: 'Luma 친구들과 같이 만드는 플레이리스트', public: false } }); }
+      sp = { id: pl.id, url: (pl.external_urls && pl.external_urls.spotify) || '', collab: !!pl.collaborative };
+      for (let k = 0; k < uris.length; k += 100) await api(`/playlists/${sp.id}/items`, { method: 'POST', body: { uris: uris.slice(k, k + 100) } });
+      if (!quiet) toast(sp.collab ? 'Spotify 공동 플레이리스트로 만들었어요' : 'Spotify 플레이리스트로 만들었어요 (공동 설정은 Spotify 앱에서 켜 주세요)', 6000);
+    } else {
+      await api(`/playlists/${sp.id}/items`, { method: 'PUT', body: { uris: uris.slice(0, 100) } });
+      for (let k = 100; k < uris.length; k += 100) await api(`/playlists/${sp.id}/items`, { method: 'POST', body: { uris: uris.slice(k, k + 100) } });
+      if (!quiet) toast('Spotify 플레이리스트와 맞췄어요', 3000);
+    }
+    sp = { ...sp, n: uris.length, sig: listSig(l), at: Date.now() };
+    l.spotify = sp;
+    await fsSet('lists/' + l.id, { spotify: sp });
+    if (curView === 'fri' && FR.page === 'list') renderFri(true);
+  } catch (e) {
+    if (!quiet) { if (e.status === 403 || e.status === 401) toast('Spotify가 허용하지 않았어요. 다시 로그인해 보세요', 8000, { label: '다시 로그인', fn: () => { LS.set('luma_after', 'spot'); login(false); } }); else handleErr(e); }
+  } finally { FR.syncing = false; }
+}
+async function friShareMine(p){
+  const box = $('vFri');
+  box.innerHTML = backBar() + `<div class="fForm"><h2>${esc(p.name)}</h2><p>곡을 불러오는 중이에요…</p><div class="spin"></div></div>`;
+  const tracks = []; let off = 0;
+  try {
+    for (let n = 0; n < 16; n++) {
+      const j = await api(`/playlists/${p.id}/items?limit=50&offset=${off}`);
+      const its = (j.items || []).map(e => e && (e.item || e.track)).filter(t => t && t.type === 'track' && !t.is_local && t.uri);
+      tracks.push(...its.map(normTrack)); off += (j.items || []).length;
+      if (!j.next) break;
+    }
+  } catch (e) {
+    toast(e.status === 403 ? '내가 만든 플레이리스트만 공유할 수 있어요 (Spotify 정책)' : '곡을 불러오지 못했어요', 6000);
+    return friGo('share');
+  }
+  friCreate(p.name, dedupe(tracks));
+}
+let fAddT = 0;
+async function friSearch(q){
+  FR.addQ = q; const seq = ++fAddT;
+  if (!q.trim()) { FR.addRes = []; return renderFriList($('vFri'), true); }
+  try {
+    const j = await api('/search?' + new URLSearchParams({ q, type: 'track', limit: 10 }));
+    if (seq !== fAddT) return;
+    FR.addRes = (j.tracks?.items || []).filter(Boolean).map(normTrack);
+    renderFriList($('vFri'), true);
+  } catch {}
+}
+function listenWith(uid){
+  const u = FR.users.find(x => x.id === uid); if (!u || !u.now) return;
+  const t = toTrack(u.now);
+  let pos = 0;
+  if (isLive(u)) pos = Math.min((u.now.pos || 0) + (Date.now() - (u.nowAt || 0)), Math.max(0, (u.now.dur || 0) - 3000));
+  setQueue([t], `${u.name}님과 같이 듣기`);
+  startPlayback({ uris: [t.uri], position_ms: Math.round(pos) }, t, { pos: Math.round(pos) });
+  toast(isLive(u) ? `${u.name}님이 듣는 위치부터 같이 들어요` : `${u.name}님이 들은 곡을 틀어요`, 3500);
+}
+function bindFri(){
+  const v = $('vFri');
+  v.addEventListener('click', e => {
+    const fa = e.target.closest('[data-fa]');
+    const rm = e.target.closest('[data-frm]');
+    if (rm) { e.stopPropagation(); return friRemoveTrack(+rm.dataset.frm); }
+    if (fa) {
+      const a = fa.dataset.fa;
+      if (a === 'back') return friGo(FR.page === 'list' || FR.page === 'friend' || FR.page === 'new' || FR.page === 'share' ? 'main' : 'main');
+      if (a === 'reload') { FR.err = null; renderFri(); return friLoad().then(() => renderFri(true)); }
+      if (a === 'settings') { openSettings(); setTimeout(() => { const g = $('setFriGroup'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); return; }
+      if (a === 'on') { SET.friOn = true; saveSet(); return openFri(); }
+      if (a === 'new') return friGo('new');
+      if (a === 'share') return friGo('share');
+      if (a === 'create') return friCreate($('fNewName').value);
+      if (a === 'playboth') return FR.both && FR.both.length && playList(FR.both, 0, '둘 다 많이 듣는 곡');
+      if (a === 'playfav') return FR.fav && FR.fav.length && playList(FR.fav, 0, '친구가 많이 듣는 곡');
+      const l = FR.lists.find(x => x.id === FR.lid);
+      if (a === 'lplay' && l) return FR.listTracks.length && playList(FR.listTracks, 0, l.name);
+      if (a === 'addopen') { FR.add = FR.add ? null : { focus: true }; FR.addRes = []; FR.addQ = ''; return renderFri(true); }
+      if (a === 'addnow' && S.track) return friAddTrack(S.track);
+      if (a === 'spsync' && l) return spSync(l, false);
+      if (a === 'lsave' && l) return saveToSpotify({ title: l.name, tracks: FR.listTracks });
+      if (a === 'ldel' && l) {
+        if (fa.dataset.sure !== '1') { fa.dataset.sure = '1'; fa.textContent = '한 번 더 누르면 삭제'; setTimeout(() => { if (fa.isConnected) { fa.dataset.sure = ''; fa.textContent = '삭제'; } }, 4000); return; }
+        return fsReq('/lists/' + l.id, { method: 'DELETE' }).then(() => { FR.lists = FR.lists.filter(x => x !== l); toast('플레이리스트를 지웠어요'); friGo('main'); })
+          .catch(err => toast('지우지 못했어요: ' + (err.detail || err.message), 5000));
+      }
+      return;
+    }
+    const fl = e.target.closest('[data-fl]'); if (fl) return listenWith(fl.dataset.fl);
+    const fu = e.target.closest('[data-fu]'); if (fu) return friGo('friend', fu.dataset.fu);
+    const fli = e.target.closest('[data-fli]'); if (fli) return friGo('list', fli.dataset.fli);
+    const fsh = e.target.closest('[data-fsh]'); if (fsh) return friShareMine(myPlaylists[+fsh.dataset.fsh]);
+    const fadd = e.target.closest('[data-fadd]'); if (fadd) return friAddTrack(FR.addRes[+fadd.dataset.fadd]);
+    const fr = e.target.closest('[data-fr]'); if (fr) { FR.rank = fr.dataset.fr; return renderFri(true); }
+    const row = e.target.closest('.trk');
+    if (row) {
+      const src = row.parentElement.dataset.fsrc, i = +row.dataset.i;
+      if (src === 'both') return playList(FR.both, i, '둘 다 많이 듣는 곡');
+      if (src === 'fav') return playList(FR.fav, i, '친구가 많이 듣는 곡');
+      if (src === 'list') { const l = FR.lists.find(x => x.id === FR.lid); return playList(FR.listTracks, i, l ? l.name : '같이 만드는 플레이리스트'); }
+    }
+  });
+  let qt;
+  v.addEventListener('input', e => {
+    if (e.target.id === 'fAddQ') { clearTimeout(qt); const q = e.target.value; qt = setTimeout(() => friSearch(q), 350); }
+  });
+  v.addEventListener('keydown', e => { if (e.target.id === 'fNewName' && e.key === 'Enter') friCreate(e.target.value); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && curView === 'fri') { friLoad().then(() => renderFri(true)); friPoll(); } });
+}
+async function friForgetMe(){
+  if (!fbReady() || !me) return;
+  try { await fsReq('/users/' + me.id, { method: 'DELETE' }); toast('친구 서버에서 내 정보를 지웠어요'); }
+  catch (e) { toast('지우지 못했어요: ' + (e.detail || e.message), 5000); }
+}
+
 /* ---------- 시작 ---------- */
 /* 앱에서 시작한 로그인이 브라우저로 돌아온 경우: 받은 결과를 앱(luma://callback)으로 넘겨요 */
 function showHandoff(){
@@ -3377,6 +4179,7 @@ async function startApp(){
   if (hasScopes(NEED_SPOT)) api('/me/player/recently-played?limit=50').then(j => importRecent(j.items)).catch(() => {});
   pollRemote();
   setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
+  if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); }
 }
 
 function bind(){
@@ -3437,6 +4240,7 @@ function bind(){
   bindSettings();
   bindRight();
   bindLyEd();
+  bindFri();
   const dateChange = () => {
     const pd = v => { const [y, m, d] = v.split('-').map(Number); return y ? new Date(y, m - 1, d) : null; };
     ST.from = pd($('dFrom').value); ST.to = pd($('dTo').value); renderStats();
@@ -3586,7 +4390,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
+window.LumaTest = { FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
 init();
 })();
 </script>
