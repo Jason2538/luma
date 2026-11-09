@@ -622,7 +622,7 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 #vFri .hb .trackbar i{background:#ffb27a}
 #vFri .hb:nth-child(-n+4) .rkN{color:#ffcfa6}
 #vFri .link{color:#ffcfa6}
-#vFri [data-fsrc="fav"] .trk .d,#vFri [data-fsrc="fav"] .trk .al{visibility:hidden}
+#vFri [data-fsrc="fav"] .trk .d,#vFri [data-fsrc="fav"] .trk .al,#vFri [data-fsrc="favall"] .trk .d,#vFri [data-fsrc="favall"] .trk .al{visibility:hidden}
 .fHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .fShare{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);font-size:13px;font-weight:600;margin-bottom:8px;transition:background .3s,scale .35s var(--spring)}
 .fShare:active{scale:.94}
@@ -742,7 +742,7 @@ a.saveBtn{text-decoration:none}
 .fCmp .r b{font-variant-numeric:tabular-nums;font-size:14px}
 .fCmp .b{height:10px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
 .fCmp .b i{display:block;height:100%;border-radius:6px;transform-origin:left;animation:barX .9s var(--ease) both}
-.fCmp .me .b i,.f7 .me,.fLeg .me{background:var(--accent)}
+.fCmp .me .b i,.f7 .me,.fLeg .me{background:#8fbaff}
 .fCmp .fr .b i,.f7 .fr,.fLeg .fr{background:#ffb27a}
 .f7{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;height:150px;padding:14px 12px 8px;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px}
 .f7 .c{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
@@ -766,6 +766,60 @@ a.saveBtn{text-decoration:none}
 .fPick img,.fPick .ph{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:var(--faint);margin-bottom:6px}
 .fPick b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fPick small{font-size:12px;color:var(--dim)}
+.fTiles{margin:6px 0 4px}
+.fAva.sm{width:24px;height:24px;font-size:11px;border:2px solid #1a1816}
+.avs{display:inline-flex;align-items:center;vertical-align:middle}
+.avs .fAva{margin-left:-7px}.avs .fAva:first-child{margin-left:0}
+.avs em{font-style:normal;font-size:11px;color:var(--dim);margin-left:4px}
+.fFeed{display:flex;flex-direction:column;gap:2px}
+.fFi{display:grid;grid-template-columns:auto 44px 1fr auto;gap:12px;align-items:center;text-align:left;padding:7px 10px;border-radius:12px;animation:itemIn .5s var(--ease) both;animation-delay:calc(var(--i,0) * 30ms);transition:background .25s,scale .3s var(--spring)}
+.fFi:not(:has(.fAva)){grid-template-columns:44px 1fr auto}
+.fFi:hover{background:rgba(255,255,255,.06)}.fFi:active{scale:.985}
+.fFi>img,.fFi>.ph{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--faint)}
+.fFi .m{min-width:0}
+.fFi .m b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fFi .m small{display:block;font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fFi .w{font-size:12.5px;color:#ffcfa6;text-align:right;white-space:nowrap}
+.fFi .w small{display:block;color:var(--dim);font-size:11.5px}
+.fRk .stk{font-style:normal;font-size:11.5px;font-weight:700;color:#ffcfa6;margin-left:4px}
+.fAgg{display:flex;flex-direction:column;gap:2px}
+.fAr{display:grid;grid-template-columns:26px 44px 1fr auto auto;gap:12px;align-items:center;text-align:left;padding:7px 10px;border-radius:12px;animation:itemIn .5s var(--ease) both;animation-delay:calc(var(--i,0) * 30ms);transition:background .25s,scale .3s var(--spring)}
+.fAr:hover{background:rgba(255,255,255,.06)}.fAr:active{scale:.985}
+.fAr .rk{font-weight:800;color:var(--dim);text-align:center;font-variant-numeric:tabular-nums}
+.fAr:nth-child(-n+3) .rk{color:#ffcfa6}
+.fAr>img,.fAr>.ph{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--faint)}
+.fAr .m{min-width:0}
+.fAr .m b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fAr .m small{display:block;font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fAr .v{font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.fHb .n{display:flex;align-items:center;gap:6px}
+.fMc .mini{display:block;font-size:11.5px;color:#ffcfa6;margin-top:4px;opacity:.85}
+.fParts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.fPart{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;animation:itemIn .5s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms)}
+.fPart .l{font-size:12.5px;color:var(--dim)}
+.fPart b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.fPart .b{height:6px;border-radius:4px;background:rgba(255,178,122,.12);overflow:hidden}
+.fPart .b i{display:block;height:100%;background:linear-gradient(90deg,#ff9a6a,#ffcf8a);border-radius:4px;transform-origin:left;animation:barX .9s var(--ease) both}
+.fPart small{font-size:12px;color:var(--dim);line-height:1.4}
+.fSub{font-size:13px;font-weight:700;color:var(--dim);margin:16px 2px 8px}
+.fHours{background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px;padding:16px 16px 6px}
+.fHours svg{display:block;width:100%;height:130px;overflow:visible}
+.fHours .g{stroke:rgba(255,255,255,.07)}
+.fHours .hl{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin:6px 0 4px}
+.fHours path{fill:none;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.fHours path.me{stroke:#8fbaff}.fHours path.fr{stroke:#ffb27a}
+.fPeak{color:#ffcfa6!important;font-size:13px!important;margin-top:-6px!important}
+.fChips span.both{box-shadow:inset 0 0 0 1.5px #ffb27a;color:#fff}
+.fNote{font-size:12px;color:var(--dim);margin-top:8px}
+.fArts{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px}
+.fArt{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;animation:itemIn .5s var(--ease) both;animation-delay:calc(var(--i,0) * 40ms)}
+.fArt img,.fArt .ph{width:100%;aspect-ratio:1;border-radius:50%;object-fit:cover;background:var(--faint);box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.fArt b{font-size:13.5px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.fArt small{font-size:11.5px;color:#ffcfa6}
+#vFri .more{display:block;margin:10px auto 0}
+@media (max-width:900px){.fParts{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.fAr{grid-template-columns:22px 40px 1fr auto}.fAr .v{display:none}.fFi .w small{display:none}.secHead .segs{width:100%}}
+
 @media (max-width:700px){
   .fCmps{grid-template-columns:1fr}
   .fLT .trk{grid-template-columns:44px 1fr auto auto}
@@ -3591,7 +3645,7 @@ function fsSet(path, obj){
 const fsCommit = writes => fsReq(':commit', { method: 'POST', body: { writes } });
 
 /* ---------- 내 상태 올리기 ---------- */
-const FR = { users: [], lists: [], loaded: false, err: null, page: 'main', fid: null, lid: null, rank: 'week',
+const FR = { users: [], lists: [], loaded: false, err: null, page: 'main', fid: null, lid: null, rank: 'week', rankBy: 'time', feedMore: false, recMore: false,
              lastNow: '', lastNowAt: 0, lastStatsAt: 0, tops: null, topsAt: 0, pollT: 0, add: null, addQ: '', addRes: [] };
 const myName = () => me ? (me.display_name || me.id) : '';
 const myImg = () => me ? pickImg(me.images, 64) || '' : '';
@@ -3614,13 +3668,19 @@ async function pushNow(force){
 /* Spotify가 기억하는 많이 들은 아티스트·곡 (궁합 계산용, 세션마다 한 번) */
 async function myTops(){
   if (FR.tops && Date.now() - FR.topsAt < 6 * 3600e3) return FR.tops;
-  const out = { artists: [], ids: [], meta: {} };
+  const out = { artists: [], ids: [], meta: {}, genres: [], arts: [] };
   if (hasScopes(['user-top-read'])) {
     try {
       const [a, t] = await Promise.all([
         api('/me/top/artists?limit=50&time_range=medium_term'),
         api('/me/top/tracks?limit=50&time_range=medium_term')]);
-      out.artists = (a.items || []).map(x => x.name);
+      const items = (a.items || []).filter(Boolean);
+      out.artists = items.map(x => x.name);
+      out.arts = items.slice(0, 12).map(x => ({ n: x.name, img: pickImg(x.images, 120) || '' }));
+      // 장르: 순위가 높은 아티스트일수록 가중치
+      const g = {};
+      items.forEach((x, i) => (x.genres || []).forEach(n => { g[n] = (g[n] || 0) + 1 / Math.sqrt(i + 1); }));
+      out.genres = Object.entries(g).sort((p, q) => q[1] - p[1]).slice(0, 15).map(([n, w]) => ({ n, w: Math.round(w * 100) / 100 }));
       (t.items || []).filter(Boolean).forEach(x => { const n = normTrack(x); out.ids.push(n.id); out.meta[n.id] = n; });
     } catch {}
   }
@@ -3633,26 +3693,63 @@ function weekDays(){
   const days = []; for (let d = mon; d <= today; d = addDays(d, 1)) days.push(d);
   return days;
 }
+function monthDays(){
+  const today = startOfDay(new Date());
+  const days = []; for (let d = new Date(today.getFullYear(), today.getMonth(), 1); d <= today; d = addDays(d, 1)) days.push(d);
+  return days;
+}
+const lastDays = n => { const t = startOfDay(new Date()); const a = []; for (let k = n - 1; k >= 0; k--) a.push(addDays(t, -k)); return a; };
 function aggDays(days){
-  const tr = {}; let ms = 0;
-  for (const d of days) { const r = H.d[dayKey(d)]; if (!r) continue; ms += r.t; for (const [id, v] of Object.entries(r.tr)) tr[id] = (tr[id] || 0) + v; }
+  const tr = {}; let ms = 0, plays = 0; const hours = Array(24).fill(0);
+  for (const d of days) {
+    const r = H.d[dayKey(d)]; if (!r) continue;
+    ms += r.t; for (const [id, v] of Object.entries(r.tr)) tr[id] = (tr[id] || 0) + v;
+    plays += r.lg ? r.lg.length : Object.keys(r.tr).length;
+    if (r.h) r.h.forEach((v, i) => { hours[i] += v; });
+  }
   const ar = {};
   for (const [id, v] of Object.entries(tr)) { const m = H.m[id]; const a = m ? m[2] : ''; if (a) ar[a] = (ar[a] || 0) + v; }
-  const topT = Object.entries(tr).sort((x, y) => y[1] - x[1]).slice(0, 10).map(([id, v]) => {
+  const topT = Object.entries(tr).sort((x, y) => y[1] - x[1]).slice(0, 15).map(([id, v]) => {
     const m = H.m[id] || []; return { id, uri: 'spotify:track:' + id, n: m[0] || '', a: m[1] || '', img: m[3] || '', ms: Math.round(v) }; });
   const topA = Object.entries(ar).sort((x, y) => y[1] - x[1]).slice(0, 10).map(([n, v]) => ({ n, ms: Math.round(v) }));
-  return { ms: Math.round(ms), topT, topA };
+  return { ms: Math.round(ms), topT, topA, plays, uniq: Object.keys(tr).length, hours: hours.map(Math.round) };
+}
+/* 오늘(또는 어제)까지 연속으로 들은 날 */
+function myStreak(){
+  let d = startOfDay(new Date()), n = 0;
+  if (!(H.d[dayKey(d)] && H.d[dayKey(d)].t > 60000)) d = addDays(d, -1);
+  while (H.d[dayKey(d)] && H.d[dayKey(d)].t > 60000 && n < 400) { n++; d = addDays(d, -1); }
+  return n;
+}
+/* 최근 들은 곡 (들은 시각 순, 최근 30곡) */
+function myRecent(){
+  const out = [];
+  for (const d of lastDays(4).reverse()) {
+    const r = H.d[dayKey(d)]; if (!r || !r.lg) continue;
+    for (let i = r.lg.length - 1; i >= 0 && out.length < 30; i--) {
+      const [id, at, ms] = r.lg[i]; if (ms < 20000) continue;
+      const m = H.m[id] || [];
+      out.push({ id, n: m[0] || '', a: m[1] || '', img: m[3] || '', at: Math.round(at), ms: Math.round(ms) });
+    }
+    if (out.length >= 30) break;
+  }
+  return out;
 }
 /* 내 기록 요약 (친구에게 올리는 것과 같은 모양) */
 async function myStats(){
   const today = startOfDay(new Date());
   const tops = await myTops();
-  const w = aggDays(weekDays()), d = aggDays([today]);
+  const w = aggDays(weekDays()), d = aggDays([today]), mo = aggDays(monthDays()), d30 = aggDays(lastDays(30));
   const days7 = []; for (let k = 6; k >= 0; k--) { const r = H.d[dayKey(addDays(today, -k))]; days7.push(Math.round(r ? r.t : 0)); }
-  const stats = { day: dayKey(today), week: dayKey(weekDays()[0]), todayMs: d.ms, weekMs: w.ms, days7,
-              todayTopT: d.topT.slice(0, 5), weekTopT: w.topT, weekTopA: w.topA,
-              artists: tops.artists, ids: tops.ids,
-              favs: tops.ids.slice(0, 10).map(id => { const t = tops.meta[id]; return { id, uri: t.uri, n: t.name, a: t.artists.join(', '), img: t.thumb }; }) };
+  const mon = weekDays()[0], weeks4 = [];
+  for (let k = 3; k >= 0; k--) { const a = addDays(mon, -7 * k), ds = []; for (let j = 0; j < 7; j++) { const x = addDays(a, j); if (x <= today) ds.push(x); } weeks4.push(aggDays(ds).ms); }
+  const stats = { day: dayKey(today), week: dayKey(mon), month: dayKey(monthDays()[0]),
+              todayMs: d.ms, weekMs: w.ms, monthMs: mo.ms, d30Ms: d30.ms, days7, weeks4,
+              todayPlays: d.plays, weekPlays: w.plays, monthPlays: mo.plays, weekUniq: w.uniq,
+              hours: d30.hours, streak: myStreak(), recent: myRecent(),
+              todayTopT: d.topT.slice(0, 5), weekTopT: w.topT, weekTopA: w.topA, monthTopA: mo.topA.slice(0, 8),
+              artists: tops.artists, ids: tops.ids, genres: tops.genres, arts: tops.arts,
+              favs: tops.ids.slice(0, 15).map(id => { const t = tops.meta[id]; return { id, uri: t.uri, n: t.name, a: t.artists.join(', '), img: t.thumb }; }) };
   FR.myStats = stats;
   return stats;
 }
@@ -3718,16 +3815,20 @@ const meDoc = () => { const d = FR.users.find(u => me && u.id === me.id) || { id
 const isLive = u => u.now && u.now.playing && Date.now() - (u.nowAt || 0) < 150000;
 const ago = ts => { const s = Math.max(0, (Date.now() - ts) / 1000);
   return s < 60 ? '방금' : s < 3600 ? Math.floor(s / 60) + '분 전' : s < 86400 ? Math.floor(s / 3600) + '시간 전' : Math.floor(s / 86400) + '일 전'; };
-function statOf(u, key){             // 오늘/이번 주 값이 지난 날짜 것이면 0
-  const s = u.stats; if (!s) return 0;
+function statOf(u, key){             // 지난 날짜·주·달 값이면 0 (나는 기기 기록을 바로 써요)
+  const s = me && u.id === me.id && FR.myStats ? FR.myStats : u.stats; if (!s) return 0;
   const today = dayKey(startOfDay(new Date()));
-  if (key === 'todayMs') return s.day === today ? s.todayMs || 0 : 0;
-  if (key === 'weekMs') return s.week === dayKey(weekDays()[0]) ? s.weekMs || 0 : 0;
-  return 0;
+  if (/^today/.test(key)) return s.day === today ? s[key] || 0 : 0;
+  if (/^week/.test(key)) return s.week === dayKey(weekDays()[0]) ? s[key] || 0 : 0;
+  if (/^month/.test(key)) return s.month === dayKey(monthDays()[0]) ? s[key] || 0 : 0;
+  if (key === 'streak') { const lag = s.day ? Math.round((startOfDay(new Date()) - startOfDay(new Date(s.day + 'T00:00:00'))) / 864e5) : 9; return lag <= 1 ? s.streak || 0 : 0; }
+  return s[key] || 0;
 }
-/* 취향 궁합: 많이 들은 아티스트(순위 가중치)와 곡이 얼마나 겹치는지 */
+const statsOf = u => (me && u.id === me.id && FR.myStats) ? FR.myStats : u.stats;
+const cosine = (a, b) => { let d = 0, x = 0, y = 0; for (let i = 0; i < a.length; i++) { d += a[i] * b[i]; x += a[i] * a[i]; y += b[i] * b[i]; } return x && y ? d / Math.sqrt(x * y) : null; };
+/* 취향 궁합: 아티스트(순위 가중치) 중심 + 장르·곡·시간대 */
 function match(a, b){
-  const sa = a.stats, sb = b.stats;
+  const sa = statsOf(a), sb = statsOf(b);
   if (!sa || !sb) return null;
   const art = s => { const m = new Map();
     (s.artists || []).forEach((n, i) => m.set(n.toLowerCase(), Math.max(m.get(n.toLowerCase()) || 0, 1 / Math.sqrt(i + 1))));
@@ -3740,10 +3841,49 @@ function match(a, b){
   for (const v of B.values()) nb += v * v;
   const cos = dot / Math.sqrt(na * nb);
   const ia = new Set(sa.ids || []), sharedT = (sb.ids || []).filter(id => ia.has(id));
-  const score = Math.round(Math.min(99, 100 * (1 - Math.pow(1 - Math.min(1, cos * 1.25 + sharedT.length * 0.02), 1.6))));
+  // 장르
+  let gScore = null, sharedG = [];
+  if ((sa.genres || []).length && (sb.genres || []).length) {
+    const ga = new Map(sa.genres.map(g => [g.n, g.w])), gb = new Map(sb.genres.map(g => [g.n, g.w]));
+    const keys = [...new Set([...ga.keys(), ...gb.keys()])];
+    const c = cosine(keys.map(k => ga.get(k) || 0), keys.map(k => gb.get(k) || 0));
+    gScore = c == null ? null : Math.round(c * 100);
+    sharedG = keys.filter(k => ga.has(k) && gb.has(k)).sort((p, q) => (gb.get(q) + ga.get(q)) - (gb.get(p) + ga.get(p)));
+  }
+  // 시간대
+  const hc = (sa.hours && sb.hours) ? cosine(sa.hours, sb.hours) : null;
+  const hScore = hc == null ? null : Math.round(hc * 100);
+  const base = Math.min(1, cos * 1.25 + sharedT.length * 0.02 + (gScore != null ? gScore / 100 * 0.15 : 0));
+  const score = Math.round(Math.min(99, 100 * (1 - Math.pow(1 - base, 1.6))));
   const names = new Map(); [...(sa.artists || []), ...(sb.artists || []), ...(sa.weekTopA || []).map(x => x.n), ...(sb.weekTopA || []).map(x => x.n)].forEach(n => names.set(n.toLowerCase(), n));
-  return { score: Math.max(score, shared.length ? 5 : 0), artists: shared.sort((x, y) => y[1] - x[1]).map(([k]) => names.get(k) || k), ids: sharedT };
+  return { score: Math.max(score, shared.length ? 5 : 0), artists: shared.sort((x, y) => y[1] - x[1]).map(([k]) => names.get(k) || k), ids: sharedT,
+           art: Math.round(Math.min(1, cos * 1.25) * 100), genre: gScore, hour: hScore, genres: sharedG };
 }
+const HOUR_NAMES = [[0, 5, '새벽'], [6, 11, '아침'], [12, 17, '낮'], [18, 21, '저녁'], [22, 23, '밤']];
+function peakTime(hours){
+  if (!hours || !hours.some(Boolean)) return '';
+  const bins = HOUR_NAMES.map(([a, b, n]) => [n, hours.slice(a, b + 1).reduce((x, y) => x + y, 0) / (b - a + 1)]);
+  bins.sort((p, q) => q[1] - p[1]);
+  const top = hours.indexOf(Math.max(...hours));
+  return `주로 ${bins[0][0]}에 들어요 · 가장 많이 듣는 시간 ${top}시`;
+}
+/* 모두가 들은 곡·아티스트 합치기 */
+function friendsAgg(){
+  const T = new Map(), A = new Map(), all = [meDoc(), ...others()];
+  for (const u of all) {
+    const s = statsOf(u); if (!s || s.week !== dayKey(weekDays()[0])) continue;
+    (s.weekTopT || []).forEach(t => { const e = T.get(t.id) || { t, ms: 0, who: [] }; e.ms += t.ms || 0; if (!e.who.includes(u)) e.who.push(u); if (!e.t.img && t.img) e.t = t; T.set(t.id, e); });
+    (s.weekTopA || []).forEach(a => { const e = A.get(a.n) || { n: a.n, ms: 0, who: [] }; e.ms += a.ms || 0; if (!e.who.includes(u)) e.who.push(u); A.set(a.n, e); });
+  }
+  const byScore = (p, q) => (q.who.length - p.who.length) || (q.ms - p.ms);
+  return { tracks: [...T.values()].sort(byScore).slice(0, 15), artists: [...A.values()].sort(byScore).slice(0, 10) };
+}
+function friendsFeed(){
+  const out = [];
+  for (const u of others()) { const s = u.stats; if (!s) continue; (s.recent || []).forEach(r => out.push({ u, r })); }
+  return out.sort((p, q) => q.r.at - p.r.at);
+}
+const avStack = (who, max = 4) => `<span class="avs">${who.slice(0, max).map(u => avatar(u, 'sm')).join('')}${who.length > max ? `<em>+${who.length - max}</em>` : ''}</span>`;
 const avatar = (u, cls = '') => u.img ? `<img class="fAva ${cls}" src="${esc(u.img)}" alt="">`
   : `<span class="fAva ${cls} noimg">${esc((u.name || '?').slice(0, 1))}</span>`;
 const toTrack = x => ({ id: x.id, uri: x.uri || 'spotify:track:' + x.id, name: x.n || x.name || '', artists: (x.a || '').split(', ').filter(Boolean),
@@ -3792,31 +3932,58 @@ function renderFriMain(box){
   const us = others();
   const live = us.filter(u => u.now).sort((a, b) => (isLive(b) - isLive(a)) || ((b.nowAt || 0) - (a.nowAt || 0)));
   const all = [meDoc(), ...us];
-  const key = FR.rank === 'today' ? 'todayMs' : 'weekMs';
-  const ranked = all.map(u => ({ u, ms: me && u.id === me.id ? (SET.shStats ? (key === 'todayMs' ? aggDays([startOfDay(new Date())]).ms : aggDays(weekDays()).ms) : statOf(u, key)) : statOf(u, key) }))
-    .sort((a, b) => b.ms - a.ms);
-  const maxMs = Math.max(1, ...ranked.map(r => r.ms));
-  const mine = { ...meDoc(), stats: meDoc().stats };
+  const per = FR.rank, by = FR.rankBy || 'time';
+  const key = per + (by === 'time' ? 'Ms' : 'Plays');
+  const ranked = all.map(u => ({ u, v: statOf(u, key), streak: statOf(u, 'streak') })).sort((a, b) => b.v - a.v);
+  const maxV = Math.max(1, ...ranked.map(r => r.v));
+  const fmtV = v => by === 'time' ? (v ? fmtDur(v) : '—') : (v ? v + '번' : '—');
+  const mine = meDoc();
   const matches = us.map(u => ({ u, m: match(mine, u) })).filter(x => x.m).sort((a, b) => b.m.score - a.m.score);
+  const ag = friendsAgg(); FR.aggT = ag.tracks.map(e => toTrack(e.t));
+  const feed = friendsFeed(); FR.feed = feed;
+  const feedN = FR.feedMore ? 60 : 12;
+  const weekAll = all.reduce((x, u) => x + statOf(u, 'weekMs'), 0);
+  const top = ranked.slice().sort((a, b) => statOf(b.u, 'weekMs') - statOf(a.u, 'weekMs'))[0];
+  const stk = ranked.slice().sort((a, b) => b.streak - a.streak)[0];
+  const liveN = us.filter(isLive).length;
   const err = FR.err && !FR.loaded ? `<div class="fEmpty">친구 정보를 불러오지 못했어요.<br>${esc(friErrHint(FR.err))}<br><button class="pill" data-fa="reload">다시 시도</button></div>` : '';
+  const seg = (id, attr, items, cur) => `<div class="seg" id="${id}"><span class="ind"></span>${items.map(([v, l]) => `<button ${attr}="${v}"${v === cur ? ' class="on"' : ''}>${l}</button>`).join('')}</div>`;
   box.innerHTML =
     `<header class="spHead fHead"><div><p class="spKicker fk"><i></i>Luma 친구 · ${all.length}명</p><h1>친구</h1></div>
       <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></header>` + err +
     (!FR.loaded && !err ? '<div class="spin"></div>' : '') +
     (FR.loaded ? `
+    <div class="stTiles fTiles">
+      <div class="stTile big"><span class="lbl">이번 주 우리 모두</span><b>${fmtDur(weekAll)}</b><span class="sub">${all.length}명이 들은 시간</span></div>
+      <div class="stTile"><span class="lbl">지금 듣는 친구</span><b>${liveN}명</b><span class="sub">${liveN ? esc(us.filter(isLive).map(u => u.name).join(', ')) : '조용해요'}</span></div>
+      <div class="stTile wrap"><span class="lbl">이번 주 1등</span><b>${top && statOf(top.u, 'weekMs') ? esc(top.u.name) : '—'}</b><span class="sub">${top && statOf(top.u, 'weekMs') ? fmtDur(statOf(top.u, 'weekMs')) : ''}</span></div>
+      <div class="stTile wrap"><span class="lbl">연속 기록</span><b>${stk && stk.streak ? '🔥 ' + esc(stk.u.name) : '—'}</b><span class="sub">${stk && stk.streak ? stk.streak + '일 연속 들었어요' : ''}</span></div>
+    </div>
     <section class="spSec"><h2 class="sec">지금 듣는 중</h2>
       ${live.length ? `<div class="fNow">${live.map((u, i) => friNowCard(u, i)).join('')}</div>`
         : `<div class="fEmpty sm">${us.length ? '지금 듣고 있는 친구가 없어요' : '아직 친구가 없어요. Luma에 로그인한 친구가 자동으로 여기에 나와요.'}</div>`}
     </section>
+    ${feed.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">최근 활동</h2>${feed.length > 12 ? `<button class="link" data-fa="feedmore">${FR.feedMore ? '접기' : '더 보기'}</button>` : ''}</div>
+      <div class="fFeed">${feed.slice(0, feedN).map((x, i) => `<button class="fFi" data-ffi="${i}" style="--i:${Math.min(i, 14)}">${avatar(x.u, 'sm')}
+        ${x.r.img ? `<img src="${esc(x.r.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}
+        <span class="m"><b>${esc(x.r.n)}</b><small>${esc(x.u.name)} · ${esc(x.r.a)}</small></span><span class="w">${ago(x.r.at)}<small>${fmtSec(x.r.ms)}</small></span></button>`).join('')}</div></section>` : ''}
     <section class="spSec"><div class="secHead"><h2 class="sec">친구 순위표</h2>
-      <div class="seg" id="fRankSeg"><span class="ind"></span><button data-fr="today"${FR.rank === 'today' ? ' class="on"' : ''}>오늘</button><button data-fr="week"${FR.rank === 'week' ? ' class="on"' : ''}>이번 주</button></div></div>
+      <div class="segs">${seg('fRankSeg', 'data-fr', [['today', '오늘'], ['week', '이번 주'], ['month', '이번 달']], per)}${seg('fBySeg', 'data-fby', [['time', '시간'], ['plays', '재생 횟수']], by)}</div></div>
       <div class="fRank">${ranked.map((r, i) => `<button class="fRk${me && r.u.id === me.id ? ' me' : ''}" data-fu="${esc(r.u.id)}" style="--i:${i}">
-        <span class="n">${i === 0 && r.ms ? '👑' : i + 1}</span>${avatar(r.u)}<span class="nm">${esc(r.u.name || '')}${me && r.u.id === me.id ? ' <small>나</small>' : ''}</span>
-        <span class="v">${r.ms ? fmtDur(r.ms) : '—'}</span><span class="bar"><i style="width:${Math.max(r.ms ? 2 : 0, r.ms / maxMs * 100)}%"></i></span></button>`).join('')}</div>
+        <span class="n">${i === 0 && r.v ? '👑' : i + 1}</span>${avatar(r.u)}<span class="nm">${esc(r.u.name || '')}${me && r.u.id === me.id ? ' <small>나</small>' : ''}${r.streak > 1 ? ` <em class="stk">🔥${r.streak}일</em>` : ''}</span>
+        <span class="v">${fmtV(r.v)}</span><span class="bar"><i style="width:${Math.max(r.v ? 2 : 0, r.v / maxV * 100)}%"></i></span></button>`).join('')}</div>
     </section>
+    ${ag.tracks.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">이번 주 우리가 많이 들은 곡</h2><button class="link" data-fa="playagg">전체 재생</button></div>
+      <div class="fAgg">${ag.tracks.map((e, i) => `<button class="fAr" data-fag="${i}" style="--i:${Math.min(i, 14)}"><span class="rk">${i + 1}</span>
+        ${e.t.img ? `<img src="${esc(e.t.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}
+        <span class="m"><b>${esc(e.t.n)}</b><small>${esc(e.t.a)}</small></span>${avStack(e.who)}<span class="v">${fmtDur(e.ms)}</span></button>`).join('')}</div></section>` : ''}
+    ${ag.artists.length ? `<section class="spSec"><h2 class="sec">이번 주 우리가 많이 들은 아티스트</h2>
+      <div class="stCard">${ag.artists.map((a, i) => `<div class="hb fHb" style="--i:${i}"><span class="n"><span class="rkN">${i + 1}</span>${esc(a.n)} ${avStack(a.who, 5)}</span><span class="v">${fmtDur(a.ms)}</span>
+        <span class="trackbar"><i style="width:${a.ms / ag.artists[0].ms * 100}%"></i></span></div>`).join('')}</div></section>` : ''}
     <section class="spSec"><h2 class="sec">취향 궁합</h2>
       ${matches.length ? `<div class="fMatch">${matches.map((x, i) => `<button class="fMc" data-fu="${esc(x.u.id)}" style="--i:${i}">${avatar(x.u, 'lg')}
-        <div class="mi"><b>${esc(x.u.name)}</b><small>${x.m.artists.length ? '같이 좋아하는: ' + esc(x.m.artists.slice(0, 3).join(', ')) : '겹치는 아티스트가 아직 없어요'}</small></div>
+        <div class="mi"><b>${esc(x.u.name)}</b><small>${x.m.artists.length ? '같이 좋아하는: ' + esc(x.m.artists.slice(0, 3).join(', ')) : '겹치는 아티스트가 아직 없어요'}</small>
+        <span class="mini">아티스트 ${x.m.art}%${x.m.genre != null ? ` · 장르 ${x.m.genre}%` : ''}${x.m.hour != null ? ` · 시간대 ${x.m.hour}%` : ''}${x.m.ids.length ? ` · 겹치는 곡 ${x.m.ids.length}` : ''}</span></div>
         <span class="pct" style="--p:${x.m.score}"><b>${x.m.score}</b>%</span></button>`).join('')}</div>`
         : `<div class="fEmpty sm">${us.length ? '궁합을 계산할 기록이 아직 없어요. 노래를 조금 더 들으면 나와요.' : '친구가 생기면 취향 궁합을 보여 줘요.'}</div>`}
     </section>
@@ -3827,7 +3994,7 @@ function renderFriMain(box){
         ${FR.lists.map((l, i) => friListCard(l, i)).join('')}
       </div>
     </section>` : '');
-  requestAnimationFrame(() => { const sg = $('fRankSeg'); if (sg) placeSeg(sg); });
+  requestAnimationFrame(() => ['fRankSeg', 'fBySeg'].forEach(id => { const sg = $(id); if (sg) placeSeg(sg); }));
 }
 function friNowCard(u, i){
   const n = u.now, live = isLive(u);
@@ -3857,45 +4024,89 @@ function backBar(label){ return `<button class="back" data-fa="back"><svg class=
 
 /* 친구 한 명과 비교 */
 function renderFriend(box){
-  const u = FR.users.find(x => x.id === FR.fid);
+  const u = FR.users.find(x => x.id === FR.fid) || (me && FR.fid === me.id ? meDoc() : null);
   if (!u) { FR.page = 'main'; return renderFriMain(box); }
   const mine = meDoc(), isMe = me && u.id === me.id;
-  const myToday = aggDays([startOfDay(new Date())]).ms, myWeek = aggDays(weekDays()).ms;
-  const fT = statOf(u, 'todayMs'), fW = statOf(u, 'weekMs');
+  const ms = statsOf(mine) || {}, s = statsOf(u) || {};
   const m = isMe ? null : match(mine, u);
-  const s = u.stats || {};
   const today = startOfDay(new Date());
   const my7 = []; for (let k = 6; k >= 0; k--) { const r = H.d[dayKey(addDays(today, -k))]; my7.push(r ? r.t : 0); }
-  // 친구 7일: 올린 날 기준으로 오늘까지 밀어 맞춰요
+  // 친구 값은 올린 날 기준이라 오늘까지 밀어서 맞춰요
+  const lagDays = s.day ? Math.round((today - startOfDay(new Date(s.day + 'T00:00:00'))) / 864e5) : 0;
   let f7 = (s.days7 || []).slice();
-  if (s.day) { const lag = Math.round((today - startOfDay(new Date(s.day + 'T00:00:00'))) / 864e5); if (lag > 0) f7 = f7.slice(lag).concat(Array(Math.min(7, lag)).fill(0)); }
+  if (lagDays > 0) f7 = f7.slice(lagDays).concat(Array(Math.min(7, lagDays)).fill(0));
   while (f7.length < 7) f7.unshift(0);
-  const mx = Math.max(1, ...my7, ...f7);
+  const lagW = Math.round(lagDays / 7);
+  let f4 = (s.weeks4 || []).slice(); if (lagW > 0) f4 = f4.slice(lagW).concat(Array(Math.min(4, lagW)).fill(0)); while (f4.length < 4) f4.unshift(0);
+  const m4 = (ms.weeks4 || [0, 0, 0, 0]).slice(-4);
   const both = m && m.ids.length ? m.ids.map(id => (FR.tops && FR.tops.meta[id]) || null).filter(Boolean) : [];
   FR.both = both;
-  const fav = (s.weekTopT && s.weekTopT.length ? s.weekTopT : s.favs || []).map(toTrack);
-  FR.fav = fav;
-  const cmp = (label, a, b) => { const M = Math.max(1, a, b);
+  const fav = (s.weekTopT && s.weekTopT.length ? s.weekTopT : s.favs || []).map(toTrack); FR.fav = fav;
+  const favAll = (s.favs || []).map(toTrack); FR.favAll = favAll;
+  const rec = (s.recent || []); FR.urec = rec.map(toTrack);
+  const cmp = (label, a, b, fmt = fmtDur) => { const M = Math.max(1, a, b);
     return `<div class="fCmp"><span class="l">${label}</span>
-      <span class="r me"><em>나</em><span class="b"><i style="width:${a / M * 100}%"></i></span><b>${a ? fmtDur(a) : '—'}</b></span>
-      <span class="r fr"><em>${esc(u.name)}</em><span class="b"><i style="width:${b / M * 100}%"></i></span><b>${b ? fmtDur(b) : '—'}</b></span></div>`; };
+      <span class="r me"><em>나</em><span class="b"><i style="width:${a / M * 100}%"></i></span><b>${a ? fmt(a) : '—'}</b></span>
+      <span class="r fr"><em>${esc(u.name)}</em><span class="b"><i style="width:${b / M * 100}%"></i></span><b>${b ? fmt(b) : '—'}</b></span></div>`; };
+  const bars = (labels, a, b) => { const mx = Math.max(1, ...a, ...b);
+    return `<div class="f7" style="grid-template-columns:repeat(${labels.length},1fr)">${labels.map((l, k) =>
+      `<div class="c"><div class="bars">${isMe ? '' : `<i class="me" style="height:${a[k] / mx * 100}%" title="나 ${fmtDur(a[k])}"></i>`}<i class="fr" style="height:${b[k] / mx * 100}%" title="${esc(u.name)} ${fmtDur(b[k])}"></i></div><span>${l}</span></div>`).join('')}</div>`; };
+  const hoursChart = () => {
+    const mh = ms.hours || Array(24).fill(0), fh = s.hours || Array(24).fill(0);
+    const mx = Math.max(1, ...mh, ...fh), W = 480, Hh = 120, step = W / 23;
+    const path = arr => arr.map((v, i) => `${i ? 'L' : 'M'}${(i * step).toFixed(1)},${(Hh - v / mx * (Hh - 8)).toFixed(1)}`).join('');
+    return `<div class="fHours"><svg viewBox="0 -4 ${W} ${Hh + 8}" preserveAspectRatio="none">
+      ${[0, 6, 12, 18, 23].map(h => `<line x1="${h * step}" x2="${h * step}" y1="0" y2="${Hh}" class="g"/>`).join('')}
+      ${isMe ? '' : `<path d="${path(mh)}" class="me"/>`}<path d="${path(fh)}" class="fr"/></svg>
+      <div class="hl"><span>0시</span><span>6시</span><span>12시</span><span>18시</span><span>23시</span></div></div>`;
+  };
+  const tile = (lbl, v, sub) => `<div class="stTile"><span class="lbl">${lbl}</span><b>${v}</b>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
+  const genres = s.genres || [];
+  const myG = new Set((ms.genres || []).map(g => g.n));
   box.innerHTML = backBar() +
     `<header class="fPHead">${avatar(u, 'xl')}<div><h1>${esc(u.name)}${isMe ? ' <small>나</small>' : ''}</h1>
       <p>${u.now ? (isLive(u) ? '<i class="eq"><i></i><i></i><i></i></i>지금 ' : ago(u.nowAt || 0) + ' · ') + esc(u.now.n) + ' — ' + esc(u.now.a) : '최근 들은 곡 정보가 없어요'}</p>
-      ${u.now ? `<button class="playall" data-fl="${esc(u.id)}"><svg class="ic"><use href="#i-play"/></svg>${isLive(u) ? '같이 듣기' : '이 곡 듣기'}</button>` : ''}</div>
+      ${s.hours ? `<p class="fPeak">${esc(peakTime(s.hours))}</p>` : ''}
+      ${u.now && !isMe ? `<button class="playall" data-fl="${esc(u.id)}"><svg class="ic"><use href="#i-play"/></svg>${isLive(u) ? '같이 듣기' : '이 곡 듣기'}</button>` : ''}</div>
       ${m ? `<span class="pct big" style="--p:${m.score}"><b>${m.score}</b>%<small>취향 궁합</small></span>` : ''}</header>` +
-    (u.stats ? '' : '<div class="fEmpty sm">이 친구는 재생 기록을 공유하지 않고 있어요.</div>') +
-    (isMe ? '' : `<section class="spSec"><h2 class="sec">재생 시간 비교</h2><div class="fCmps">${cmp('오늘', myToday, fT)}${cmp('이번 주', myWeek, fW)}</div>
-      <div class="f7">${my7.map((v, k) => { const d = addDays(today, k - 6);
-        return `<div class="c"><div class="bars"><i class="me" style="height:${v / mx * 100}%" title="나 ${fmtDur(v)}"></i><i class="fr" style="height:${f7[k] / mx * 100}%" title="${esc(u.name)} ${fmtDur(f7[k])}"></i></div><span>${k === 6 ? '오늘' : WD[d.getDay()]}</span></div>`; }).join('')}</div>
+    (statsOf(u) ? '' : '<div class="fEmpty sm">이 친구는 재생 기록을 공유하지 않고 있어요.</div>') +
+    (statsOf(u) ? `<div class="stTiles fTiles">
+      ${tile('이번 주', fmtDur(statOf(u, 'weekMs')), statOf(u, 'weekPlays') ? `${statOf(u, 'weekPlays')}번 재생 · ${statOf(u, 'weekUniq')}곡` : '')}
+      ${tile('이번 달', fmtDur(statOf(u, 'monthMs')), statOf(u, 'monthPlays') ? statOf(u, 'monthPlays') + '번 재생' : '')}
+      ${tile('최근 30일', fmtDur(s.d30Ms || 0), s.d30Ms ? '하루 평균 ' + fmtDur(s.d30Ms / 30) : '')}
+      ${tile('연속으로 들은 날', statOf(u, 'streak') ? '🔥 ' + statOf(u, 'streak') + '일' : '—', !isMe && u.statsAt ? '기록 ' + ago(u.statsAt) : '')}
+    </div>` : '') +
+    (m ? `<section class="spSec"><h2 class="sec">궁합 자세히</h2><div class="fParts">
+      ${[['아티스트', m.art, `겹치는 아티스트 ${m.artists.length}명`], ['장르', m.genre, m.genres.length ? m.genres.slice(0, 3).join(', ') : '장르 정보가 없어요'],
+         ['듣는 시간대', m.hour, m.hour != null ? (m.hour >= 70 ? '비슷한 시간에 들어요' : '듣는 시간이 달라요') : '기록이 부족해요'],
+         ['겹치는 곡', m.ids.length ? Math.min(100, m.ids.length * 10) : 0, `둘 다 많이 듣는 곡 ${m.ids.length}곡`]].map(([l, v, sub], i) =>
+        `<div class="fPart" style="--i:${i}"><span class="l">${l}</span><b>${l === '겹치는 곡' ? m.ids.length + '곡' : v == null ? '—' : v + '%'}</b>${l === '겹치는 곡' ? '' : `<span class="b"><i style="width:${v || 0}%"></i></span>`}<small>${esc(sub)}</small></div>`).join('')}
+    </div></section>` : '') +
+    (isMe || !statsOf(u) ? '' : `<section class="spSec"><h2 class="sec">재생 시간 비교</h2><div class="fCmps">${cmp('오늘', statOf(mine, 'todayMs'), statOf(u, 'todayMs'))}${cmp('이번 주', statOf(mine, 'weekMs'), statOf(u, 'weekMs'))}${cmp('이번 달', statOf(mine, 'monthMs'), statOf(u, 'monthMs'))}${cmp('이번 주 재생 횟수', statOf(mine, 'weekPlays'), statOf(u, 'weekPlays'), v => v + '번')}</div>
+      <h3 class="fSub">최근 7일</h3>${bars(my7.map((_, k) => k === 6 ? '오늘' : WD[addDays(today, k - 6).getDay()]), my7, f7)}
+      <h3 class="fSub">최근 4주</h3>${bars(['3주 전', '2주 전', '지난주', '이번 주'], m4, f4)}
       <div class="fLeg"><span><i class="me"></i>나</span><span><i class="fr"></i>${esc(u.name)}</span></div></section>`) +
+    (s.hours && s.hours.some(Boolean) ? `<section class="spSec"><h2 class="sec">듣는 시간대 (최근 30일)</h2>${hoursChart()}
+      ${isMe ? '' : `<div class="fLeg"><span><i class="me"></i>나 · ${esc(peakTime(ms.hours) || '기록 없음')}</span><span><i class="fr"></i>${esc(u.name)} · ${esc(peakTime(s.hours))}</span></div>`}</section>` : '') +
+    (genres.length ? `<section class="spSec"><h2 class="sec">${isMe ? '내가' : esc(u.name) + '님이'} 좋아하는 장르</h2>
+      <div class="fChips">${genres.slice(0, 15).map(g => `<span class="${!isMe && myG.has(g.n) ? 'both' : ''}">${esc(g.n)}</span>`).join('')}</div>
+      ${!isMe && m && m.genres.length ? '<p class="fNote">테두리가 있는 장르는 나도 좋아하는 장르예요</p>' : ''}</section>` : '') +
     (m ? `<section class="spSec"><h2 class="sec">같이 좋아하는 아티스트</h2>
-      ${m.artists.length ? `<div class="fChips">${m.artists.slice(0, 16).map(a => `<span>${esc(a)}</span>`).join('')}</div>` : '<div class="fEmpty sm">아직 겹치는 아티스트가 없어요</div>'}</section>` : '') +
+      ${m.artists.length ? `<div class="fChips">${m.artists.slice(0, 20).map(a => `<span>${esc(a)}</span>`).join('')}</div>` : '<div class="fEmpty sm">아직 겹치는 아티스트가 없어요</div>'}</section>` : '') +
+    ((s.arts || []).length ? `<section class="spSec"><h2 class="sec">${isMe ? '내가' : esc(u.name) + '님이'} 요즘 많이 듣는 아티스트</h2>
+      <div class="fArts">${s.arts.slice(0, 12).map((a, i) => `<div class="fArt" style="--i:${i}">${a.img ? `<img src="${esc(a.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}<b>${esc(a.n)}</b><small>${i + 1}위</small></div>`).join('')}</div></section>` : '') +
+    (rec.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">최근 들은 곡</h2><button class="link" data-fa="playrec">전체 재생</button></div>
+      <div class="fFeed">${rec.slice(0, FR.recMore ? 30 : 10).map((r, i) => `<button class="fFi" data-fri="${i}" style="--i:${Math.min(i, 14)}">
+        ${r.img ? `<img src="${esc(r.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}
+        <span class="m"><b>${esc(r.n)}</b><small>${esc(r.a)}</small></span><span class="w">${ago(r.at)}<small>${fmtSec(r.ms)}</small></span></button>`).join('')}</div>
+      ${rec.length > 10 ? `<button class="more" data-fa="recmore">${FR.recMore ? '접기' : '더 보기'}</button>` : ''}</section>` : '') +
     (both.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">둘 다 많이 듣는 곡</h2><button class="link" data-fa="playboth">전체 재생</button></div>
       <div class="tracks" data-fsrc="both">${both.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
     (fav.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">${s.weekTopT && s.weekTopT.length ? (isMe ? '내가' : esc(u.name) + '님이') + ' 이번 주 많이 들은 곡' : (isMe ? '내가' : esc(u.name) + '님이') + ' 요즘 많이 듣는 곡'}</h2><button class="link" data-fa="playfav">전체 재생</button></div>
       <div class="tracks" data-fsrc="fav">${fav.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
-    (s.weekTopA && s.weekTopA.length ? `<section class="spSec"><h2 class="sec">이번 주 많이 들은 아티스트</h2><div class="stCard">${s.weekTopA.slice(0, 8).map((a, i) =>
+    (s.weekTopT && s.weekTopT.length && favAll.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">${isMe ? '내가' : esc(u.name) + '님이'} 최근 몇 달 많이 들은 곡</h2><button class="link" data-fa="playfavall">전체 재생</button></div>
+      <div class="tracks" data-fsrc="favall">${favAll.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
+    (s.weekTopA && s.weekTopA.length ? `<section class="spSec"><h2 class="sec">이번 주 많이 들은 아티스트</h2><div class="stCard">${s.weekTopA.slice(0, 10).map((a, i) =>
       `<div class="hb" style="--i:${i}"><span class="n"><span class="rkN">${i + 1}</span>${esc(a.n)}</span><span class="v">${fmtDur(a.ms)}</span><span class="trackbar"><i style="width:${a.ms / s.weekTopA[0].ms * 100}%"></i></span></div>`).join('')}</div></section>` : '');
   markPlaying();
 }
@@ -4075,6 +4286,11 @@ function bindFri(){
       if (a === 'new') return friGo('new');
       if (a === 'share') return friGo('share');
       if (a === 'create') return friCreate($('fNewName').value);
+      if (a === 'feedmore') { FR.feedMore = !FR.feedMore; return renderFri(true); }
+      if (a === 'recmore') { FR.recMore = !FR.recMore; return renderFri(true); }
+      if (a === 'playagg') return FR.aggT && FR.aggT.length && playList(FR.aggT, 0, '이번 주 우리가 많이 들은 곡');
+      if (a === 'playrec') return FR.urec && FR.urec.length && playList(FR.urec, 0, '친구가 최근 들은 곡');
+      if (a === 'playfavall') return FR.favAll && FR.favAll.length && playList(FR.favAll, 0, '친구가 많이 듣는 곡');
       if (a === 'playboth') return FR.both && FR.both.length && playList(FR.both, 0, '둘 다 많이 듣는 곡');
       if (a === 'playfav') return FR.fav && FR.fav.length && playList(FR.fav, 0, '친구가 많이 듣는 곡');
       const l = FR.lists.find(x => x.id === FR.lid);
@@ -4096,11 +4312,16 @@ function bindFri(){
     const fsh = e.target.closest('[data-fsh]'); if (fsh) return friShareMine(myPlaylists[+fsh.dataset.fsh]);
     const fadd = e.target.closest('[data-fadd]'); if (fadd) return friAddTrack(FR.addRes[+fadd.dataset.fadd]);
     const fr = e.target.closest('[data-fr]'); if (fr) { FR.rank = fr.dataset.fr; return renderFri(true); }
+    const fby = e.target.closest('[data-fby]'); if (fby) { FR.rankBy = fby.dataset.fby; return renderFri(true); }
+    const ffi = e.target.closest('[data-ffi]'); if (ffi) { const list = FR.feed.map(x => toTrack(x.r)); return playList(list, +ffi.dataset.ffi, '친구들의 최근 활동'); }
+    const fag = e.target.closest('[data-fag]'); if (fag) return playList(FR.aggT, +fag.dataset.fag, '이번 주 우리가 많이 들은 곡');
+    const fri = e.target.closest('[data-fri]'); if (fri) return playList(FR.urec, +fri.dataset.fri, '친구가 최근 들은 곡');
     const row = e.target.closest('.trk');
     if (row) {
       const src = row.parentElement.dataset.fsrc, i = +row.dataset.i;
       if (src === 'both') return playList(FR.both, i, '둘 다 많이 듣는 곡');
       if (src === 'fav') return playList(FR.fav, i, '친구가 많이 듣는 곡');
+      if (src === 'favall') return playList(FR.favAll, i, '친구가 많이 듣는 곡');
       if (src === 'list') { const l = FR.lists.find(x => x.id === FR.lid); return playList(FR.listTracks, i, l ? l.name : '같이 만드는 플레이리스트'); }
     }
   });
