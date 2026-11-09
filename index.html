@@ -3700,6 +3700,17 @@ async function friLoadList(id){
   } catch (e) { FR.err = e; return null; }
 }
 
+/* 설정이 덜 된 경우 알기 쉬운 안내 */
+function friErrHint(e){
+  const d = String((e && e.detail) || '') + ' ' + String((e && e.message) || '');
+  if (/OPERATION_NOT_ALLOWED|ADMIN_ONLY/i.test(d)) return 'Firebase에서 Authentication → 로그인 방법 → 익명을 사용 설정해 주세요.';
+  if (/does not exist|NOT_FOUND|database/i.test(d) && e.status === 404) return 'Firebase에서 Firestore 데이터베이스를 만들어 주세요.';
+  if (e && e.status === 403 || /PERMISSION_DENIED/i.test(d)) return 'Firestore의 규칙 탭에 Luma 규칙을 붙여 넣고 게시해 주세요.';
+  if (/API key|API_KEY/i.test(d)) return 'Firebase 설정값(apiKey)을 확인해 주세요.';
+  if (!e || !e.status) return '인터넷 연결을 확인해 주세요.';
+  return '서버 오류 ' + e.status + (e.detail ? ' · ' + e.detail : '');
+}
+
 /* ---------- 계산 ---------- */
 const others = () => FR.users.filter(u => !me || u.id !== me.id);
 const meDoc = () => { const d = FR.users.find(u => me && u.id === me.id) || { id: me ? me.id : '', name: myName(), img: myImg() };
@@ -3787,7 +3798,7 @@ function renderFriMain(box){
   const maxMs = Math.max(1, ...ranked.map(r => r.ms));
   const mine = { ...meDoc(), stats: meDoc().stats };
   const matches = us.map(u => ({ u, m: match(mine, u) })).filter(x => x.m).sort((a, b) => b.m.score - a.m.score);
-  const err = FR.err && !FR.loaded ? `<div class="fEmpty">친구 정보를 불러오지 못했어요 (${esc(String(FR.err.status || '네트워크'))}).<br><button class="pill" data-fa="reload">다시 시도</button></div>` : '';
+  const err = FR.err && !FR.loaded ? `<div class="fEmpty">친구 정보를 불러오지 못했어요.<br>${esc(friErrHint(FR.err))}<br><button class="pill" data-fa="reload">다시 시도</button></div>` : '';
   box.innerHTML =
     `<header class="spHead fHead"><div><p class="spKicker fk"><i></i>Luma 친구 · ${all.length}명</p><h1>친구</h1></div>
       <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></header>` + err +
