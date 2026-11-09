@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "now": {
+      ".read": "auth != null",
+      "$uid": { ".write": "auth != null" }
+    },
+    "t": {
+      "$uid": { ".read": "auth != null", ".write": "auth != null" }
+    }
+  }
+}

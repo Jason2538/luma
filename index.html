@@ -155,6 +155,27 @@ body[data-navdir=r] .view-in{animation-name:viewInR;animation-duration:.5s}
 #tabbar.dragging #tabInd{transition:transform .12s linear,width .2s ease,opacity .2s;background:rgba(255,255,255,.2)}
 #tabbar button.hov{color:var(--fg)}
 #player:not(.open) .pbg{animation-play-state:paused}
+#liveStrip{display:flex;gap:10px;align-items:center;overflow-x:auto;scrollbar-width:none;margin:-6px 0 14px;padding:4px 2px;max-width:100%;touch-action:pan-x pan-y;animation:itemIn .5s var(--ease) both}
+#liveStrip::-webkit-scrollbar{display:none}
+#liveStrip .lsH{flex:none;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#ffcfa6;padding-right:4px}
+.lsC{flex:none;display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border-radius:999px;background:rgba(255,178,122,.1);border:1px solid rgba(255,178,122,.25);max-width:340px;text-align:left;transition:background .25s,scale .3s var(--spring)}
+.lsC:hover{background:rgba(255,178,122,.18)}.lsC:active{scale:.97}
+.lsC.on{background:rgba(255,178,122,.26);border-color:#ffb27a}
+.lsC .fAva{width:28px;height:28px;border:0}
+.lsC>img{width:28px;height:28px;border-radius:6px;object-fit:cover}
+.lsC .m{min-width:0}
+.lsC .m b{display:block;font-size:12.5px;color:#ffcfa6}
+.lsC .m small{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.lsC .go{flex:none;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:#ffb27a;color:#1a1814}
+#folBar{position:absolute;top:calc(26px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 8px;border-radius:999px;
+  background:rgba(255,178,122,.2);border:1px solid rgba(255,178,122,.45);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);font-size:13px;white-space:nowrap;animation:popIn .4s var(--ease) both}
+#folBar[hidden]{display:none}
+#folBar .fAva{width:26px;height:26px;border:0}
+#folBar button{border:0;border-radius:999px;background:rgba(0,0,0,.25);color:var(--fg);font:600 12px var(--font);padding:6px 11px;cursor:pointer}
+body.following #miniBar{box-shadow:0 0 0 1.5px rgba(255,178,122,.7),0 14px 44px rgba(0,0,0,.4)}
+.rtOn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#ffcfa6;margin-bottom:14px}
+.rtOn i{width:7px;height:7px;border-radius:50%;background:#ffb27a;box-shadow:0 0 8px #ffb27a;animation:pulse 1.6s ease-in-out infinite}
+@media (max-width:600px){#folBar{top:calc(80px + env(safe-area-inset-top));font-size:12px}.lsC .m small{max-width:130px}}
 .trk,.pl,.artist,.mix,.mood,.rc{animation:itemIn .65s var(--ease) both;animation-delay:calc(min(var(--i,0),14) * 32ms)}
 @keyframes itemIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 body[data-view=spot] .hero,body[data-view=detail] .hero,body[data-view=set] .hero{display:none}
@@ -939,6 +960,7 @@ a.saveBtn{text-decoration:none}
         <svg class="ic"><use href="#i-search"/></svg>
         <input id="q" type="search" enterkeyhint="search" placeholder="노래나 가수를 검색해 보세요" autocomplete="off" spellcheck="false">
       </div>
+      <section id="liveStrip" hidden aria-label="친구가 지금 듣는 중"></section>
       <div id="results" hidden></div>
       <section id="recSec">
         <h2 class="sec">오늘의 추천 곡</h2>
@@ -1058,6 +1080,7 @@ a.saveBtn{text-decoration:none}
 <section id="player" aria-label="플레이어">
   <div class="pbg on" id="pBgA"></div><div class="pbg" id="pBgB"></div><div id="pShade"></div>
   <button id="closeP" aria-label="플레이어 닫기"><svg class="ic"><use href="#i-close"/></svg></button>
+  <div id="folBar" hidden></div>
   <button id="devBtn" aria-label="기기 선택"><svg class="ic"><use href="#i-dev"/></svg></button>
   <div id="devMenu" hidden></div>
 
@@ -1730,6 +1753,7 @@ function updateMediaSession(){
 }
 function syncUI(){
   updateMediaSession();
+  try { rtNowSoon(); } catch {}
   $('bPlay').classList.toggle('is-playing', !S.paused);
   $('miniPP').classList.toggle('is-playing', !S.paused);
   $('player').classList.toggle('paused', !!S.track && S.paused);
@@ -2032,6 +2056,7 @@ function resumeFresh(){
   return startPlayback(body, t, { pos });
 }
 async function startPlayback(body, hint, opts){
+  if (FOL.uid && !FOL.self) stopFollow(true);
   const seq = ++playSeq;
   player && player.activateElement && player.activateElement();
   const prev = { track: S.track, pos: curPos(), paused: S.paused };
@@ -2131,6 +2156,7 @@ const withDev = p => S.devId ? p + (p.includes('?') ? '&' : '?') + 'device_id=' 
 const afterRemote = () => { if (!S.web) pollSoon(); };
 async function togglePlay(){
   if (!S.track) return;
+  if (FOL.uid && !FOL.self) stopFollow(true);
   player && player.activateElement && player.activateElement();
   const wantPlay = S.paused, t0 = Date.now();
   setPos(curPos(), !S.paused); syncUI();
@@ -2160,6 +2186,7 @@ async function togglePlay(){
   }
 }
 async function skip(dir){
+  if (FOL.uid && !FOL.self) stopFollow(true);
   if (!S.track) return;
   const seq = ++playSeq, from = S.track.uri, dev = S.devId;
   // 목록 안의 곡이면 화면을 먼저 다음 곡으로 바꿔요
@@ -2196,6 +2223,8 @@ async function skip(dir){
 }
 async function seekTo(ms){
   if (!S.track) return;
+  if (FOL.uid && !FOL.self) stopFollow(true);
+  setTimeout(rtNowSoon, 400);
   ms = Math.max(0, Math.min(ms, S.dur - 300));
   setPos(ms);
   try {
@@ -3861,6 +3890,8 @@ async function pushStats(force){
 function friTick(){                         // 5초마다: 바뀐 게 있으면 올리기
   if (!friOn() || document.hidden && !S.web) return;
   pushNow(false);
+  rtPush(false);
+  if (!RT.es && !document.hidden) rtOpen();
   if (Date.now() - FR.lastStatsAt > 600000) pushStats(true);
 }
 
@@ -3870,6 +3901,7 @@ async function friLoad(){
   try {
     const [u, l] = await Promise.all([fsList('users'), fsList('lists')]);
     FR.users = u; FR.lists = l.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); FR.loaded = true; FR.err = null;
+    liveMerge();
   } catch (e) { FR.err = e; dlog('친구: 불러오기 실패 ' + (e.status || '') + ' ' + (e.detail || '')); }
 }
 function friPoll(){
@@ -4026,7 +4058,6 @@ function friSetupHTML(){
 }
 function renderFriMain(box){
   const us = others();
-  const live = us.filter(u => u.now).sort((a, b) => (isLive(b) - isLive(a)) || ((b.nowAt || 0) - (a.nowAt || 0)));
   const all = [meDoc(), ...us];
   const per = FR.rank, by = FR.rankBy || 'time';
   const key = per + (by === 'time' ? 'Ms' : 'Plays');
@@ -4055,10 +4086,7 @@ function renderFriMain(box){
       <div class="stTile wrap"><span class="lbl">이번 주 1등</span><b>${top && statOf(top.u, 'weekMs') ? esc(top.u.name) : '—'}</b><span class="sub">${top && statOf(top.u, 'weekMs') ? fmtDur(statOf(top.u, 'weekMs')) : ''}</span></div>
       <div class="stTile wrap"><span class="lbl">연속 기록</span><b>${stk && stk.streak ? '🔥 ' + esc(stk.u.name) : '—'}</b><span class="sub">${stk && stk.streak ? stk.streak + '일 연속 들었어요' : ''}</span></div>
     </div>
-    <section class="spSec"><h2 class="sec">지금 듣는 중</h2>
-      ${live.length ? `<div class="fNow">${live.map((u, i) => friNowCard(u, i)).join('')}</div>`
-        : `<div class="fEmpty sm">${us.length ? '지금 듣고 있는 친구가 없어요' : '아직 친구가 없어요. Luma에 로그인한 친구가 자동으로 여기에 나와요.'}</div>`}
-    </section>
+    <section class="spSec" id="fNowSec">${friNowSecHTML()}</section>
     ${feed.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">최근 활동</h2>${feed.length > 12 ? `<button class="link" data-fa="feedmore">${FR.feedMore ? '접기' : '더 보기'}</button>` : ''}</div>
       <div class="fFeed">${feed.slice(0, feedN).map((x, i) => `<button class="fFi" data-ffi="${i}" style="--i:${Math.min(i, 14)}">${avatar(x.u, 'sm')}
         ${x.r.img ? `<img src="${esc(x.r.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}
@@ -4092,14 +4120,21 @@ function renderFriMain(box){
     </section>` : '');
   requestAnimationFrame(() => ['fRankSeg', 'fBySeg'].forEach(id => { const sg = $(id); if (sg) placeSeg(sg); }));
 }
+function friNowSecHTML(){
+  const us = others();
+  const live = us.filter(u => u.now).sort((a, b) => (isLive(b) - isLive(a)) || ((b.nowAt || 0) - (a.nowAt || 0)));
+  return `<div class="secHead"><h2 class="sec">지금 듣는 중</h2>${RT.ok ? '<span class="rtOn"><i></i>실시간</span>' : ''}</div>` +
+    (live.length ? `<div class="fNow">${live.map((u, i) => friNowCard(u, i)).join('')}</div>`
+      : `<div class="fEmpty sm">${us.length ? '지금 듣고 있는 친구가 없어요' : '아직 친구가 없어요. Luma에 로그인한 친구가 자동으로 여기에 나와요.'}</div>`);
+}
 function friNowCard(u, i){
   const n = u.now, live = isLive(u);
   return `<button class="fNc${live ? ' live' : ''}" data-fl="${esc(u.id)}" style="--i:${i}">
     <span class="art">${n.big || n.img ? `<img src="${esc(n.big || n.img)}" alt="" loading="lazy">` : '<span class="ph"></span>'}${avatar(u, 'badge')}
-      <span class="go"><svg><use href="#i-play"/></svg>${live ? '같이 듣기' : '듣기'}</span></span>
+      <span class="go"><svg><use href="#i-play"/></svg>${FOL.uid === u.id ? '같이 듣는 중' : live ? '같이 듣기' : '듣기'}</span></span>
     <b class="nm">${esc(u.name)}</b>
     <span class="tt">${esc(n.n)}</span><span class="aa">${esc(n.a)}</span>
-    <span class="st">${live ? '<i class="eq"><i></i><i></i><i></i></i>지금 듣는 중' : ago(u.nowAt || 0) + (n.playing ? '' : ' · 멈춤')}</span></button>`;
+    <span class="st">${live ? '<i class="eq"><i></i><i></i><i></i></i>' + (n.with ? esc(n.with) + '님과 같이 듣는 중' : '지금 듣는 중') : ago(u.nowAt || 0) + (n.playing ? '' : ' · 멈춤')}</span></button>`;
 }
 function listArt(l, cls = ''){
   const imgs = []; for (const t of l.tracks || []) { if (t.img && !imgs.includes(t.img)) imgs.push(t.img); if (imgs.length === 4) break; }
@@ -4360,10 +4395,12 @@ async function friSearch(q){
 }
 function listenWith(uid){
   const u = FR.users.find(x => x.id === uid); if (!u || !u.now) return;
+  if (FOL.uid === uid) { openPlayer(); return; }
+  if (isLive(u) && u.now.playing) return startFollow(uid);
   const t = toTrack(u.now);
   let pos = 0;
   if (isLive(u)) pos = Math.min((u.now.pos || 0) + (Date.now() - (u.nowAt || 0)), Math.max(0, (u.now.dur || 0) - 3000));
-  setQueue([t], `${u.name}님과 같이 듣기`);
+  setQueue([t], `${u.name}님이 들은 곡`);
   startPlayback({ uris: [t.uri], position_ms: Math.round(pos) }, t, { pos: Math.round(pos) });
   toast(isLive(u) ? `${u.name}님이 듣는 위치부터 같이 들어요` : `${u.name}님이 들은 곡을 틀어요`, 3500);
 }
@@ -4635,6 +4672,194 @@ function bindCoverSwipe(){
 }
 function bindGestures(){ bindPageSwipe(); bindTabDrag(); bindCoverSwipe(); }
 
+/* ---------- 실시간: 친구가 지금 듣는 곡 (Firebase Realtime Database, 스트림) ----------
+   /now/{Spotify ID} = { name, img, uri, id, n, a, img_t, big, dur, pos, playing, at(서버 시각), with }
+   EventSource(서버 전송 이벤트)로 바뀌는 즉시 받아요. 안 되면 기존 방식(15초마다)으로 돌아가요. */
+const RT_URLS = [
+  `https://${FB.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`,
+  `https://${FB.projectId}-default-rtdb.firebaseio.com`,
+  `https://${FB.projectId}-default-rtdb.europe-west1.firebasedatabase.app`
+];
+const RT = { url: LS.get('luma_rtdb') || '', es: null, ok: false, live: {}, skew: 0, skews: [], pushT: 0, lastSig: '', hbT: 0, sentAt: 0, failed: 0, reopenT: 0, mineAt: 0 };
+const srvNow = () => Date.now() + RT.skew;
+async function rtFind(){
+  if (RT.url) return RT.url;
+  const t = await clAuth();
+  for (const u of RT_URLS) {
+    try {
+      const r = await fetch(`${u}/now.json?shallow=true&auth=${encodeURIComponent(t)}`);
+      if (r.ok) { RT.url = u; LS.set('luma_rtdb', u); return u; }
+      if (r.status === 401) { RT.url = u; LS.set('luma_rtdb', u); return u; }   // 있긴 한데 규칙이 막음 → 안내
+    } catch {}
+  }
+  return '';
+}
+function rtApply(path, data){
+  // path: "/" (전체) 또는 "/{id}" 또는 "/{id}/필드"
+  const parts = path.split('/').filter(Boolean);
+  if (!parts.length) { RT.live = data && typeof data === 'object' ? data : {}; }
+  else {
+    const id = parts[0];
+    if (parts.length === 1) { if (data == null) delete RT.live[id]; else RT.live[id] = data; }
+    else { const o = RT.live[id] = RT.live[id] || {}; if (data == null) delete o[parts[1]]; else o[parts[1]] = data; }
+  }
+  // 내 기록으로 서버 시각 차이 계산
+  if (me && RT.live[me.id] && RT.live[me.id].at && RT.sentAt && RT.live[me.id].at !== RT.mineAt) {
+    RT.mineAt = RT.live[me.id].at;
+    const est = RT.live[me.id].at - (RT.sentAt + (Date.now() - RT.sentAt) / 2);
+    if (Date.now() - RT.sentAt < 5000) { RT.skews.push(est); if (RT.skews.length > 7) RT.skews.shift(); RT.skew = RT.skews.slice().sort((a, b) => a - b)[RT.skews.length >> 1]; }
+  }
+  liveMerge(); liveRender(); folCheck();
+}
+async function rtOpen(){
+  if (!friOn() || RT.es || document.hidden && !S.web) return;
+  try {
+    const base = await rtFind(); if (!base) { RT.ok = false; return; }
+    const t = await clAuth();
+    const es = RT.es = new EventSource(`${base}/now.json?auth=${encodeURIComponent(t)}`);
+    const onData = e => { try { const j = JSON.parse(e.data); if (j) rtApply(j.path || '/', j.data); } catch {} };
+    es.addEventListener('put', e => { if (!RT.ok) rtSync(); RT.ok = true; RT.failed = 0; onData(e); });
+    es.addEventListener('patch', e => {
+      try { const j = JSON.parse(e.data); for (const [k, v] of Object.entries(j.data || {})) rtApply((j.path === '/' ? '' : j.path) + '/' + k, v); } catch {}
+    });
+    const reopen = (why, wait) => { dlog('친구 실시간 연결 다시: ' + why); rtClose(); clearTimeout(RT.reopenT); RT.reopenT = setTimeout(rtOpen, wait); };
+    es.addEventListener('auth_revoked', () => { CL.tok = null; reopen('인증 갱신', 300); });
+    es.addEventListener('cancel', () => { RT.ok = false; reopen('권한 없음(규칙 확인)', 60000); });
+    es.onerror = () => { if (es.readyState === 2) { RT.ok = false; RT.failed++; reopen('끊김', Math.min(60000, 2000 * RT.failed)); } };
+    // 토큰은 1시간짜리라 50분마다 새로 연결
+    setTimeout(() => { if (RT.es === es) reopen('토큰 갱신', 200); }, 50 * 60e3);
+  } catch (e) { RT.ok = false; dlog('친구 실시간 연결 실패 ' + (e.status || '')); }
+}
+/* 서버 시각 재기: 서버가 채운 시각을 돌려받아 내 시계와의 차이를 구해요 */
+async function rtSync(){
+  if (!RT.url || !me) return;
+  try {
+    const t = await clAuth();
+    for (let k = 0; k < 2; k++) {
+      const t0 = Date.now();
+      const r = await fetch(`${RT.url}/t/${encodeURIComponent(me.id)}.json?auth=${encodeURIComponent(t)}`, { method: 'PUT', body: JSON.stringify({ '.sv': 'timestamp' }) });
+      const t1 = Date.now();
+      if (!r.ok) return;
+      const srv = +(await r.text());
+      if (srv > 0) { RT.skews.push(srv - (t0 + t1) / 2); if (RT.skews.length > 7) RT.skews.shift(); RT.skew = RT.skews.slice().sort((a, b) => a - b)[RT.skews.length >> 1]; }
+    }
+  } catch {}
+}
+function rtClose(){ if (RT.es) { try { RT.es.close(); } catch {} RT.es = null; } }
+/* 내 지금 듣는 곡을 바로 올리기 (곡·재생/멈춤·위치가 바뀌면 0.3초 뒤, 듣는 중이면 25초마다) */
+function rtNowSoon(){ clearTimeout(RT.pushT); RT.pushT = setTimeout(() => rtPush(false), 300); }
+async function rtPush(force){
+  if (!friOn() || !RT.url) return;
+  const n = SET.shNow ? nowObj() : null;
+  const sig = n ? `${n.uri}|${n.playing}|${Math.round(n.pos / 5000)}|${FOL.uid || ''}` : 'none';
+  const stale = n && n.playing && Date.now() - RT.sentAt > 25000;
+  if (!force && sig === RT.lastSig && !stale) return;
+  RT.lastSig = sig;
+  try {
+    const t = await clAuth();
+    const url = `${RT.url}/now/${encodeURIComponent(me.id)}.json?auth=${encodeURIComponent(t)}&print=silent`;
+    RT.sentAt = Date.now();
+    if (!n) await fetch(url, { method: 'DELETE' });
+    else await fetch(url, { method: 'PUT', body: JSON.stringify({ uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing,
+      name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: FOL.uid ? (folUser() || {}).name || '' : '' }) });
+  } catch { RT.lastSig = ''; }
+}
+/* 실시간 정보를 친구 목록에 합치기 */
+function liveMerge(){
+  for (const [id, v] of Object.entries(RT.live)) {
+    if (me && id === me.id) continue;
+    let u = FR.users.find(x => x.id === id);
+    if (!u) { u = { id, name: v.name || id, img: v.img || '' }; FR.users.push(u); }
+    if (!v || !v.uri) { u.now = null; continue; }
+    const localAt = (v.at || 0) - RT.skew;
+    if (!u.nowAt || localAt >= u.nowAt - 1000 || RT.ok) {
+      u.now = { uri: v.uri, id: v.id, n: v.n, a: v.a, img: v.img_t || '', big: v.big || '', dur: v.dur || 0, pos: v.pos || 0, playing: !!v.playing, with: v.with || '' };
+      u.nowAt = localAt;
+      if (v.name) u.name = v.name; if (v.img) u.img = v.img;
+    }
+  }
+  // 실시간 목록에서 사라진 친구(공유 끔) → 듣는 곡 지우기
+  if (RT.ok) for (const u of FR.users) if (!(me && u.id === me.id) && !RT.live[u.id] && u.now && Date.now() - (u.nowAt || 0) < 3600e3) u.now = null;
+}
+let liveRT = 0;
+function liveRender(){
+  cancelAnimationFrame(liveRT);
+  liveRT = requestAnimationFrame(() => {
+    renderLiveStrip();
+    if (curView === 'fri' && FR.page === 'main') { const sec = $('fNowSec'); if (sec) sec.innerHTML = friNowSecHTML(); else renderFri(true); }
+    if (curView === 'fri' && FR.page === 'friend') renderFri(true);
+  });
+}
+/* 홈 맨 위: 친구가 지금 듣는 중 */
+function renderLiveStrip(){
+  const box = $('liveStrip'); if (!box) return;
+  const live = fbReady() && SET.friOn !== false ? others().filter(isLive) : [];
+  if (!live.length) { if (!box.hidden) box.hidden = true; return; }
+  const html = `<span class="lsH"><i class="eq"><i></i><i></i><i></i></i>친구가 지금 듣는 중</span>` + live.map(u =>
+    `<button class="lsC${FOL.uid === u.id ? ' on' : ''}" data-fl="${esc(u.id)}">${avatar(u, 'sm')}${u.now.img ? `<img src="${esc(u.now.img)}" alt="">` : ''}<span class="m"><b>${esc(u.name)}</b><small>${esc(u.now.n)} · ${esc(u.now.a)}</small></span>
+      <span class="go">${FOL.uid === u.id ? '같이 듣는 중' : '같이 듣기'}</span></button>`).join('');
+  if (box.dataset.h !== html) { box.innerHTML = html; box.dataset.h = html; }
+  box.hidden = false;
+}
+
+/* ---------- 따라 듣기: 친구가 곡을 바꾸거나 멈추면 그대로 따라가요 ---------- */
+const FOL = { uid: null, uri: '', playing: null, self: 0, at: 0 };
+const folUser = () => FOL.uid ? FR.users.find(u => u.id === FOL.uid) : null;
+function friendPos(u){ return Math.min((u.now.pos || 0) + (u.now.playing ? Math.max(0, Date.now() - (u.nowAt || 0)) : 0), Math.max(0, (u.now.dur || 0) - 2500)); }
+function startFollow(uid){
+  const u = FR.users.find(x => x.id === uid); if (!u || !u.now) return;
+  FOL.uid = uid; FOL.uri = ''; FOL.playing = null;
+  folApply(u, true);
+  toast(`${u.name}님과 같이 들어요. 친구가 곡을 바꾸면 따라가요`, 4000);
+  folUI(); rtNowSoon();
+}
+function stopFollow(why){
+  if (!FOL.uid) return;
+  const u = folUser();
+  FOL.uid = null; folUI(); rtNowSoon();
+  if (why) toast(`${u ? u.name + '님과 ' : ''}같이 듣기를 끝냈어요`, 2500);
+}
+/* 내가 직접 조작했는지 구분하려고, 따라 듣기가 하는 동작은 self 표시 */
+async function folDo(fn){ FOL.self++; try { return await fn(); } finally { setTimeout(() => { FOL.self--; }, 50); } }
+function folApply(u, first){
+  const n = u.now;
+  if (!n || !n.uri) return;
+  const pos = friendPos(u);
+  if (n.uri !== FOL.uri) {
+    FOL.uri = n.uri; FOL.playing = n.playing;
+    const t = toTrack(n);
+    folDo(() => { setQueue([t], `${u.name}님과 같이 듣기`); return startPlayback({ uris: [t.uri], position_ms: Math.round(pos) }, t, { pos: Math.round(pos) }); })
+      .then(() => {
+        if (!n.playing) setTimeout(() => { if (FOL.uid === u.id && !S.paused) folDo(togglePlay); }, 1500);
+        // 곡을 불러오는 동안 생긴 차이를 3초 뒤 한 번 맞춰요
+        else setTimeout(() => { const f = folUser(); if (f && f.now && f.now.uri === n.uri && S.track && S.track.uri === n.uri && Math.abs(curPos() - friendPos(f)) > 2500) folDo(() => seekTo(friendPos(f))); }, 3000);
+      });
+    if (!first) toast(`${u.name}님이 "${n.n}"(으)로 바꿨어요`, 2500);
+    return;
+  }
+  if (n.playing !== FOL.playing) {
+    FOL.playing = n.playing;
+    if (n.playing === S.paused) folDo(togglePlay);
+    if (n.playing) setTimeout(() => { if (FOL.uid === u.id && Math.abs(curPos() - friendPos(u)) > 4000) folDo(() => seekTo(friendPos(u))); }, 1200);
+    return;
+  }
+  // 같은 곡인데 위치가 많이 다르면 맞추기 (친구가 앞뒤로 넘겼을 때)
+  if (n.playing && !S.paused && S.track && S.track.uri === n.uri && Math.abs(curPos() - pos) > 6000) folDo(() => seekTo(pos));
+}
+function folCheck(){
+  if (!FOL.uid) return;
+  const u = folUser();
+  if (!u || !u.now) { stopFollow(); toast('친구가 듣기를 멈춰서 같이 듣기를 끝냈어요', 3000); return; }
+  folApply(u, false);
+}
+function folUI(){
+  const u = folUser();
+  document.body.classList.toggle('following', !!u);
+  const b = $('folBar');
+  if (b) { b.hidden = !u; if (u) b.innerHTML = `${avatar(u, 'sm')}<span><b>${esc(u.name)}</b>님과 같이 듣는 중</span><button data-fa2="stopfol">그만 듣기</button>`; }
+  renderLiveStrip();
+}
+
 /* ---------- 시작 ---------- */
 /* 앱에서 시작한 로그인이 브라우저로 돌아온 경우: 받은 결과를 앱(luma://callback)으로 넘겨요 */
 function showHandoff(){
@@ -4709,7 +4934,7 @@ async function startApp(){
   if (hasScopes(NEED_SPOT)) api('/me/player/recently-played?limit=50').then(j => importRecent(j.items)).catch(() => {});
   pollRemote();
   setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
-  if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); }
+  if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); setTimeout(() => { rtOpen().then(() => rtPush(true)); friLoad().then(() => { liveMerge(); renderLiveStrip(); }); }, 1500); }
 }
 
 function bind(){
@@ -4772,6 +4997,14 @@ function bind(){
   bindLyEd();
   bindFri();
   bindGestures();
+  $('liveStrip').addEventListener('click', e => { const b = e.target.closest('[data-fl]'); if (b) listenWith(b.dataset.fl); });
+  $('folBar').addEventListener('click', e => { if (e.target.closest('[data-fa2="stopfol"]')) stopFollow(true); });
+  document.addEventListener('visibilitychange', () => {
+    if (!fbReady()) return;
+    if (document.hidden) { if (!S.web && !FOL.uid) rtClose(); }
+    else if (!RT.es) rtOpen();
+  });
+  setInterval(() => { if (!document.hidden) renderLiveStrip(); }, 30000);
   const dateChange = () => {
     const pd = v => { const [y, m, d] = v.split('-').map(Number); return y ? new Date(y, m - 1, d) : null; };
     ST.from = pd($('dFrom').value); ST.to = pd($('dTo').value); renderStats();
@@ -4921,7 +5154,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
+window.LumaTest = { RT, FOL, rtApply, startFollow, stopFollow, togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
 init();
 })();
 </script>
