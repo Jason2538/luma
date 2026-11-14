@@ -3891,7 +3891,7 @@ function myRecent(){
   for (const d of lastDays(4).reverse()) {
     const r = H.d[dayKey(d)]; if (!r || !r.lg) continue;
     for (let i = r.lg.length - 1; i >= 0 && out.length < 30; i--) {
-      const [id, at, ms] = r.lg[i]; if (ms < 20000) continue;
+      const [id, at, ms] = r.lg[i]; if (ms < 8000) continue;
       const m = H.m[id] || [];
       out.push({ id, n: m[0] || '', a: m[1] || '', img: m[3] || '', at: Math.round(at), ms: Math.round(ms) });
     }
@@ -3931,7 +3931,7 @@ function friTick(){                         // 5초마다: 바뀐 게 있으면 
   pushNow(false);
   rtPush(false);
   if (!RT.es && !document.hidden) rtOpen();
-  if (Date.now() - FR.lastStatsAt > 600000) pushStats(true);
+  if (Date.now() - FR.lastStatsAt > 180000) pushStats(true);
 }
 
 /* ---------- 받아 오기 ---------- */
@@ -3949,7 +3949,7 @@ function friPoll(){
   const fast = FR.page === 'list' ? 8000 : 15000;
   FR.pollT = setTimeout(async () => {
     if (curView !== 'fri') return;
-    if (FR.page === 'list' && FR.lid) await friLoadList(FR.lid); else await friLoad();
+    if (FR.page === 'list' && FR.lid) await friLoadList(FR.lid); else { await friLoad(); if (FR.myStats) FR.myStats = { ...FR.myStats, ...myLiveToStats() }; }
     if (curView === 'fri') renderFri(true);
     friPoll();
   }, fast);
@@ -4085,6 +4085,7 @@ function renderFri(quiet){
   }
   const keepAdd = FR.page === 'list' && FR.add && document.activeElement && document.activeElement.id === 'fAddQ';
   if (keepAdd) { renderFriList(box, true); return; }
+  if (FR.page !== 'main') box._pg = FR.page;
   if (FR.page === 'friend') return renderFriend(box);
   if (FR.page === 'list') return renderFriList(box);
   if (FR.page === 'new') return renderFriNew(box);
@@ -4114,7 +4115,8 @@ function renderFriMain(box){
   const liveN = us.filter(isLive).length;
   const err = FR.err && !FR.loaded ? `<div class="fEmpty">친구 정보를 불러오지 못했어요.<br>${esc(friErrHint(FR.err))}<br><button class="pill" data-fa="reload">다시 시도</button></div>` : '';
   const seg = (id, attr, items, cur) => `<div class="seg" id="${id}"><span class="ind"></span>${items.map(([v, l]) => `<button ${attr}="${v}"${v === cur ? ' class="on"' : ''}>${l}</button>`).join('')}</div>`;
-  box.innerHTML =
+  liveFullAt = Date.now();
+  const html =
     `<header class="spHead fHead"><div><p class="spKicker fk"><i></i>Luma 친구 · ${all.length}명</p><h1>친구</h1></div>
       <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></header>` + err +
     (!FR.loaded && !err ? '<div class="spin"></div>' : '') +
@@ -4157,6 +4159,8 @@ function renderFriMain(box){
         ${FR.lists.map((l, i) => friListCard(l, i)).join('')}
       </div>
     </section>` : '');
+  if (box._h === html && box._pg === 'main') return;
+  box.innerHTML = html; box._h = html; box._pg = 'main';
   requestAnimationFrame(() => ['fRankSeg', 'fBySeg'].forEach(id => { const sg = $(id); if (sg) placeSeg(sg); }));
 }
 function friNowSecHTML(){
@@ -4233,7 +4237,8 @@ function renderFriend(box){
   const tile = (lbl, v, sub) => `<div class="stTile"><span class="lbl">${lbl}</span><b>${v}</b>${sub ? `<span class="sub">${sub}</span>` : ''}</div>`;
   const genres = s.genres || [];
   const myG = new Set((ms.genres || []).map(g => g.n));
-  box.innerHTML = backBar() +
+  liveFullAt = Date.now();
+  const fhtml = backBar() +
     `<header class="fPHead">${avatar(u, 'xl')}<div><h1>${esc(u.name)}${isMe ? ' <small>나</small>' : ''}</h1>
       <p>${u.now ? (isLive(u) ? '<i class="eq"><i></i><i></i><i></i></i>지금 ' : ago(u.nowAt || 0) + ' · ') + esc(u.now.n) + ' — ' + esc(u.now.a) : '최근 들은 곡 정보가 없어요'}</p>
       ${s.hours ? `<p class="fPeak">${esc(peakTime(s.hours))}</p>` : ''}
@@ -4278,6 +4283,8 @@ function renderFriend(box){
       <div class="tracks" data-fsrc="favall">${favAll.map((t, i) => rowHTML(t, i)).join('')}</div></section>` : '') +
     (s.weekTopA && s.weekTopA.length ? `<section class="spSec"><h2 class="sec">이번 주 많이 들은 아티스트</h2><div class="stCard">${s.weekTopA.slice(0, 10).map((a, i) =>
       `<div class="hb" style="--i:${i}"><span class="n"><span class="rkN">${i + 1}</span>${esc(a.n)}</span><span class="v">${fmtDur(a.ms)}</span><span class="trackbar"><i style="width:${a.ms / s.weekTopA[0].ms * 100}%"></i></span></div>`).join('')}</div></section>` : '');
+  if (box._fh === fhtml && box._fid === u.id && box.querySelector('.fPHead')) return;
+  box.innerHTML = fhtml; box._fh = fhtml; box._fid = u.id; box._h = '';
   markPlaying();
 }
 
@@ -4792,10 +4799,19 @@ async function rtSync(){
 function rtClose(){ if (RT.es) { try { RT.es.close(); } catch {} RT.es = null; } }
 /* 내 지금 듣는 곡을 바로 올리기 (곡·재생/멈춤·위치가 바뀌면 0.3초 뒤, 듣는 중이면 25초마다) */
 function rtNowSoon(){ clearTimeout(RT.pushT); RT.pushT = setTimeout(() => rtPush(false), 300); }
+function liveStats(){
+  const today = startOfDay(new Date());
+  const d = aggDays([today]), w = aggDays(weekDays()), mo = aggDays(monthDays());
+  return { st: { d: dayKey(today), w: dayKey(weekDays()[0]), m: dayKey(monthDays()[0]),
+                 tMs: d.ms, wMs: w.ms, mMs: mo.ms, tP: d.plays, wP: w.plays, mP: mo.plays, wU: w.uniq, stk: myStreak() },
+           rec: myRecent().slice(0, 15) };
+}
 async function rtPush(force){
   if (!friOn() || !RT.url) return;
   const n = SET.shNow ? nowObj() : null;
-  const sig = n ? `${n.uri}|${n.playing}|${Math.round(n.pos / 5000)}|${FOL.uid || ''}` : 'none';
+  const ls = SET.shStats ? liveStats() : null;
+  const sig = (n ? `${n.uri}|${n.playing}|${Math.round(n.pos / 5000)}|${FOL.uid || ''}` : 'none') +
+    (ls ? `#${ls.rec.length ? ls.rec[0].id + '@' + ls.rec[0].at : ''}|${Math.round(ls.st.tMs / 30000)}|${ls.st.d}` : '#');
   const stale = n && n.playing && Date.now() - RT.sentAt > 25000;
   if (!force && sig === RT.lastSig && !stale) return;
   RT.lastSig = sig;
@@ -4803,9 +4819,11 @@ async function rtPush(force){
     const t = await clAuth();
     const url = `${RT.url}/now/${encodeURIComponent(rtKey(me.id))}.json?auth=${encodeURIComponent(t)}&print=silent`;
     RT.sentAt = Date.now();
-    if (!n) await fetch(url, { method: 'DELETE' });
-    else await fetch(url, { method: 'PUT', body: JSON.stringify({ uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing,
-      sid: me.id, name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: FOL.uid ? (folUser() || {}).name || '' : '' }) });
+    if (!n && !ls) await fetch(url, { method: 'DELETE' });
+    else await fetch(url, { method: 'PUT', body: JSON.stringify({
+      ...(n ? { uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing } : {}),
+      ...(ls || {}),
+      sid: me.id, name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: n && FOL.uid ? (folUser() || {}).name || '' : '' }) });
   } catch { RT.lastSig = ''; }
 }
 /* 실시간 정보를 친구 목록에 합치기 */
@@ -4818,8 +4836,15 @@ function liveMerge(){
     if (me && id === me.id) continue;
     let u = FR.users.find(x => x.id === id);
     if (!u) { u = { id, name: v.name || id, img: v.img || '' }; FR.users.push(u); }
-    if (!v.uri) { u.now = null; continue; }
     const localAt = (v.at || 0) - RT.skew;
+    if (v.st && RT.ok) {                    // 재생 시간·최근 들은 곡은 실시간 값이 더 새 거예요
+      const o = u.stats || {};
+      u.stats = { ...o, day: v.st.d, week: v.st.w, month: v.st.m, todayMs: v.st.tMs, weekMs: v.st.wMs, monthMs: v.st.mMs,
+                  todayPlays: v.st.tP, weekPlays: v.st.wP, monthPlays: v.st.mP, weekUniq: v.st.wU, streak: v.st.stk,
+                  recent: Array.isArray(v.rec) ? v.rec : (o.recent || []) };
+      u.statsAt = localAt;
+    }
+    if (!v.uri) { u.now = null; continue; }
     if (!u.nowAt || localAt >= u.nowAt - 1000 || RT.ok) {
       u.now = { uri: v.uri, id: v.id, n: v.n, a: v.a, img: v.img_t || '', big: v.big || '', dur: v.dur || 0, pos: v.pos || 0, playing: !!v.playing, with: v.with || '' };
       u.nowAt = localAt;
@@ -4829,13 +4854,23 @@ function liveMerge(){
   // 실시간 목록에서 사라진 친구(공유 끔) → 듣는 곡 지우기
   if (RT.ok) for (const u of FR.users) if (!(me && u.id === me.id) && !liveIds.has(u.id) && u.now && Date.now() - (u.nowAt || 0) < 3600e3) u.now = null;
 }
-let liveRT = 0;
+let liveRT = 0, liveFullT = 0, liveFullAt = 0;
+/* 내 숫자도 기기 기록에서 바로 다시 계산 */
+function myLiveToStats(){
+  const l = liveStats();
+  return { day: l.st.d, week: l.st.w, month: l.st.m, todayMs: l.st.tMs, weekMs: l.st.wMs, monthMs: l.st.mMs,
+           todayPlays: l.st.tP, weekPlays: l.st.wP, monthPlays: l.st.mP, weekUniq: l.st.wU, streak: l.st.stk, recent: l.rec };
+}
 function liveRender(){
   cancelAnimationFrame(liveRT);
   liveRT = requestAnimationFrame(() => {
     renderLiveStrip();
-    if (curView === 'fri' && FR.page === 'main') { const sec = $('fNowSec'); if (sec) sec.innerHTML = friNowSecHTML(); else renderFri(true); }
-    if (curView === 'fri' && FR.page === 'friend') renderFri(true);
+    if (curView !== 'fri' || (FR.page !== 'main' && FR.page !== 'friend')) return;
+    if (FR.page === 'main') { const sec = $('fNowSec'); if (sec) { const h = friNowSecHTML(); if (sec._h !== h) { sec.innerHTML = h; sec._h = h; } } }
+    // 순위표·최근 활동 등 나머지는 2초에 한 번만
+    clearTimeout(liveFullT);
+    liveFullT = setTimeout(() => { if (curView === 'fri' && (FR.page === 'main' || FR.page === 'friend')) { FR.myStats = FR.myStats && { ...FR.myStats, ...myLiveToStats() }; renderFri(true); } },
+      Math.max(0, 2000 - (Date.now() - liveFullAt)));
   });
 }
 /* 홈 맨 위: 친구가 지금 듣는 중 */
