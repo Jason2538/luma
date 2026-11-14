@@ -1180,7 +1180,7 @@ function anim(el, frames, opts){
 const shuffleArr = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function dedupe(list){
   const seen = new Set();
-  return list.filter(t => { const k = t.id + '|' + (t.name + t.artists[0]).toLowerCase(); const k2 = (t.name + t.artists[0]).toLowerCase();
+  return list.filter(t => { const k2 = (t.name + t.artists[0]).toLowerCase();
     if (seen.has(t.id) || seen.has(k2)) return false; seen.add(t.id); seen.add(k2); return true; });
 }
 
@@ -1255,12 +1255,18 @@ async function getToken(force){
   if (!refreshing) {
     refreshing = tokenReq({ grant_type: 'refresh_token', refresh_token: tok.refresh, client_id: getCid() })
       .then(j => { saveTok(j); return tok.access; })
-      .catch(e => { if (e.status === 400 || e.status === 401) { forgetTokens(); } throw e; })
+      .catch(e => { if (e.status === 400 || e.status === 401) { forgetTokens(); sessionExpired(); } throw e; })
       .finally(() => { refreshing = null; });
   }
   return refreshing;
 }
 function forgetTokens(){ tok = null; LS.del('luma_tok'); }
+let expiredShown = false;
+function sessionExpired(){
+  if (expiredShown) return; expiredShown = true;
+  toast('로그인이 만료됐어요. 다시 로그인해 주세요', 4000);
+  setTimeout(() => { location.href = redirectUri(); }, 2200);
+}
 
 async function login(showDialog){
   if (!window.crypto || !crypto.subtle) { toast('https 주소(또는 127.0.0.1)에서만 로그인할 수 있어요'); return; }
@@ -1352,12 +1358,12 @@ let likeChkT = 0;
 /* ---------- 좋아요 (Spotify 내 라이브러리) ----------
    2026년 2월부터 PUT/DELETE /me/library?uris=… (한 번에 40개), 확인은 GET /me/library/contains */
 const LK = new Map();              // track id -> true/false
-let likeLoaded = false;
+let likeLoaded = false, likeFailUntil = 0;
 const NEED_LIKE = ['user-library-modify'];
 async function loadLikes(){
   if (likeLoaded) return; likeLoaded = true;
   try {
-    for (let off = 0; off < 500; off += 50) {
+    for (let off = 0; off < 300; off += 50) {
       const j = await api(`/me/tracks?limit=50&offset=${off}`);
       (j.items || []).forEach(e => { const t = e && (e.track || e.item); if (t && t.id) LK.set(t.id, true); });
       if (!j.next) break;
@@ -1367,11 +1373,11 @@ async function loadLikes(){
 }
 async function checkLikes(tracks){
   const ids = [...new Set(tracks.filter(t => t && t.id && !LK.has(t.id)).map(t => t.id))].slice(0, 40);
-  if (!ids.length) return;
+  if (!ids.length || Date.now() < likeFailUntil) return;
   try {
     const j = await api('/me/library/contains?uris=' + encodeURIComponent(ids.map(id => 'spotify:track:' + id).join(',')));
     if (Array.isArray(j)) ids.forEach((id, k) => LK.set(id, !!j[k]));
-  } catch {}
+  } catch (e) { likeFailUntil = Date.now() + (e.status === 403 || e.status === 404 ? 3600e3 : 60e3); }   // 실패하면 한동안 다시 묻지 않아요
   markLikes();
 }
 const isLiked = id => LK.get(id) === true;
@@ -1674,7 +1680,7 @@ function applyTrack(tr){
   if (!changed && prevT) {          // 같은 곡: 이미 있던 정보(커버 등)를 잃지 않게 합쳐요
     tr = { ...prevT, ...tr, cover: tr.cover || prevT.cover, thumb: tr.thumb || prevT.thumb, artistIds: tr.artistIds || prevT.artistIds };
   }
-  S.track = tr; S.dur = tr.dur || S.dur;
+  S.track = tr; S.dur = tr.dur || (changed ? 0 : S.dur);
   if (!changed && prevT && (tr.cover || tr.thumb) !== (prevT.cover || prevT.thumb)) setCover(tr);
   if (changed) {
     if (sleepT.end && sleepT.uri && sleepT.uri !== tr.uri && !S.paused) { clearSleep(); setTimeout(pauseNow, 50); toast('수면 타이머: 재생을 멈췄어요'); }
@@ -1705,7 +1711,8 @@ function setCover(t, fresh){
     if (k >= srcs.length) { if (tries++ < 2) setTimeout(() => load(0), 1500); return; }
     if (!fresh) {                       // 같은 곡: 새 커버를 다 받은 다음에만 바꿔요
       const pre = new Image();
-      pre.onload = () => { if (my !== img._seq) return; img.onload = img.onerror = null; img.src = srcs[k]; setPlayerBg(srcs[k]); };
+      pre.onload = () => { if (my !== img._seq) return; img.onload = img.onerror = null; img.src = srcs[k]; setPlayerBg(srcs[k]);
+        $('coverBg').style.backgroundImage = `url("${srcs[k]}")`; document.body.classList.add('has-cover'); };
       pre.onerror = () => load(k + 1);
       pre.src = srcs[k];
       return;
@@ -1741,13 +1748,14 @@ function renderTrack(){
   if (RP.mode === 'q') renderQueue(); else if (RP.mode === 'pl' && RP.pl) renderPlTracks();
   if (ED.on) { const w = $('lyEd').querySelector('.edWarn'); if (!!w !== edOther()) { const ta = $('edText'); if (ta) ED.text = ta.value; renderEd(); } }
 }
+let msUri = '';
 function updateMediaSession(){
   if (!('mediaSession' in navigator) || !S.track) return;
   try {
     const t = S.track;
-    if (navigator.mediaSession.metadata?.title !== t.name)
+    if (msUri !== t.uri + '|' + (t.cover || '')) { msUri = t.uri + '|' + (t.cover || '');
       navigator.mediaSession.metadata = new MediaMetadata({ title: t.name, artist: t.artists.join(', '), album: t.album || '',
-        artwork: t.cover ? [{ src: t.cover, sizes: '640x640' }] : [] });
+        artwork: t.cover ? [{ src: t.cover, sizes: '640x640' }] : [] }); }
     navigator.mediaSession.playbackState = S.paused ? 'paused' : 'playing';
   } catch {}
 }
@@ -1764,6 +1772,14 @@ function syncUI(){
   $('state').textContent = (S.dev ? `${S.dev}에서 재생` : '') + sleepLabel();
   nativeSync();
 }
+/* Spotify가 같은 곡의 다른 주소(지역별 대체 곡)를 알려줄 때, 내가 고른 목록의 주소로 맞춰요.
+   안 맞추면 같은 곡인데 다른 곡으로 보고 가사·재생 목록 위치·좋아요가 어긋나요. */
+function canonTrack(uri, id, linked){
+  const lf = linked && linked.uri;
+  if (lf && lf !== uri && (lf === S.expectUri || (S.track && S.track.uri === lf) || Q.list.some(t => t.uri === lf)))
+    return { uri: lf, id: linked.id || idFromUri(lf) };
+  return { uri, id };
+}
 function applySdkState(st){
   const c = st.track_window && st.track_window.current_track;
   if (!c) return;
@@ -1779,8 +1795,9 @@ function applySdkState(st){
   S.web = true; S.devId = deviceId; S.dev = 'Luma'; S.devSeenAt = Date.now();
   setPos(st.position || 0, !!st.paused);
   S.shuffle = !!st.shuffle; S.repeat = st.repeat_mode || 0;
+  const cn = canonTrack(c.uri, c.id, c.linked_from);
   applyTrack({
-    id: c.id, uri: c.uri, name: c.name,
+    id: cn.id, uri: cn.uri, name: c.name,
     artists: (c.artists || []).map(a => a.name), album: c.album?.name || '',
     thumb: pickImg(c.album?.images, 64), cover: bigImg(c.album?.images),
     dur: st.duration || c.duration_ms || 0
@@ -1803,8 +1820,12 @@ async function pollRemote(){
       return;
     }
     noDevPolls = 0;
-    if (j.device.id === deviceId) { S.web = true; return; }
-    S.web = false; S.devId = j.device.id; S.dev = j.device.name;
+    if (j.device.id === deviceId) {
+      let st = null; try { st = player && await player.getCurrentState(); } catch {}
+      if (seq !== playSeq) return;
+      if (st) { S.web = true; return; }        // 재생기가 살아 있으면 재생기 이벤트가 화면을 맡아요
+    }
+    S.web = false; S.devId = j.device.id; S.dev = j.device.id === deviceId ? 'Luma' : j.device.name;
     if (j.device.is_active) S.devSeenAt = Date.now();
     if (typeof j.device.volume_percent === 'number' && !volDrag) S.vol = j.device.volume_percent;
     if (j.item && j.item.type === 'track') {
@@ -1820,7 +1841,7 @@ async function pollRemote(){
       setPos(j.progress_ms || 0, now < S.ctlUntil ? undefined : !j.is_playing);
       S.shuffle = !!j.shuffle_state;
       S.repeat = { off: 0, context: 1, track: 2 }[j.repeat_state] || 0;
-      applyTrack(normTrack(j.item));
+      applyTrack({ ...normTrack(j.item), ...canonTrack(j.item.uri, j.item.id, j.item.linked_from) });
       syncUI();
       checkQueueEnd();
     }
@@ -1894,6 +1915,8 @@ function handleErr(e){
   if (e.status === 404) return toast('재생할 기기가 응답하지 않아요. Spotify 앱을 한 번 열어 주세요', 8000, { label: 'Spotify 앱 열기', fn: () => { location.href = (S.track && S.track.uri) || 'spotify:'; } });
   if (e.status >= 500) return toast('Spotify 서버가 잠깐 응답하지 않아요. 잠시 후 다시 눌러 주세요', 6000);
   if (e.status === 403) return toast('Spotify에서 이 동작을 허용하지 않았어요: ' + e.message);
+  if (!tok) return sessionExpired();
+  if (!e.status) return toast(navigator.onLine === false ? '인터넷 연결이 끊겼어요' : '연결이 잠깐 불안정해요. 다시 눌러 주세요', 5000);
   toast(e.message || '문제가 생겼어요');
 }
 
@@ -2195,7 +2218,7 @@ async function skip(dir){
   if (nx && (dir > 0 || curPos() < 3000)) { applyTrack(nx); setPos(0, false); syncUI(); S.expectUri = nx.uri; S.avoidUri = null; }
   else { S.expectUri = null; S.avoidUri = from; }
   S.holdUntil = Date.now() + 5000;
-  if (dir < 0 && curPos() >= 3000) { S.avoidUri = S.expectUri = null; S.holdUntil = 0; }   // 3초 넘게 들었으면 '이전'은 처음으로
+  if (dir < 0 && curPos() >= 3000) { S.avoidUri = S.expectUri = null; S.holdUntil = 0; setPos(0); }   // 3초 넘게 들었으면 '이전'은 처음으로
   const viaApi = () => api(withDev(dir > 0 ? '/me/player/next' : '/me/player/previous'), { method: 'POST' });
   try {
     if (S.web && player) {
@@ -2225,7 +2248,7 @@ async function seekTo(ms){
   if (!S.track) return;
   if (FOL.uid && !FOL.self) stopFollow(true);
   setTimeout(rtNowSoon, 400);
-  ms = Math.max(0, Math.min(ms, S.dur - 300));
+  ms = Math.max(0, S.dur > 600 ? Math.min(ms, S.dur - 300) : ms);
   setPos(ms);
   try {
     if (S.web && player) await player.seek(ms);
@@ -2841,6 +2864,16 @@ async function loadPlaylists(){
   renderSpotPls();
 }
 
+/* 최근 재생 기록: 여러 곳에서 같이 쓰도록 1분 동안 한 번만 받아요 */
+let recentP = null, recentAt = 0;
+function getRecent(force){
+  if (!recentP || force || Date.now() - recentAt > 60000) {
+    recentAt = Date.now();
+    recentP = api('/me/player/recently-played?limit=50').catch(e => { recentP = null; throw e; });
+  }
+  return recentP;
+}
+
 /* ---------- 오늘의 추천 곡 50 (Luma 홈) ---------- */
 const REC = { list: [], seq: 0 };
 async function artistTracks(a){
@@ -2857,7 +2890,7 @@ async function buildRecs(){
     const ids = new Set();
     for (const a of [...s1, ...m1]) if (!ids.has(a.id)) { ids.add(a.id); artists.push({ id: a.id, name: a.name }); }
     favs = dedupe([...ts, ...tm]);
-    try { const r = await api('/me/player/recently-played?limit=50'); for (const it of r.items || []) if (it && it.track) known.add(it.track.id); } catch {}
+    try { const r = await getRecent(); for (const it of r.items || []) if (it && it.track) known.add(it.track.id); } catch {}
   } else {
     // 권한이 없을 때: 좋아요 표시한 곡을 바탕으로
     const j = await api('/me/tracks?limit=50').catch(() => ({ items: [] }));
@@ -2978,8 +3011,10 @@ window.lumaNative = a => {
 window.lumaBack = () => {
   if (!$('devMenu').hidden) { $('devMenu').hidden = true; return true; }
   if (!$('reqDlg').hidden) { closeReq(); return true; }
-  if ($('player').classList.contains('open')) { closePlayer(); return true; }
+  if ($('player').classList.contains('open')) { if (ED.on) { closeLyEd(); return true; } closePlayer(); return true; }
   if (curView === 'detail') { backFromDetail(); return true; }
+  if (curView === 'fri' && FR.page !== 'main') { friGo('main'); return true; }
+  if (curView === 'fri') { goTab('home'); return true; }
   if (curView === 'spot' || curView === 'set' || (sQ && $('q').value.trim())) { goTab('home'); return true; }
   return false;
 };
@@ -3270,7 +3305,7 @@ function renderLiveBtn(){
 async function syncRecordsNow(){
   histDirty = true; saveHist();
   if (hasScopes(NEED_SPOT)) {
-    try { const j = await api('/me/player/recently-played?limit=50'); importRecent(j.items); } catch {}
+    try { const j = await getRecent(true); importRecent(j.items); } catch {}
     liveImportAt = Date.now();
   }
   $('liveWhen').textContent = hhmm(Date.now()) + ' 반영';
@@ -3370,7 +3405,7 @@ function renderSettings(){
   $('setId').textContent = me ? `Spotify ID · ${me.id}` : '';
   const im = me && pickImg(me.images, 64);
   $('setAvaBox').innerHTML = im ? `<span class="acct"><img src="${esc(im)}" alt=""></span>` : `<span class="noimg">${esc(((me && me.display_name) || 'L').slice(0, 1))}</span>`;
-  $('setVer').textContent = `웹 버전 2026.10 · ${IS_APP ? '안드로이드 앱에서 실행 중' : '브라우저에서 실행 중'}`;
+  $('setVer').textContent = `웹 버전 2026.11 · ${IS_APP ? '안드로이드 앱에서 실행 중' : '브라우저에서 실행 중'}`;
 }
 let clearArm = 0;
 function bindSettings(){
@@ -3379,7 +3414,7 @@ function bindSettings(){
     const sb = e.target.closest('.seg button');
     if (sb) {
       const id = sb.parentElement.id, val = sb.dataset.v;
-      if (id === 'setOut') { LS.set('luma_out', val); if (val === 'luma') { pickedDevice = null; sdkBroken = false; } else pickedDevice = null; toast(val === 'luma' ? '다음 곡부터 Luma에서 재생해요' : '다음 곡부터 Spotify 앱을 조작해요'); }
+      if (id === 'setOut') { LS.set('luma_out', val); pickedDevice = null; if (val === 'luma') { sdkBroken = false; sdkFails = 0; clearTimeout(sdkBrokenT); } toast(val === 'luma' ? '다음 곡부터 Luma에서 재생해요' : '다음 곡부터 Spotify 앱을 조작해요'); }
       if (id === 'setLys') { SET.lys = val; saveSet(); applySettings(); }
       if (id === 'setStart') { SET.start = val; saveSet(); }
       setSeg(id, val); return;
@@ -3406,7 +3441,8 @@ function bindSettings(){
     if (e.target.closest('#setClear')) {
       const b = $('setClear');
       if (Date.now() - clearArm > 4000) { clearArm = Date.now(); b.textContent = '한 번 더 누르면 지워져요'; setTimeout(() => { b.textContent = '지우기'; }, 4000); return; }
-      ['luma_hist', 'luma_set', 'luma_out', 'luma_vol', 'luma_after'].forEach(k => LS.del(k));
+      ['luma_hist', 'luma_set', 'luma_out', 'luma_vol', 'luma_after', 'luma_live', 'luma_rp', 'luma_lyc', 'luma_ncp'].forEach(k => LS.del(k));
+      lyCache.clear();
       H = { d: {}, m: {}, seen: [] }; histDirty = false; SET = { ...SET_DEF }; applySettings(); renderSettings();
       b.textContent = '지우기'; clearArm = 0; toast('저장된 데이터를 지웠어요');
     }
@@ -3590,7 +3626,7 @@ async function loadRecent(){
   const box = $('spRecent');
   box.innerHTML = skelBlocks(6, 'flex:0 0 150px;height:190px');
   try {
-    const j = await api('/me/player/recently-played?limit=50');
+    const j = await getRecent();
     importRecent(j.items); renderStats();
     const seen = new Set(); SP.recent = [];
     for (const it of j.items || []) { const t = it && it.track; if (!t || !t.uri || seen.has(t.id)) continue; seen.add(t.id); SP.recent.push(normTrack(t)); }
@@ -3767,6 +3803,9 @@ function fsSet(path, obj){
   const mask = Object.keys(obj).map(k => 'updateMask.fieldPaths=' + encodeURIComponent(k)).join('&');
   return fsReq('/' + path + '?' + mask, { method: 'PATCH', body: { fields: fsEncF(obj) } });
 }
+/* Spotify ID에 . / # 같은 글자가 있어도 주소·키로 쓸 수 있게 */
+const uidPath = () => encodeURIComponent(me.id);
+const rtKey = id => String(id).replace(/[.$#\[\]\/%]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 const fsCommit = writes => fsReq(':commit', { method: 'POST', body: { writes } });
 
 /* ---------- 내 상태 올리기 ---------- */
@@ -3787,7 +3826,7 @@ async function pushNow(force){
   const stale = n && n.playing && Date.now() - FR.lastNowAt > 60000;
   if (!force && sig === FR.lastNow && !stale) return;
   FR.lastNow = sig; FR.lastNowAt = Date.now();
-  try { await fsSet('users/' + me.id, { name: myName(), img: myImg(), now: n, nowAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
+  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), now: n, nowAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
   catch (e) { FR.lastNow = ''; dlog('친구: 지금 듣는 곡 올리기 실패 ' + (e.status || '')); }
 }
 /* Spotify가 기억하는 많이 들은 아티스트·곡 (궁합 계산용, 세션마다 한 번) */
@@ -3884,7 +3923,7 @@ async function pushStats(force){
   FR.lastStatsAt = Date.now();
   const all = await myStats();
   const stats = SET.shStats ? all : null;
-  try { await fsSet('users/' + me.id, { name: myName(), img: myImg(), stats, statsAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
+  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), stats, statsAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
   catch (e) { FR.lastStatsAt = 0; dlog('친구: 기록 올리기 실패 ' + (e.status || '')); }
 }
 function friTick(){                         // 5초마다: 바뀐 게 있으면 올리기
@@ -4467,7 +4506,12 @@ function bindFri(){
 }
 async function friForgetMe(){
   if (!fbReady() || !me) return;
-  try { await fsReq('/users/' + me.id, { method: 'DELETE' }); toast('친구 서버에서 내 정보를 지웠어요'); }
+  try {
+    await fsReq('/users/' + uidPath(), { method: 'DELETE' });
+    if (RT.url) { const t = await clAuth(); await fetch(`${RT.url}/now/${encodeURIComponent(rtKey(me.id))}.json?auth=${encodeURIComponent(t)}`, { method: 'DELETE' }).catch(() => {}); RT.lastSig = ''; }
+    FR.lastNow = ''; FR.lastStatsAt = Date.now();
+    toast('친구 서버에서 내 정보를 지웠어요');
+  }
   catch (e) { toast('지우지 못했어요: ' + (e.detail || e.message), 5000); }
 }
 
@@ -4498,8 +4542,8 @@ function dragTracker(el, opts){
     if (!st || e.pointerId !== st.id) return;
     const dx = e.clientX - st.x, dy = e.clientY - st.y;
     if (!st.lock) {
-      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.3 && opts.x) st.lock = 'x';
-      else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.3 && opts.y && dy > 0) st.lock = 'y';
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.3 && typeof opts.x === 'function') st.lock = 'x';
+      else if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.3 && typeof opts.y === 'function' && dy > 0) st.lock = 'y';
       else if (Math.abs(dy) > 10 || Math.abs(dx) > 10) { st = null; return; }
       else return;
       try { el.setPointerCapture(e.pointerId); } catch {}
@@ -4531,7 +4575,6 @@ function bindPageSwipe(){
   dragTracker(main, {
     touchOnly: true,
     skip: e => document.body.classList.contains('player-open') || !$('reqDlg').hidden || inHScroll(e.target),
-    x: true,
     start(){
       back = curView === 'detail' || curView === 'set' || (curView === 'fri' && FR.page !== 'main');
       from = TAB_ORDER.indexOf(curTabKey());
@@ -4627,7 +4670,6 @@ async function swipeSkip(dir){
 function bindCoverSwipe(){
   const wrap = $('coverWrap'), pl = $('player');
   dragTracker(wrap, {
-    x: true, y: true,
     start(lock){
       if (lock === 'x') { wrap.style.transition = 'none'; wrap.style.willChange = 'transform,opacity'; }
       else { pl.style.transition = 'none'; }
@@ -4681,7 +4723,6 @@ const RT_URLS = [
   `https://${FB.projectId}-default-rtdb.europe-west1.firebasedatabase.app`
 ];
 const RT = { url: LS.get('luma_rtdb') || '', es: null, ok: false, live: {}, skew: 0, skews: [], pushT: 0, lastSig: '', hbT: 0, sentAt: 0, failed: 0, reopenT: 0, mineAt: 0 };
-const srvNow = () => Date.now() + RT.skew;
 async function rtFind(){
   if (RT.url) return RT.url;
   const t = await clAuth();
@@ -4704,15 +4745,17 @@ function rtApply(path, data){
     else { const o = RT.live[id] = RT.live[id] || {}; if (data == null) delete o[parts[1]]; else o[parts[1]] = data; }
   }
   // 내 기록으로 서버 시각 차이 계산
-  if (me && RT.live[me.id] && RT.live[me.id].at && RT.sentAt && RT.live[me.id].at !== RT.mineAt) {
-    RT.mineAt = RT.live[me.id].at;
-    const est = RT.live[me.id].at - (RT.sentAt + (Date.now() - RT.sentAt) / 2);
+  const mineRec = me && RT.live[rtKey(me.id)];
+  if (mineRec && mineRec.at && RT.sentAt && mineRec.at !== RT.mineAt) {
+    RT.mineAt = mineRec.at;
+    const est = mineRec.at - (RT.sentAt + (Date.now() - RT.sentAt) / 2);
     if (Date.now() - RT.sentAt < 5000) { RT.skews.push(est); if (RT.skews.length > 7) RT.skews.shift(); RT.skew = RT.skews.slice().sort((a, b) => a - b)[RT.skews.length >> 1]; }
   }
   liveMerge(); liveRender(); folCheck();
 }
 async function rtOpen(){
-  if (!friOn() || RT.es || document.hidden && !S.web) return;
+  if (!friOn() || RT.es || RT.opening || document.hidden && !S.web) return;
+  RT.opening = true;
   try {
     const base = await rtFind(); if (!base) { RT.ok = false; return; }
     const t = await clAuth();
@@ -4729,6 +4772,7 @@ async function rtOpen(){
     // 토큰은 1시간짜리라 50분마다 새로 연결
     setTimeout(() => { if (RT.es === es) reopen('토큰 갱신', 200); }, 50 * 60e3);
   } catch (e) { RT.ok = false; dlog('친구 실시간 연결 실패 ' + (e.status || '')); }
+  finally { RT.opening = false; }
 }
 /* 서버 시각 재기: 서버가 채운 시각을 돌려받아 내 시계와의 차이를 구해요 */
 async function rtSync(){
@@ -4737,7 +4781,7 @@ async function rtSync(){
     const t = await clAuth();
     for (let k = 0; k < 2; k++) {
       const t0 = Date.now();
-      const r = await fetch(`${RT.url}/t/${encodeURIComponent(me.id)}.json?auth=${encodeURIComponent(t)}`, { method: 'PUT', body: JSON.stringify({ '.sv': 'timestamp' }) });
+      const r = await fetch(`${RT.url}/t/${encodeURIComponent(rtKey(me.id))}.json?auth=${encodeURIComponent(t)}`, { method: 'PUT', body: JSON.stringify({ '.sv': 'timestamp' }) });
       const t1 = Date.now();
       if (!r.ok) return;
       const srv = +(await r.text());
@@ -4757,20 +4801,24 @@ async function rtPush(force){
   RT.lastSig = sig;
   try {
     const t = await clAuth();
-    const url = `${RT.url}/now/${encodeURIComponent(me.id)}.json?auth=${encodeURIComponent(t)}&print=silent`;
+    const url = `${RT.url}/now/${encodeURIComponent(rtKey(me.id))}.json?auth=${encodeURIComponent(t)}&print=silent`;
     RT.sentAt = Date.now();
     if (!n) await fetch(url, { method: 'DELETE' });
     else await fetch(url, { method: 'PUT', body: JSON.stringify({ uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing,
-      name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: FOL.uid ? (folUser() || {}).name || '' : '' }) });
+      sid: me.id, name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: FOL.uid ? (folUser() || {}).name || '' : '' }) });
   } catch { RT.lastSig = ''; }
 }
 /* 실시간 정보를 친구 목록에 합치기 */
 function liveMerge(){
-  for (const [id, v] of Object.entries(RT.live)) {
+  const liveIds = new Set();
+  for (const [key, v] of Object.entries(RT.live)) {
+    if (!v || typeof v !== 'object') continue;
+    const id = v.sid || key;
+    liveIds.add(id);
     if (me && id === me.id) continue;
     let u = FR.users.find(x => x.id === id);
     if (!u) { u = { id, name: v.name || id, img: v.img || '' }; FR.users.push(u); }
-    if (!v || !v.uri) { u.now = null; continue; }
+    if (!v.uri) { u.now = null; continue; }
     const localAt = (v.at || 0) - RT.skew;
     if (!u.nowAt || localAt >= u.nowAt - 1000 || RT.ok) {
       u.now = { uri: v.uri, id: v.id, n: v.n, a: v.a, img: v.img_t || '', big: v.big || '', dur: v.dur || 0, pos: v.pos || 0, playing: !!v.playing, with: v.with || '' };
@@ -4779,7 +4827,7 @@ function liveMerge(){
     }
   }
   // 실시간 목록에서 사라진 친구(공유 끔) → 듣는 곡 지우기
-  if (RT.ok) for (const u of FR.users) if (!(me && u.id === me.id) && !RT.live[u.id] && u.now && Date.now() - (u.nowAt || 0) < 3600e3) u.now = null;
+  if (RT.ok) for (const u of FR.users) if (!(me && u.id === me.id) && !liveIds.has(u.id) && u.now && Date.now() - (u.nowAt || 0) < 3600e3) u.now = null;
 }
 let liveRT = 0;
 function liveRender(){
@@ -4928,12 +4976,14 @@ async function startApp(){
   if (USE_SDK) initSDK();
   loadPlaylists();
   loadRecs();
-  setTimeout(loadLikes, 1500);
+  setTimeout(loadLikes, 4000);
   if (LS.get('luma_after') === 'spot') { LS.del('luma_after'); goTab('spot'); }
   else if (SET.start === 'spot') goTab('spot');
-  if (hasScopes(NEED_SPOT)) api('/me/player/recently-played?limit=50').then(j => importRecent(j.items)).catch(() => {});
+  if (hasScopes(NEED_SPOT)) getRecent().then(j => importRecent(j.items)).catch(() => {});
   pollRemote();
-  setInterval(() => { if (tok && !document.hidden && !S.web) pollRemote(); }, 2500);
+  // 다른 기기 상태 확인: 재생 중이면 2.5초마다, 멈춰 있으면 5초마다
+  let pollN = 0;
+  setInterval(() => { if (!tok || document.hidden || S.web) return; if (S.paused && ++pollN % 2) return; pollRemote(); }, 2500);
   if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); setTimeout(() => { rtOpen().then(() => rtPush(true)); friLoad().then(() => { liveMerge(); renderLiveStrip(); }); }, 1500); }
 }
 
@@ -5154,7 +5204,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { RT, FOL, rtApply, startFollow, stopFollow, togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
+window.LumaTest = { rtKey, RT, FOL, rtApply, startFollow, stopFollow, togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
 init();
 })();
 </script>
