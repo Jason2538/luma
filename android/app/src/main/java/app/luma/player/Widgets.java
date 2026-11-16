@@ -15,6 +15,7 @@ import android.graphics.Shader;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -41,7 +42,8 @@ final class Widgets {
     private static String title = "", artist = "", artUrl = "", plain = "", msg = "", src = "", lyId = "";
     private static long[] times = new long[0];
     private static String[] texts = new String[0];
-    private static int lastIdx = -2;
+    private static int lastIdx = -2, page, fontSp = 20;
+    private static String anim = "slide", lastSig = "";
     private static Bitmap art;
 
     private Widgets() { }
@@ -61,6 +63,7 @@ final class Widgets {
         final Context a = c.getApplicationContext();
         MAIN.post(() -> {
             alive = false;
+            lastSig = "";
             empty = true;
             playing = false;
             times = new long[0];
@@ -93,6 +96,8 @@ final class Widgets {
             app = c.getApplicationContext();
             try {
                 JSONObject o = new JSONObject(json);
+                fontSp = Math.max(12, Math.min(40, o.optInt("fs", fontSp)));
+                anim = o.optString("an", anim);
                 if (o.optBoolean("empty")) {
                     empty = true;
                     playing = false;
@@ -135,7 +140,17 @@ final class Widgets {
             } catch (Exception e) {
                 return;
             }
-            renderAll(app);
+            // 위치만 다시 알려 준 거면 화면은 그대로 두고 시계만 맞춰요 (줄 넘김·진행바는 ticker가 해요)
+            String sig = empty + "|" + title + "|" + artist + "|" + playing + "|" + lyId + "|" + times.length + "|" + plain.length() + "|" + msg + "|" + fontSp + "|" + anim + "|" + artUrl;
+            if (!sig.equals(lastSig)) {
+                lastSig = sig;
+                renderAll(app);
+            } else if (!empty && hasWidgets(app)) {
+                try {
+                    int idx = times.length > 0 ? curIdx() : -2;
+                    if (idx != lastIdx || !playing) partial(app, idx != lastIdx);     // 멈춘 채로 위치를 옮겼을 때
+                } catch (Exception ignored) { }
+            }
             startTicker();
         });
     }
@@ -170,8 +185,8 @@ final class Widgets {
         if (!alive || app == null) { ticking = false; return; }
         boolean on = hasWidgets(app);
         long now = SystemClock.elapsedRealtime();
+        if (now - lastJsTick >= 2000) { lastJsTick = now; MainActivity.tick(); }   // Luma 화면이 뒤에 있어도 상태를 계속 확인하게
         if (on) {
-            if (now - lastJsTick >= 2000) { lastJsTick = now; MainActivity.tick(); }
             if (!empty && playing) {
                 try {
                     int idx = times.length > 0 ? curIdx() : -2;
@@ -196,29 +211,61 @@ final class Widgets {
         }
         int[] b = m.getAppWidgetIds(new ComponentName(c, LyricsWidget.class));
         if (b.length > 0) {
-            RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lyrics);
+            RemoteViews v = new RemoteViews(c.getPackageName(), lyLayout());
             v.setProgressBar(R.id.w_prog, 200, prog, false);
-            if (lyricsToo) setLyrics(v);
+            if (lyricsToo) setLyrics(v, true);
             m.partiallyUpdateAppWidget(b, v);
         }
         if (lyricsToo) lastIdx = times.length > 0 ? curIdx() : -2;
     }
 
-    private static void setLyrics(RemoteViews v) {
+    private static int lyLayout() {
+        switch (anim) {
+            case "none": return R.layout.widget_lyrics_none;
+            case "fade": return R.layout.widget_lyrics_fade;
+            case "slow": return R.layout.widget_lyrics_slow;
+            default: return R.layout.widget_lyrics_slide;
+        }
+    }
+
+    private static final int[][] PAGE = {
+            {R.id.w_a0, R.id.w_a1, R.id.w_a2, R.id.w_a3},
+            {R.id.w_b0, R.id.w_b1, R.id.w_b2, R.id.w_b3}
+    };
+
+    private static void fillPage(RemoteViews v, int p, int i) {
+        float small = Math.max(11f, fontSp * 0.68f);
+        v.setTextViewText(PAGE[p][0], line(i - 1));
+        v.setTextViewText(PAGE[p][1], i < 0 ? "♪" : line(i));
+        v.setTextViewText(PAGE[p][2], line(i + 1));
+        v.setTextViewText(PAGE[p][3], line(i + 2));
+        v.setTextViewTextSize(PAGE[p][0], TypedValue.COMPLEX_UNIT_SP, small);
+        v.setTextViewTextSize(PAGE[p][1], TypedValue.COMPLEX_UNIT_SP, fontSp);
+        v.setTextViewTextSize(PAGE[p][2], TypedValue.COMPLEX_UNIT_SP, small);
+        v.setTextViewTextSize(PAGE[p][3], TypedValue.COMPLEX_UNIT_SP, small);
+    }
+
+    /** flip = 줄이 바뀌었을 때: 안 보이는 쪽에 새 줄을 채우고 넘겨서 넘김 효과가 나게 해요 */
+    private static void setLyrics(RemoteViews v, boolean flip) {
         if (!empty && times.length > 0) {
             int i = curIdx();
             v.setViewVisibility(R.id.w_sync, View.VISIBLE);
             v.setViewVisibility(R.id.w_plain, View.GONE);
-            v.setTextViewText(R.id.w_l0, line(i - 1));
-            v.setTextViewText(R.id.w_l1, i < 0 ? "♪" : line(i));
-            v.setTextViewText(R.id.w_l2, line(i + 1));
-            v.setTextViewText(R.id.w_l3, line(i + 2));
+            if (flip) {
+                page = 1 - page;
+                fillPage(v, page, i);
+            } else {
+                fillPage(v, 0, i);
+                fillPage(v, 1, i);
+            }
+            v.setDisplayedChild(R.id.w_sync, page);
         } else {
             v.setViewVisibility(R.id.w_sync, View.GONE);
             v.setViewVisibility(R.id.w_plain, View.VISIBLE);
             String t = empty ? (alive ? "노래를 틀면 가사가 여기에 나와요" : "눌러서 Luma를 열면 가사가 나와요")
                     : !plain.isEmpty() ? plain : msg;
             v.setTextViewText(R.id.w_plain, t);
+            v.setTextViewTextSize(R.id.w_plain, TypedValue.COMPLEX_UNIT_SP, Math.max(12f, fontSp * 0.72f));
         }
     }
 
@@ -257,9 +304,9 @@ final class Widgets {
                 m.updateAppWidget(now, v);
             }
             if (m.getAppWidgetIds(ly).length > 0) {
-                RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lyrics);
+                RemoteViews v = new RemoteViews(c.getPackageName(), lyLayout());
                 common(c, v);
-                setLyrics(v);
+                setLyrics(v, false);
                 v.setTextViewText(R.id.w_src, empty ? "" : src);
                 m.updateAppWidget(ly, v);
             }
@@ -275,7 +322,8 @@ final class Widgets {
         else if (A_NEXT.equals(a)) MainActivity.dispatch("next");
         else if (A_TOGGLE.equals(a)) {
             MainActivity.dispatch(playing ? "pause" : "play");
-            MAIN.post(() -> {              // 누르자마자 모양부터 바꿔요 (진짜 상태는 곧 Luma가 다시 알려 줘요)
+            MAIN.post(() -> {
+                lastSig = "";              // 누르자마자 모양부터 바꿔요 (진짜 상태는 곧 Luma가 다시 알려 줘요)
                 pos = curPos();
                 at = SystemClock.elapsedRealtime();
                 playing = !playing;

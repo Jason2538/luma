@@ -671,6 +671,10 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .fHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .fShare{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);font-size:13px;font-weight:600;margin-bottom:8px;transition:background .3s,scale .35s var(--spring)}
 .fShare:active{scale:.94}
+.srvIn{display:flex;gap:8px;align-items:center;flex:1 1 260px;min-width:0}
+.srvIn input{flex:1;min-width:0;padding:9px 12px;border-radius:12px;border:1px solid var(--faint);background:rgba(255,255,255,.06);color:inherit;font:inherit;font-size:13px}
+.fSrv{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 16px;padding:12px 16px;border-radius:16px;background:rgba(255,160,70,.1);border:1px solid rgba(255,160,70,.25);font-size:13.5px;line-height:1.5}
+.fSrv span{min-width:0}
 .fHb{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .fRk .old{font-style:normal;font-size:11px;color:var(--dim);margin-left:6px}
 .fDiag{margin:4px 0 18px;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--faint);animation:itemIn .4s var(--ease) both}
@@ -1047,6 +1051,14 @@ a.saveBtn{text-decoration:none}
         <div class="row"><div class="rl"><b>시작 화면</b><small>Luma를 열면 처음 보일 화면</small></div>
           <div class="seg" id="setStart"><span class="ind"></span><button data-v="home">홈</button><button data-v="spot">Spotify</button></div></div>
       </div>
+      <div class="setGroup" id="setAppGroup" hidden><h2>앱 · 위젯</h2>
+        <div class="row"><div class="rl"><b>뒤에서 계속 동기화</b><small>Luma를 내려 두고 Spotify 앱으로 들어도 위젯과 친구 공유가 따라가요. 알림창에 "Luma" 알림이 계속 떠 있어요</small></div>
+          <button class="tg" id="setBg" role="switch" aria-checked="true" aria-label="뒤에서 계속 동기화"></button></div>
+        <div class="row"><div class="rl"><b>위젯 가사 크기</b></div>
+          <div class="seg" id="setWSize"><span class="ind"></span><button data-v="s">작게</button><button data-v="m">보통</button><button data-v="l">크게</button><button data-v="xl">아주 크게</button></div></div>
+        <div class="row"><div class="rl"><b>위젯 가사 넘김 효과</b><small>가사 줄이 바뀔 때의 움직임</small></div>
+          <div class="seg" id="setWAnim"><span class="ind"></span><button data-v="none">없음</button><button data-v="fade">서서히</button><button data-v="slide">위로 밀기</button><button data-v="slow">천천히 밀기</button></div></div>
+      </div>
       <div class="setGroup" id="setFriGroup"><h2>친구</h2>
         <div class="row"><div class="rl"><b>친구 기능</b><small>Luma에 로그인한 친구들과 듣는 곡·재생 기록을 나누고 플레이리스트를 같이 만들어요</small></div>
           <button class="tg" id="setFriOn" role="switch" aria-checked="true" aria-label="친구 기능"></button></div>
@@ -1056,6 +1068,10 @@ a.saveBtn{text-decoration:none}
           <button class="tg" id="setShStats" role="switch" aria-checked="true" aria-label="재생 기록 공유"></button></div>
         <div class="row"><div class="rl"><b>내가 넣은 가사 공유</b><small>직접 넣은 가사를 다른 사람이 그 곡을 틀 때도 보여 주고, 친구가 넣은 가사도 받아 와요</small></div>
           <button class="tg" id="setShLyr" role="switch" aria-checked="true" aria-label="내가 넣은 가사 공유"></button></div>
+        <div class="row" id="setSrvRow"><div class="rl"><b>Luma를 꺼도 친구에게 보이기</b><small id="setSrvTxt">Luma를 닫고 Spotify 앱으로만 들어도 서버가 1분마다 확인해서 친구에게 보여 줘요. 서버는 내 재생 상태와 최근 들은 곡만 읽을 수 있어요 (조작 권한 없음)</small></div>
+          <button class="tg" id="setSrv" role="switch" aria-checked="false" aria-label="Luma를 꺼도 친구에게 보이기"></button></div>
+        <div class="row" id="setSrvUrlRow"><div class="rl"><b>동기화 서버 주소</b><small>Cloudflare에 만든 서버 주소 (https://….workers.dev)</small></div>
+          <span class="srvIn"><input id="setSrvUrl" type="url" inputmode="url" placeholder="https://luma-sync.….workers.dev" autocomplete="off" spellcheck="false"><button class="pill" id="setSrvSave">저장</button></span></div>
         <div class="row"><div class="rl"><b>친구 서버에서 내 정보 지우기</b><small>올라간 내 이름·듣는 곡·기록을 지워요. 친구 기능이 켜져 있으면 다시 올라가요.</small></div><button class="pill danger" id="setFriForget">지우기</button></div>
       </div>
       <div class="setGroup"><h2>계정</h2>
@@ -1143,7 +1159,9 @@ a.saveBtn{text-decoration:none}
      (비워 두면 화면에서 직접 입력할 수 있어요. Client Secret 은 쓰지 않아요.)
    ===================================================================== */
 const LUMA_CONFIG = {
-  CLIENT_ID: '4abe61feeed849bc83968e79adf41cc2'
+  CLIENT_ID: '4abe61feeed849bc83968e79adf41cc2',
+  // 친구 동기화 서버(Cloudflare Workers) 주소. 예: 'https://luma-sync.내이름.workers.dev'
+  SYNC_URL: ''
 };
 
 (() => {
@@ -1175,7 +1193,7 @@ function toast(msg, ms = 4200, action){
 
 /* ---------- 애니메이션 도우미 ---------- */
 const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home', friOn: true, shNow: true, shStats: true, shLyr: true };
+const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home', friOn: true, shNow: true, shStats: true, shLyr: true, bg: true, wSize: 'm', wAnim: 'slide' };
 let SET = { ...SET_DEF };
 try { SET = { ...SET_DEF, ...JSON.parse(LS.get('luma_set') || '{}') }; } catch {}
 const saveSet = () => LS.set('luma_set', JSON.stringify(SET));
@@ -1293,10 +1311,61 @@ async function login(showDialog){
   if (showDialog) p.set('show_dialog', 'true');
   location.href = AUTH_URL + '?' + p;
 }
+/* ---------- 친구 동기화 서버: Luma를 꺼도 서버가 대신 Spotify에 물어봐서 친구에게 보여 줘요 ----------
+   서버에는 "재생 상태·최근 재생 읽기"만 되는 열쇠를 따로 받아서 넘겨요 (조작·플레이리스트 권한 없음). */
+const srvUrl = () => (LUMA_CONFIG.SYNC_URL || LS.get('luma_srv') || '').trim().replace(/\/+$/, '');
+const SRV = { on: LS.get('luma_srvon') === '1', err: '', busy: false };
+const SRV_SCOPES = 'user-read-playback-state user-read-currently-playing user-read-recently-played';
+async function srvReq(path, body){
+  const r = await fetch(srvUrl() + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : undefined);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw Object.assign(new Error(j.error || '서버 오류 ' + r.status), { status: r.status });
+  return j;
+}
+const srvPrefsBody = () => ({ tz: -new Date().getTimezoneOffset(), now: SET.friOn !== false && SET.shNow !== false, stats: SET.friOn !== false && SET.shStats !== false });
+async function srvLogin(){
+  if (!srvUrl()) return toast('동기화 서버 주소가 아직 없어요');
+  const v = rand(64), state = (IS_APP ? 'app.' : '') + 'srv.' + rand(16);
+  if (IS_APP) toast('브라우저에서 한 번 허용하면 자동으로 앱으로 돌아와요', 5000);
+  const challenge = b64u(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)));
+  LS.set('luma_v2', v); LS.set('luma_state2', state);
+  location.href = AUTH_URL + '?' + new URLSearchParams({ client_id: getCid(), response_type: 'code', redirect_uri: redirectUri(), scope: SRV_SCOPES,
+    state, code_challenge_method: 'S256', code_challenge: challenge });
+}
+async function srvCallback(code, err, st){
+  if (err || !code || st !== LS.get('luma_state2')) { toast('서버 동기화 허용이 취소됐어요'); return; }
+  try {
+    const j = await tokenReq({ grant_type: 'authorization_code', code, redirect_uri: redirectUri(), client_id: getCid(), code_verifier: LS.get('luma_v2') });
+    LS.del('luma_v2'); LS.del('luma_state2');
+    await srvReq('/register', { refresh_token: j.refresh_token, ...srvPrefsBody() });
+    SRV.on = true; SRV.err = ''; LS.set('luma_srvon', '1');
+    setTimeout(() => toast('이제 Luma를 꺼도 Spotify로 듣는 곡이 친구에게 보여요', 5000), 1500);
+  } catch (e) { setTimeout(() => toast('서버 동기화를 켜지 못했어요: ' + e.message, 6000), 1500); }
+}
+async function srvOff(){
+  SRV.on = false; LS.del('luma_srvon');
+  try { await srvReq('/unregister', { access_token: await getToken() }); toast('서버 동기화를 껐어요'); } catch (e) { toast('서버에서 지우지 못했어요: ' + e.message, 5000); }
+}
+let srvPrefsT = 0;
+function srvPrefs(){              // 공유 설정이 바뀌면 서버에도 알려요
+  if (!SRV.on || !srvUrl()) return;
+  clearTimeout(srvPrefsT);
+  srvPrefsT = setTimeout(async () => { try { await srvReq('/prefs', { access_token: await getToken(), ...srvPrefsBody() }); } catch {} }, 800);
+}
+async function srvCheck(){        // 서버에 아직 등록돼 있는지 (열쇠가 만료되면 다시 허용해야 해요)
+  if (!srvUrl() || !me) return;
+  try {
+    const j = await srvReq('/status?id=' + encodeURIComponent(me.id));
+    SRV.reach = true; SRV.err = j.err ? '다시 허용이 필요해요' : '';
+    if (SRV.on !== !!j.on) { SRV.on = !!j.on; if (j.on) LS.set('luma_srvon', '1'); else LS.del('luma_srvon'); }
+  } catch (e) { SRV.reach = false; SRV.err = '서버에 연결하지 못했어요'; }
+}
+
 async function handleCallback(){
   const q = new URLSearchParams(location.search);
   const code = q.get('code'), err = q.get('error'), st = q.get('state');
   history.replaceState(null, '', redirectUri());
+  if ((st || '').includes('srv.')) { await srvCallback(code, err, st); return !!tok; }
   if (err) { toast('로그인이 취소됐어요'); return false; }
   if (!code || st !== LS.get('luma_state')) { toast('로그인 정보가 맞지 않아요. 다시 시도해 주세요'); return false; }
   try {
@@ -3057,15 +3126,17 @@ function widgetsOn(){
   if (wOn === null || Date.now() - wOnAt > 10000) { try { wOn = !!N.hasWidgets(); } catch { wOn = false; } wOnAt = Date.now(); }
   return wOn;
 }
+const bgOn = () => IS_APP && SET.bg !== false;
+const W_SIZE = { s: 16, m: 20, l: 24, xl: 29 };
 function widgetState(){
-  const t = S.track; if (!t) return { o: { empty: true }, lyId: '', L: null };
+  const t = S.track; if (!t) return { o: { empty: true, fs: W_SIZE[SET.wSize] || 20, an: SET.wAnim || 'slide' }, lyId: '', L: null };
   const r = LY.trackId === t.id ? LY.res : null;
   const L = r && r.synced && r.synced.length ? r.synced : null;
   const plain = !L && r && r.plain ? r.plain.split(/\r?\n/).map(x => x.trim()).filter(Boolean).slice(0, 40).join('\n') : '';
   const msg = L || plain ? '' : LY.trackId !== t.id || (!r && /찾는 중/.test($('lyrics').textContent)) ? '가사를 찾는 중…' : r && r.instr ? '♪ 연주곡이에요' : '이 곡은 아직 가사가 없어요';
   const lyId = t.id + '|' + (L ? 's' + L.length + '|' + L[0].t + '|' + (L[L.length - 1].s || '').length : plain ? 'p' + plain.length : 'm' + msg) + '|' + ((r && r.src) || '');
   return { o: { title: t.name, artist: t.artists.join(', '), art: t.cover || t.thumb || '', playing: !S.paused, dur: Math.round(S.dur || 0),
-                plain, msg, src: (r && r.src) || '', lyId }, lyId, L };
+                plain, msg, src: (r && r.src) || '', lyId, fs: W_SIZE[SET.wSize] || 20, an: SET.wAnim || 'slide' }, lyId, L };
 }
 function widgetSync(){
   const N = window.LumaAndroid; if (!N || !N.updateWidget || !widgetsOn()) return;
@@ -3078,10 +3149,16 @@ function widgetSync(){
   try { N.updateWidget(JSON.stringify(o)); } catch {}
 }
 /* 앱이 2초마다 불러요. 화면이 꺼져 있거나 다른 앱을 쓰는 중이라 타이머가 느려져도 위젯이 따라가게 해요 */
+let wFriAt = 0;
 window.lumaTick = () => {
-  if (!tok || !widgetsOn()) return;
-  if (!S.web && document.hidden && Date.now() - wPollAt > (S.paused ? 9000 : 4500)) { wPollAt = Date.now(); pollRemote(); }
-  widgetSync();
+  if (!tok) return;
+  const w = widgetsOn();
+  if (!w && !bgOn()) return;
+  if (document.hidden) {
+    if (!S.web && Date.now() - wPollAt > (S.paused ? 9000 : 4500)) { wPollAt = Date.now(); pollRemote(); }
+    if (bgOn() && Date.now() - wFriAt > 5000) { wFriAt = Date.now(); friTick(); }
+  }
+  if (w) widgetSync();
 };
 
 /* ---------- 앱(APK) 알림창 · 백그라운드 재생 연동 ---------- */
@@ -3089,10 +3166,15 @@ let lastNative = '';
 function nativeSync(){
   const N = window.LumaAndroid; if (!N) return;
   try {
-    if (!S.track || !(S.web || widgetsOn())) { if (lastNative !== 'stop') { lastNative = 'stop'; N.stopMedia(); } return; }
+    if (!bgOn() && !widgetsOn() && (!S.track || !S.web)) { if (lastNative !== 'stop') { lastNative = 'stop'; N.stopMedia(); } return; }
+    if (!S.track) {                       // 듣는 곡이 없어도 앱을 붙잡아 둬요 (Spotify에서 틀면 바로 따라가게)
+      const idle = JSON.stringify({ idle: true, keep: true, remote: true, playing: false, title: '', artist: '', album: '', art: '', pos: 0, dur: 0 });
+      if (idle !== lastNative) { lastNative = idle; N.updateMedia(idle); }
+      return;
+    }
     const t = S.track;
     const msg = JSON.stringify({ title: t.name, artist: t.artists.join(', '), album: t.album || '', art: t.cover || t.thumb || '',
-      playing: !S.paused, pos: Math.round(curPos()), dur: Math.round(S.dur || 0), remote: !S.web });
+      playing: !S.paused, pos: Math.round(curPos()), dur: Math.round(S.dur || 0), remote: !S.web, keep: bgOn() || widgetsOn() });
     if (msg === lastNative) return;
     lastNative = msg; N.updateMedia(msg);
   } catch {}
@@ -3492,6 +3574,11 @@ function diagText(){
 }
 function renderSettings(){
   setSeg('setOut', outPref()); setSeg('setLys', SET.lys); setSeg('setStart', SET.start);
+  $('setAppGroup').hidden = !IS_APP;
+  if (IS_APP) { setSeg('setWSize', SET.wSize || 'm'); setSeg('setWAnim', SET.wAnim || 'slide'); setToggle('setBg', SET.bg !== false); }
+  $('setSrvUrlRow').hidden = !!LUMA_CONFIG.SYNC_URL; $('setSrvUrl').value = LS.get('luma_srv') || '';
+  $('setSrvRow').hidden = !srvUrl(); setToggle('setSrv', SRV.on);
+  if (SRV.err) $('setSrvTxt').textContent = SRV.err;
   $('setCf').value = SET.cf; $('setCf').style.setProperty('--p', (SET.cf / 12 * 100) + '%');
   $('setCfV').textContent = SET.cf ? `${SET.cf}초` : '꺼짐';
   setToggle('setAuto', SET.autoplay); setToggle('setLyrics', SET.lyrics); setToggle('setCalm', SET.calm);
@@ -3514,14 +3601,27 @@ function bindSettings(){
       if (id === 'setOut') { LS.set('luma_out', val); pickedDevice = null; if (val === 'luma') { sdkBroken = false; sdkFails = 0; clearTimeout(sdkBrokenT); } toast(val === 'luma' ? '다음 곡부터 Luma에서 재생해요' : '다음 곡부터 Spotify 앱을 조작해요'); }
       if (id === 'setLys') { SET.lys = val; saveSet(); applySettings(); }
       if (id === 'setStart') { SET.start = val; saveSet(); }
+      if (id === 'setWSize') { SET.wSize = val; saveSet(); widgetSync(); }
+      if (id === 'setWAnim') { SET.wAnim = val; saveSet(); widgetSync(); }
       setSeg(id, val); return;
     }
     const tg = e.target.closest('.tg');
+    if (tg && tg.id === 'setSrv') { if (SRV.on) srvOff().then(renderSettings); else srvLogin(); return; }
+    if (e.target.closest('#setSrvSave')) {
+      const u = $('setSrvUrl').value.trim().replace(/\/+$/, '');
+      if (u && !/^https:\/\//.test(u)) return toast('https:// 로 시작하는 주소를 넣어 주세요');
+      if (u) LS.set('luma_srv', u); else LS.del('luma_srv');
+      if (!u) return renderSettings();
+      return srvReq('/').then(j => { toast(j.service === 'luma-sync' ? '서버에 연결됐어요. 이제 위 스위치를 켜 주세요' : '주소는 저장했지만 Luma 서버가 아닌 것 같아요', 5000); renderSettings(); })
+        .catch(e => { toast('서버에 연결하지 못했어요: ' + e.message, 6000); renderSettings(); });
+    }
     if (tg) {
-      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm', setFriOn: 'friOn', setShNow: 'shNow', setShStats: 'shStats', setShLyr: 'shLyr' }[tg.id];
+      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm', setFriOn: 'friOn', setShNow: 'shNow', setShStats: 'shStats', setShLyr: 'shLyr', setBg: 'bg' }[tg.id];
       SET[key] = !(SET[key] !== false); saveSet(); applySettings(); setToggle(tg.id, SET[key]);
       if (key === 'shNow' || key === 'friOn') { FR.lastNow = 'x'; pushNow(true); }
       if (key === 'shStats' || key === 'friOn') pushStats(true);
+      if (key === 'shNow' || key === 'shStats' || key === 'friOn') srvPrefs();
+      if (key === 'bg') { lastNative = ''; nativeSync(); }
       if (key === 'shLyr' && SET.shLyr) { shChecked.clear(); uploadMyLyrics(); }
       return;
     }
@@ -3907,7 +4007,7 @@ const rtKey = id => String(id).replace(/[.$#\[\]\/%]/g, c => '%' + c.charCodeAt(
 const fsCommit = writes => fsReq(':commit', { method: 'POST', body: { writes } });
 
 /* 연결 상태 기록 (친구 탭의 "연결 상태"에서 보여요) */
-const APP_VER = '2026.11.16';
+const APP_VER = '2026.11.16b';
 const FD = { fsW: { at: 0, err: '' }, fsR: { at: 0, err: '' }, rtW: { at: 0, err: '' }, rtR: { at: 0 } };
 const fdOk = k => { FD[k].at = Date.now(); FD[k].err = ''; };
 const fdErr = (k, e) => { FD[k].err = String((e && (e.status || '')) + ' ' + ((e && (e.detail || e.message)) || e || '')).trim().slice(0, 90) || '실패'; };
@@ -4031,7 +4131,7 @@ async function pushStats(force){
   catch (e) { FR.lastStatsAt = 0; fdErr('fsW', e); dlog('친구: 기록 올리기 실패 ' + (e.status || '')); }
 }
 function friTick(){                         // 5초마다: 바뀐 게 있으면 올리기
-  if (!friOn() || document.hidden && !S.web) return;
+  if (!friOn() || document.hidden && !S.web && !bgOn()) return;
   pushNow(false);
   rtPush(false);
   if (!RT.es && !document.hidden) rtOpen();
@@ -4227,6 +4327,7 @@ function renderFriMain(box){
       <span class="fHb"><button class="fShare" data-fa="diag">${RT.ok ? '<i class="on"></i>' : '<i></i>'}연결 상태</button>
       <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></span></header>` + err +
     (FR.diag ? friDiagHTML() : '') +
+    (srvUrl() && !SRV.on && !FR.srvHide ? `<div class="fSrv"><span>${SRV.err ? esc(SRV.err) + '. ' : ''}<b>Luma를 꺼도 친구에게 보이게</b> 할 수 있어요. Spotify 앱으로만 들어도 서버가 대신 확인해 줘요.</span><button class="pill" data-fa="srvon">켜기</button></div>` : '') +
     (!FR.loaded && !err ? '<div class="spin"></div>' : '') +
     (FR.loaded ? `
     <div class="stTiles fTiles">
@@ -4280,11 +4381,12 @@ function friDiagHTML(){
     ${w('fsW', '내 정보 올리기')}${w('fsR', '친구 정보 받기')}
     ${line(RT.ok ? true : RT.url ? false : null, '실시간 연결', RT.ok ? '연결됨' + (FD.rtR.at ? ' · 마지막 소식 ' + agoS(FD.rtR.at) : '') : RT.url ? '끊김 (다시 연결하는 중)' : 'Realtime Database를 찾지 못함')}
     ${w('rtW', '실시간 올리기')}
+    ${line(SRV.on ? true : srvUrl() ? false : null, '서버 동기화', !srvUrl() ? '서버 주소가 아직 없어요' : SRV.on ? '켜짐 · Luma를 꺼도 1분마다 확인해요' : (SRV.err || '꺼짐 · Luma를 켜 둔 동안에만 올라가요'))}
     ${line(SET.shNow && SET.shStats ? true : false, '내 공유 설정', `지금 듣는 곡 ${SET.shNow ? '켜짐' : '꺼짐'} · 재생 기록 ${SET.shStats ? '켜짐' : '꺼짐'}`)}
     <h3>친구별 마지막 소식</h3>
     ${us.length ? us.map(u => { const last = Math.max(u.nowAt || 0, u.statsAt || 0, u.rtAt || 0);
-      return line(Date.now() - last < 180000 ? true : null, esc(u.name), `${agoS(last)}${u.v ? ' · Luma ' + u.v : ' · 예전 버전'}${u.app ? ' · ' + (u.app === 'app' ? '앱' : '웹') : ''}`); }).join('') : '<div class="fdL"><span>아직 친구가 없어요</span></div>'}
-    <p>친구 소식은 <b>친구가 Luma를 켜 둔 동안에만</b> 올라와요. 친구가 Spotify 앱으로만 듣거나 Luma를 닫으면 "마지막 소식" 시각에서 멈춰요. "예전 버전"으로 나오면 친구에게 Luma 새로고침을 부탁해 주세요.</p>
+      return line(Date.now() - last < 180000 ? true : null, esc(u.name), `${agoS(last)}${u.srv ? ' · 서버가 대신 확인 중' : u.v ? ' · Luma ' + u.v + (u.app ? ' · ' + (u.app === 'app' ? '앱' : '웹') : '') : ' · 예전 버전'}`); }).join('') : '<div class="fdL"><span>아직 친구가 없어요</span></div>'}
+    <p>친구가 설정에서 <b>"Luma를 꺼도 친구에게 보이기"</b>를 켜 두면 Spotify 앱으로만 들어도 1분 안에 올라와요. 꺼 둔 친구는 Luma를 켜 둔 동안에만 올라와요. "예전 버전"으로 나오면 친구에게 Luma 새로고침을 부탁해 주세요.</p>
     <button class="pill" data-fa="diagrefresh">지금 다시 확인</button></div>`;
 }
 function friNowSecHTML(){
@@ -4583,9 +4685,10 @@ function bindFri(){
     if (fa) {
       const a = fa.dataset.fa;
       if (a === 'back') return friGo(FR.page === 'list' || FR.page === 'friend' || FR.page === 'new' || FR.page === 'share' ? 'main' : 'main');
+      if (a === 'srvon') return srvLogin();
       if (a === 'diag') { FR.diag = !FR.diag; return renderFri(true); }
       if (a === 'diagrefresh') { fa.textContent = '확인하는 중…'; FR.lastNow = ''; RT.lastSig = '';
-        return Promise.all([pushNow(true), pushStats(true), rtPush(true), friLoad()]).then(() => { if (!RT.es) rtOpen(); renderFri(true); }); }
+        return Promise.all([pushNow(true), pushStats(true), rtPush(true), friLoad(), srvCheck()]).then(() => { if (!RT.es) rtOpen(); renderFri(true); }); }
       if (a === 'reload') { FR.err = null; renderFri(); return friLoad().then(() => renderFri(true)); }
       if (a === 'settings') { openSettings(); setTimeout(() => { const g = $('setFriGroup'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); return; }
       if (a === 'on') { SET.friOn = true; saveSet(); return openFri(); }
@@ -4952,7 +5055,7 @@ async function rtPush(force){
     RT.sentAt = Date.now();
     let r;
     if (!n && !ls) r = await fetch(url, { method: 'DELETE' });
-    else r = await fetch(url, { method: 'PUT', body: JSON.stringify({ v: APP_VER,
+    else r = await fetch(url, { method: 'PUT', body: JSON.stringify({ v: APP_VER, tz: -new Date().getTimezoneOffset(),
       ...(n ? { uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing } : {}),
       ...(ls || {}),
       sid: me.id, name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: n && FOL.uid ? (folUser() || {}).name || '' : '' }) });
@@ -4976,7 +5079,7 @@ function liveMerge(){
     let u = FR.users.find(x => x.id === id);
     if (!u) { u = { id, name: v.name || id, img: v.img || '', _fn: 0, _fs: 0 }; FR.users.push(u); }
     const localAt = (v.at || 0) - RT.skew;
-    u.rtAt = localAt; if (v.v) u.v = v.v;
+    u.rtAt = localAt; if (v.v) u.v = v.v; u.srv = v.src === 'srv';
     if (v.name) u.name = v.name; if (v.img) u.img = v.img;
     if (v.st && localAt >= (u._fs || 0) - 5000) {
       const o = u.stats || {};
@@ -5155,9 +5258,11 @@ async function startApp(){
   pollRemote();
   // 다른 기기 상태 확인: 재생 중이면 2.5초마다, 멈춰 있으면 5초마다
   let pollN = 0;
-  setInterval(() => { if (!tok || S.web || (document.hidden && !(IS_APP && widgetsOn()))) return; if ((S.paused || document.hidden) && ++pollN % 2) return; pollRemote(); }, 2500);
+  setInterval(() => { if (!tok || S.web || document.hidden) return; if (S.paused && ++pollN % 2) return; pollRemote(); }, 2500);   // 앱이 뒤에 있을 때는 lumaTick이 맡아요
   if (IS_APP) setInterval(widgetSync, 700);
   setTimeout(uploadMyLyrics, 8000);
+  if (IS_APP) setTimeout(nativeSync, 1500);
+  setTimeout(() => srvCheck().then(() => { if (curView === 'fri') renderFri(true); }), 3000);
   if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); setTimeout(() => { rtOpen().then(() => rtPush(true)); friLoad().then(() => { liveMerge(); renderLiveStrip(); }); }, 1500); }
 }
 
@@ -5378,7 +5483,7 @@ async function init(){
   else $('loginBox').hidden = false;
 }
 
-window.LumaTest = { rtKey, RT, FOL, rtApply, startFollow, stopFollow, togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
+window.LumaTest = { SRV, srvCheck, rtKey, RT, FOL, rtApply, startFollow, stopFollow, togglePlay, swipeSkip, LK, FB, FR, match, pushStats, pushNow, parseLRC, cleanTitle, applyTrack, openPlayer, S, Q, RP, ED, playList, setRight, skip, setPos, DLOG, chooseDevice, diagText };
 init();
 })();
 </script>

@@ -2,6 +2,6 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp" android:minHeight="180dp" android:minResizeWidth="180dp" android:minResizeHeight="150dp"
     android:targetCellWidth="4" android:targetCellHeight="3"
-    android:updatePeriodMillis="0" android:initialLayout="@layout/widget_lyrics" android:previewLayout="@layout/widget_lyrics"
+    android:updatePeriodMillis="0" android:initialLayout="@layout/widget_lyrics_slide" android:previewLayout="@layout/widget_lyrics_slide"
     android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen"
     android:description="@string/w_ly_desc" />

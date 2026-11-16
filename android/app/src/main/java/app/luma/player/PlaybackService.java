@@ -47,7 +47,7 @@ public class PlaybackService extends Service {
 
     private MediaSession session;
     private String title = "", artist = "", album = "", art = "", artLoaded = "";
-    private boolean playing, remote;
+    private boolean playing, remote, idle;
     private long pos, dur, at;
     private Bitmap artBitmap;
     private PowerManager.WakeLock wake;
@@ -62,7 +62,7 @@ public class PlaybackService extends Service {
             }
             pending = json;
             boolean isPlaying = false;
-            try { isPlaying = new JSONObject(json).optBoolean("playing"); } catch (Exception ignored) { }
+            try { JSONObject o = new JSONObject(json); isPlaying = o.optBoolean("playing") || o.optBoolean("keep"); } catch (Exception ignored) { }
             if (!isPlaying) return;
             try {
                 Intent i = new Intent(ctx, PlaybackService.class);
@@ -133,6 +133,7 @@ public class PlaybackService extends Service {
             artist = o.optString("artist", "");
             album = o.optString("album", "");
             playing = o.optBoolean("playing");
+            idle = o.optBoolean("idle");
             remote = o.optBoolean("remote");   // Spotify 앱 등 다른 기기에서 나는 소리를 조작만 하는 중
             pos = o.optLong("pos", 0);
             dur = o.optLong("dur", 0);
@@ -185,7 +186,7 @@ public class PlaybackService extends Service {
         PendingIntent content = PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         b.setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(title.isEmpty() ? "Luma" : title)
-                .setContentText(artist)
+                .setContentText(idle ? "Spotify에서 틀면 위젯과 친구 공유가 따라가요" : artist)
                 .setSubText(album)
                 .setContentIntent(content)
                 .setOngoing(playing)
@@ -197,7 +198,7 @@ public class PlaybackService extends Service {
                         playing ? "일시정지" : "재생", action(A_TOGGLE, 2)).build())
                 .addAction(new Notification.Action.Builder(Icon.createWithResource(this, R.drawable.ic_n_next), "다음 곡", action(A_NEXT, 3)).build())
                 ;
-        if (remote) b.setSubText("위젯 동기화 중");
+        if (remote) b.setSubText("동기화 중");
         else b.setStyle(new Notification.MediaStyle().setMediaSession(session.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
         if (artBitmap != null) b.setLargeIcon(artBitmap);
         return b.build();

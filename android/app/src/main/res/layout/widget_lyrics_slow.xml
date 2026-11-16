@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/w_root"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical"
+    android:background="@drawable/widget_bg" android:padding="14dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical">
+        <ImageView android:id="@+id/w_art" android:layout_width="44dp" android:layout_height="44dp"
+            android:src="@drawable/widget_art" android:scaleType="centerCrop" android:contentDescription="앨범 커버" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical" android:layout_marginStart="12dp" android:layout_marginEnd="4dp">
+            <TextView android:id="@+id/w_title" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Luma" android:textColor="#FFFFFFFF" android:textSize="15sp" android:textStyle="bold"
+                android:singleLine="true" android:ellipsize="end" />
+            <TextView android:id="@+id/w_artist" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="눌러서 Luma 열기" android:textColor="#B3FFFFFF" android:textSize="13sp"
+                android:singleLine="true" android:ellipsize="end" />
+        </LinearLayout>
+        <ImageButton android:id="@+id/w_prev" android:layout_width="40dp" android:layout_height="40dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_prev" android:scaleType="center"
+            android:contentDescription="이전 곡" />
+        <ImageButton android:id="@+id/w_toggle" android:layout_width="44dp" android:layout_height="44dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_play" android:scaleType="center"
+            android:contentDescription="재생 또는 일시정지" />
+        <ImageButton android:id="@+id/w_next" android:layout_width="40dp" android:layout_height="40dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_next" android:scaleType="center"
+            android:contentDescription="다음 곡" />
+    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:layout_marginTop="8dp">
+        <ViewFlipper android:id="@+id/w_sync" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:visibility="gone" android:autoStart="false" android:animateFirstView="false" android:inAnimation="@anim/w_slow_in" android:outAnimation="@anim/w_slow_out">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                android:orientation="vertical" android:gravity="center_vertical">
+                <TextView android:id="@+id/w_a0" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#66FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end" />
+                <TextView android:id="@+id/w_a1" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#FFFFFFFF" android:textSize="20sp" android:textStyle="bold" android:maxLines="3"
+                    android:ellipsize="end" android:paddingTop="4dp" android:paddingBottom="4dp" />
+                <TextView android:id="@+id/w_a2" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#99FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end" />
+                <TextView android:id="@+id/w_a3" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#55FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end"
+                    android:paddingTop="2dp" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                android:orientation="vertical" android:gravity="center_vertical">
+                <TextView android:id="@+id/w_b0" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#66FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end" />
+                <TextView android:id="@+id/w_b1" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#FFFFFFFF" android:textSize="20sp" android:textStyle="bold" android:maxLines="3"
+                    android:ellipsize="end" android:paddingTop="4dp" android:paddingBottom="4dp" />
+                <TextView android:id="@+id/w_b2" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#99FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end" />
+                <TextView android:id="@+id/w_b3" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:textColor="#55FFFFFF" android:textSize="14sp" android:singleLine="true" android:ellipsize="end"
+                    android:paddingTop="2dp" />
+            </LinearLayout>
+        </ViewFlipper>
+        <TextView android:id="@+id/w_plain" android:layout_width="match_parent" android:layout_height="match_parent"
+            android:gravity="center_vertical" android:text="눌러서 Luma를 열면 가사가 나와요" android:textColor="#B3FFFFFF"
+            android:textSize="14sp" android:lineSpacingExtra="3dp" android:ellipsize="end" />
+    </FrameLayout>
+    <TextView android:id="@+id/w_src" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="#55FFFFFF" android:textSize="10sp" android:singleLine="true" android:ellipsize="end" />
+    <ProgressBar android:id="@+id/w_prog" style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent" android:layout_height="3dp" android:layout_marginTop="8dp"
+        android:max="200" android:progress="0" android:progressDrawable="@drawable/widget_prog" />
+</LinearLayout>
