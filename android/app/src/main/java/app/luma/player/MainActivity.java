@@ -52,6 +52,18 @@ public class MainActivity extends Activity {
         public void stopMedia() {
             PlaybackService.stop();
         }
+
+        /** 홈 화면에 Luma 위젯을 올려 뒀는지 */
+        @JavascriptInterface
+        public boolean hasWidgets() {
+            return Widgets.hasWidgets(getApplicationContext());
+        }
+
+        /** 위젯에 보여 줄 곡·재생 위치·가사 */
+        @JavascriptInterface
+        public void updateWidget(String json) {
+            Widgets.update(getApplicationContext(), json);
+        }
     }
 
     /** 알림창·잠금화면 버튼을 누르면 Luma 화면에 전달해요 (play, pause, next, prev, seek:ms). */
@@ -61,6 +73,13 @@ public class MainActivity extends Activity {
         a.runOnUiThread(() -> {
             if (a.web != null) a.web.evaluateJavascript("window.lumaNative&&window.lumaNative(" + JSONObject.quote(action) + ")", null);
         });
+    }
+
+    /** 위젯이 있을 때 2초마다: 화면이 꺼져 타이머가 느려져도 Luma가 상태를 다시 알려 주게 해요. */
+    static void tick() {
+        final MainActivity a = current;
+        if (a == null || a.web == null) return;
+        a.web.evaluateJavascript("window.lumaTick&&window.lumaTick()", null);
     }
 
     private static boolean hostIn(Uri uri, String[] hosts) {
@@ -82,6 +101,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         current = this;
+        Widgets.appStarted(this);
         web = new WebView(this);
         web.setBackgroundColor(0xFF0E0E10);
         setContentView(web);
@@ -180,7 +200,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         PlaybackService.stop();
-        if (current == this) current = null;
+        if (current == this) {
+            current = null;
+            Widgets.appGone(this);
+        }
         if (web != null) {
             web.destroy();
             web = null;

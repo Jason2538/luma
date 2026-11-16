@@ -671,6 +671,16 @@ body.calm .pbg,body.calm #glow,body.calm .spKicker i,body.calm .skel{animation:n
 .fHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .fShare{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--faint);font-size:13px;font-weight:600;margin-bottom:8px;transition:background .3s,scale .35s var(--spring)}
 .fShare:active{scale:.94}
+.fHb{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.fRk .old{font-style:normal;font-size:11px;color:var(--dim);margin-left:6px}
+.fDiag{margin:4px 0 18px;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--faint);animation:itemIn .4s var(--ease) both}
+.fDiag h3{font-size:14px;margin:0 0 8px}.fDiag h3 small{color:var(--dim);font-weight:500;margin-left:6px}
+.fDiag h3:not(:first-child){margin-top:14px}
+.fdL{display:grid;grid-template-columns:10px minmax(90px,auto) 1fr;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.fdL i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.fdL i.ok{background:#6fdc8c}.fdL i.bad{background:#ff6b6b}
+.fdL span{color:var(--dim);word-break:break-all}
+.fDiag p{font-size:12.5px;color:var(--dim);line-height:1.6;margin:12px 0}
 .fShare i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
 .fShare i.on{background:#ffb27a;box-shadow:0 0 10px #ffb27a}
 .fEmpty{color:var(--dim);text-align:center;padding:34px 16px;line-height:1.8;font-size:14px;background:rgba(255,255,255,.04);border:1px solid var(--faint);border-radius:18px}
@@ -1044,6 +1054,8 @@ a.saveBtn{text-decoration:none}
           <button class="tg" id="setShNow" role="switch" aria-checked="true" aria-label="지금 듣는 곡 공유"></button></div>
         <div class="row"><div class="rl"><b>재생 기록 공유</b><small>오늘·이번 주 재생 시간, 많이 들은 곡·아티스트 (순위표와 취향 궁합에 쓰여요)</small></div>
           <button class="tg" id="setShStats" role="switch" aria-checked="true" aria-label="재생 기록 공유"></button></div>
+        <div class="row"><div class="rl"><b>내가 넣은 가사 공유</b><small>직접 넣은 가사를 다른 사람이 그 곡을 틀 때도 보여 주고, 친구가 넣은 가사도 받아 와요</small></div>
+          <button class="tg" id="setShLyr" role="switch" aria-checked="true" aria-label="내가 넣은 가사 공유"></button></div>
         <div class="row"><div class="rl"><b>친구 서버에서 내 정보 지우기</b><small>올라간 내 이름·듣는 곡·기록을 지워요. 친구 기능이 켜져 있으면 다시 올라가요.</small></div><button class="pill danger" id="setFriForget">지우기</button></div>
       </div>
       <div class="setGroup"><h2>계정</h2>
@@ -1163,7 +1175,7 @@ function toast(msg, ms = 4200, action){
 
 /* ---------- 애니메이션 도우미 ---------- */
 const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home', friOn: true, shNow: true, shStats: true };
+const SET_DEF = { cf: 0, autoplay: true, lyrics: true, lys: 'm', calm: false, start: 'home', friOn: true, shNow: true, shStats: true, shLyr: true };
 let SET = { ...SET_DEF };
 try { SET = { ...SET_DEF, ...JSON.parse(LS.get('luma_set') || '{}') }; } catch {}
 const saveSet = () => LS.set('luma_set', JSON.stringify(SET));
@@ -1537,19 +1549,60 @@ async function fromOvh(q){
 async function fetchLyrics(t){
   const q = { name: t.name, title: cleanTitle(t.name), artist: t.artists[0] || '', artist2: t.artists[1] || '',
               artists: t.artists || [], album: t.album, dur: Math.round(t.dur / 1000) };
+  const pS = SET.shLyr !== false ? sharedLyrGet(t.id) : Promise.resolve(null);   // 친구가 넣은 가사가 있으면 먼저
   const pL = fromLrclib(q).catch(e => ({ err: e }));       // 두 곳에 동시에 물어봐요
   const pN = fromNetease(q).catch(e => ({ err: e }));
+  const Sh = await pS; shChecked.add(t.id);
+  if (Sh && Sh.synced && Sh.synced.length) return Sh;
   const L = await pL;
   if (L && L.synced && L.synced.length) return L;          // LRCLIB 시간 가사가 있으면 바로 사용
   const N = await pN;
   if (N && N.synced && N.synced.length) return N;
-  let plain = (L && L.plain && L) || (N && N.plain && N) || null;
+  let plain = (Sh && Sh.plain && Sh) || (L && L.plain && L) || (N && N.plain && N) || null;
   if (!plain) { const O = await fromOvh(q).catch(() => null); if (O) plain = O; }
   if (plain) return plain;
   if (L && L.instr) return L;
   if (L && L.err) throw L.err;                             // LRCLIB 연결 자체가 실패 → 오류(새로고침 버튼)
   return null;
 }
+/* 누군가 직접 넣은 가사: 다른 사람이 그 곡을 틀어도 보이게 서버에 같이 둬요 */
+const lyrKey = id => 'L~' + rtKey(id);
+async function sharedLyrUrl(id){
+  if (!fbReady() || !me) return '';
+  const base = await rtFind(); if (!base) return '';
+  return `${base}/t/${encodeURIComponent(lyrKey(id))}.json?auth=${encodeURIComponent(await clAuth())}`;
+}
+async function sharedLyrGet(id){
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), 2500);
+  try {
+    const url = await sharedLyrUrl(id); if (!url) return null;
+    const r = await fetch(url, { signal: ac.signal }); if (!r.ok) return null;
+    const j = await r.json();
+    if (!j || (!j.lrc && !j.plain)) return null;
+    return { synced: j.lrc ? parseLRC(j.lrc) : null, raw: j.lrc || '', plain: j.plain || '',
+             src: (me && j.by === me.id ? '내가' : (j.byName || '친구') + '님이') + ' 넣은 가사', shared: true, by: j.by };
+  } catch { return null; } finally { clearTimeout(to); }
+}
+async function sharedLyrPut(id, data){
+  try {
+    const url = await sharedLyrUrl(id); if (!url) return false;
+    const r = data ? await fetch(url, { method: 'PUT', body: JSON.stringify({ lrc: data.lrc || '', plain: data.plain || '', name: data.name || '', artist: data.artist || '',
+        by: me.id, byName: myName(), at: { '.sv': 'timestamp' } }) })
+      : await fetch(url, { method: 'DELETE' });
+    return r.ok;
+  } catch { return false; }
+}
+/* 전에 넣어 둔 내 가사도 한 번 올려요 */
+async function uploadMyLyrics(){
+  if (SET.shLyr === false || !fbReady() || !me) return;
+  const m = myLyrAll(); let n = 0;
+  for (const [id, e] of Object.entries(m)) {
+    if (e.up || n >= 30) continue; n++;
+    if (await sharedLyrPut(id, e)) { const cur = myLyrAll(); if (cur[id]) { cur[id].up = 1; LS.set(MYL_KEY, JSON.stringify(cur)); } }
+  }
+}
+const shChecked = new Set();
+
 /* 찾은 가사는 이 기기에 저장해 두고(최근 80곡) 다음부터는 바로 불러와요 */
 function lyStoreGet(id){
   try {
@@ -1587,12 +1640,16 @@ async function loadLyrics(track, force, auto){
   let res = myLyrGet(track.id) || lyCache.get(track.id);
   if (res === undefined && !force) { res = lyStoreGet(track.id); if (res) lyCache.set(track.id, res); }
   if (res === undefined) {
-    try { res = await fetchLyrics(track); lyCache.set(track.id, res); lyStorePut(track.id, res); }
+    try { res = await fetchLyrics(track); lyCache.set(track.id, res); if (!res || !res.shared) lyStorePut(track.id, res); }
     catch { res = 'err'; }
   }
   if (seq !== LY.seq) return;
+  if (res !== 'err' && !(res && (res.mine || res.shared)) && !shChecked.has(track.id) && SET.shLyr !== false) {
+    shChecked.add(track.id);
+    sharedLyrGet(track.id).then(sh => { if (sh) { lyCache.set(track.id, sh); if (seq === LY.seq && !ED.on) loadLyrics(track); } });
+  }
   const el = $('lyrics');
-  LY.res = res && res !== 'err' ? res : null; updLyEditBtn();
+  LY.res = res && res !== 'err' ? res : null; updLyEditBtn(); setTimeout(widgetSync, 0);
   if (res === 'err') {
     setLyMsg('가사를 불러오지 못했어요.<br>네트워크가 불안정해요.' + RETRY_BTN + ADD_BTN);
     if (!auto) lyRetryT = setTimeout(() => { if (seq === LY.seq && S.track && S.track.id === track.id) loadLyrics(track, true, true); }, 4000);
@@ -1770,7 +1827,7 @@ function syncUI(){
   $('repBadge').hidden = S.repeat !== 2;
   if (!volDrag) { $('vol').value = S.vol; $('vol').style.setProperty('--p', S.vol + '%'); }
   $('state').textContent = (S.dev ? `${S.dev}에서 재생` : '') + sleepLabel();
-  nativeSync();
+  nativeSync(); widgetSync();
 }
 /* Spotify가 같은 곡의 다른 주소(지역별 대체 곡)를 알려줄 때, 내가 고른 목록의 주소로 맞춰요.
    안 맞추면 같은 곡인데 다른 곡으로 보고 가사·재생 목록 위치·좋아요가 어긋나요. */
@@ -2466,11 +2523,13 @@ function edSave(plainOnly){
   }
   data.name = ED.track.name; data.artist = ED.track.artists.join(', ');
   if (!myLyrPut(id, data)) return toast('저장 공간이 부족해서 저장하지 못했어요', 5000);
+  const share = SET.shLyr !== false && fbReady() && !!me;
+  if (share) sharedLyrPut(id, data).then(ok => { if (ok) { const cur = myLyrAll(); if (cur[id]) { cur[id].up = 1; LS.set(MYL_KEY, JSON.stringify(cur)); } } else toast('가사는 이 기기에 저장했지만, 친구들에게 공유하지는 못했어요', 5000); });
   const left = ED.lines.filter(l => l.t == null).length;
   lyCache.delete(id);
   closeLyEd();
   if (S.track && S.track.id === id) loadLyrics(S.track);
-  toast(plainOnly ? '가사를 저장했어요' : left ? `저장했어요. 시간을 안 맞춘 ${left}줄은 앞뒤 줄 사이에 나눠서 보여요` : '가사를 저장했어요. 이 곡을 틀 때마다 이 가사가 나와요', 5000);
+  toast((share ? '친구들도 이 곡에서 볼 수 있어요. ' : '') + (plainOnly ? '가사를 저장했어요' : left ? `저장했어요. 시간을 안 맞춘 ${left}줄은 앞뒤 줄 사이에 나눠서 보여요` : '가사를 저장했어요. 이 곡을 틀 때마다 이 가사가 나와요'), 5000);
 }
 function bindLyEd(){
   $('lyEditBtn').addEventListener('click', openLyEd);
@@ -2495,7 +2554,9 @@ function bindLyEd(){
     else if (a === 'save') edSave(false);
     else if (a === 'del') {
       if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = '한 번 더 누르면 지워져요'; return; }
+      const wasUp = (myLyrAll()[ED.track.id] || {}).up;
       myLyrPut(ED.track.id, null); lyCache.delete(ED.track.id); const id = ED.track.id; closeLyEd();
+      if (wasUp) sharedLyrPut(id, null);
       if (S.track && S.track.id === id) loadLyrics(S.track, true);
       toast('내가 넣은 가사를 지웠어요');
     }
@@ -2987,15 +3048,51 @@ async function pickDevice(id){
   }
 }
 
+/* ---------- 앱(APK) 홈 화면 위젯: 지금 듣는 곡 · 싱크 가사 ---------- */
+/* 가사는 줄마다 시각을 통째로 앱에 넘기고, 줄을 넘기는 건 앱이 직접 해요 (화면이 꺼져 있어도 안 밀리게).
+   여기서는 곡·재생/멈춤·위치가 바뀔 때와 3초마다 지금 위치만 다시 알려 줘요. */
+let wOn = null, wOnAt = 0, wSig = '', wAt = 0, wLy = '', wPos = 0, wPollAt = 0;
+function widgetsOn(){
+  const N = window.LumaAndroid; if (!N || !N.hasWidgets) return false;
+  if (wOn === null || Date.now() - wOnAt > 10000) { try { wOn = !!N.hasWidgets(); } catch { wOn = false; } wOnAt = Date.now(); }
+  return wOn;
+}
+function widgetState(){
+  const t = S.track; if (!t) return { o: { empty: true }, lyId: '', L: null };
+  const r = LY.trackId === t.id ? LY.res : null;
+  const L = r && r.synced && r.synced.length ? r.synced : null;
+  const plain = !L && r && r.plain ? r.plain.split(/\r?\n/).map(x => x.trim()).filter(Boolean).slice(0, 40).join('\n') : '';
+  const msg = L || plain ? '' : LY.trackId !== t.id || (!r && /찾는 중/.test($('lyrics').textContent)) ? '가사를 찾는 중…' : r && r.instr ? '♪ 연주곡이에요' : '이 곡은 아직 가사가 없어요';
+  const lyId = t.id + '|' + (L ? 's' + L.length + '|' + L[0].t + '|' + (L[L.length - 1].s || '').length : plain ? 'p' + plain.length : 'm' + msg) + '|' + ((r && r.src) || '');
+  return { o: { title: t.name, artist: t.artists.join(', '), art: t.cover || t.thumb || '', playing: !S.paused, dur: Math.round(S.dur || 0),
+                plain, msg, src: (r && r.src) || '', lyId }, lyId, L };
+}
+function widgetSync(){
+  const N = window.LumaAndroid; if (!N || !N.updateWidget || !widgetsOn()) return;
+  const { o, lyId, L } = widgetState();
+  const sig = JSON.stringify(o), now = Date.now(), pos = S.track ? Math.round(curPos()) : 0;
+  const drift = Math.abs(pos - (wPos + (o.playing ? now - wAt : 0)));      // 앞뒤로 넘겼는지
+  if (sig === wSig && now - wAt < 3000 && drift < 900) return;
+  if (lyId !== wLy && L) o.lines = L.map(l => [l.t, l.s || '♪']);          // 가사는 바뀔 때만 보내요
+  wSig = sig; wAt = now; wPos = pos; wLy = lyId; o.pos = pos;
+  try { N.updateWidget(JSON.stringify(o)); } catch {}
+}
+/* 앱이 2초마다 불러요. 화면이 꺼져 있거나 다른 앱을 쓰는 중이라 타이머가 느려져도 위젯이 따라가게 해요 */
+window.lumaTick = () => {
+  if (!tok || !widgetsOn()) return;
+  if (!S.web && document.hidden && Date.now() - wPollAt > (S.paused ? 9000 : 4500)) { wPollAt = Date.now(); pollRemote(); }
+  widgetSync();
+};
+
 /* ---------- 앱(APK) 알림창 · 백그라운드 재생 연동 ---------- */
 let lastNative = '';
 function nativeSync(){
   const N = window.LumaAndroid; if (!N) return;
   try {
-    if (!S.track || !S.web) { if (lastNative !== 'stop') { lastNative = 'stop'; N.stopMedia(); } return; }
+    if (!S.track || !(S.web || widgetsOn())) { if (lastNative !== 'stop') { lastNative = 'stop'; N.stopMedia(); } return; }
     const t = S.track;
     const msg = JSON.stringify({ title: t.name, artist: t.artists.join(', '), album: t.album || '', art: t.cover || t.thumb || '',
-      playing: !S.paused, pos: Math.round(curPos()), dur: Math.round(S.dur || 0) });
+      playing: !S.paused, pos: Math.round(curPos()), dur: Math.round(S.dur || 0), remote: !S.web });
     if (msg === lastNative) return;
     lastNative = msg; N.updateMedia(msg);
   } catch {}
@@ -3398,14 +3495,14 @@ function renderSettings(){
   $('setCf').value = SET.cf; $('setCf').style.setProperty('--p', (SET.cf / 12 * 100) + '%');
   $('setCfV').textContent = SET.cf ? `${SET.cf}초` : '꺼짐';
   setToggle('setAuto', SET.autoplay); setToggle('setLyrics', SET.lyrics); setToggle('setCalm', SET.calm);
-  setToggle('setFriOn', SET.friOn !== false); setToggle('setShNow', SET.shNow); setToggle('setShStats', SET.shStats);
+  setToggle('setFriOn', SET.friOn !== false); setToggle('setShNow', SET.shNow); setToggle('setShStats', SET.shStats); setToggle('setShLyr', SET.shLyr !== false);
   $('setFriGroup').hidden = !fbReady();
   renderSleep();
   $('setName').textContent = me ? (me.display_name || me.id) : '';
   $('setId').textContent = me ? `Spotify ID · ${me.id}` : '';
   const im = me && pickImg(me.images, 64);
   $('setAvaBox').innerHTML = im ? `<span class="acct"><img src="${esc(im)}" alt=""></span>` : `<span class="noimg">${esc(((me && me.display_name) || 'L').slice(0, 1))}</span>`;
-  $('setVer').textContent = `웹 버전 2026.11 · ${IS_APP ? '안드로이드 앱에서 실행 중' : '브라우저에서 실행 중'}`;
+  $('setVer').textContent = `웹 버전 ${APP_VER} · ${IS_APP ? '안드로이드 앱에서 실행 중' : '브라우저에서 실행 중'}`;
 }
 let clearArm = 0;
 function bindSettings(){
@@ -3421,10 +3518,11 @@ function bindSettings(){
     }
     const tg = e.target.closest('.tg');
     if (tg) {
-      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm', setFriOn: 'friOn', setShNow: 'shNow', setShStats: 'shStats' }[tg.id];
+      const key = { setAuto: 'autoplay', setLyrics: 'lyrics', setCalm: 'calm', setFriOn: 'friOn', setShNow: 'shNow', setShStats: 'shStats', setShLyr: 'shLyr' }[tg.id];
       SET[key] = !(SET[key] !== false); saveSet(); applySettings(); setToggle(tg.id, SET[key]);
       if (key === 'shNow' || key === 'friOn') { FR.lastNow = 'x'; pushNow(true); }
       if (key === 'shStats' || key === 'friOn') pushStats(true);
+      if (key === 'shLyr' && SET.shLyr) { shChecked.clear(); uploadMyLyrics(); }
       return;
     }
     const ch = e.target.closest('#setSleep button'); if (ch) return setSleep(ch.dataset.v);
@@ -3808,6 +3906,12 @@ const uidPath = () => encodeURIComponent(me.id);
 const rtKey = id => String(id).replace(/[.$#\[\]\/%]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 const fsCommit = writes => fsReq(':commit', { method: 'POST', body: { writes } });
 
+/* 연결 상태 기록 (친구 탭의 "연결 상태"에서 보여요) */
+const APP_VER = '2026.11.16';
+const FD = { fsW: { at: 0, err: '' }, fsR: { at: 0, err: '' }, rtW: { at: 0, err: '' }, rtR: { at: 0 } };
+const fdOk = k => { FD[k].at = Date.now(); FD[k].err = ''; };
+const fdErr = (k, e) => { FD[k].err = String((e && (e.status || '')) + ' ' + ((e && (e.detail || e.message)) || e || '')).trim().slice(0, 90) || '실패'; };
+
 /* ---------- 내 상태 올리기 ---------- */
 const FR = { users: [], lists: [], loaded: false, err: null, page: 'main', fid: null, lid: null, rank: 'week', rankBy: 'time', feedMore: false, recMore: false,
              lastNow: '', lastNowAt: 0, lastStatsAt: 0, tops: null, topsAt: 0, pollT: 0, add: null, addQ: '', addRes: [] };
@@ -3826,8 +3930,8 @@ async function pushNow(force){
   const stale = n && n.playing && Date.now() - FR.lastNowAt > 60000;
   if (!force && sig === FR.lastNow && !stale) return;
   FR.lastNow = sig; FR.lastNowAt = Date.now();
-  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), now: n, nowAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
-  catch (e) { FR.lastNow = ''; dlog('친구: 지금 듣는 곡 올리기 실패 ' + (e.status || '')); }
+  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), now: n, nowAt: Date.now(), app: IS_APP ? 'app' : 'web', v: APP_VER }); fdOk('fsW'); }
+  catch (e) { FR.lastNow = ''; fdErr('fsW', e); dlog('친구: 지금 듣는 곡 올리기 실패 ' + (e.status || '')); }
 }
 /* Spotify가 기억하는 많이 들은 아티스트·곡 (궁합 계산용, 세션마다 한 번) */
 async function myTops(){
@@ -3923,8 +4027,8 @@ async function pushStats(force){
   FR.lastStatsAt = Date.now();
   const all = await myStats();
   const stats = SET.shStats ? all : null;
-  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), stats, statsAt: Date.now(), app: IS_APP ? 'app' : 'web' }); }
-  catch (e) { FR.lastStatsAt = 0; dlog('친구: 기록 올리기 실패 ' + (e.status || '')); }
+  try { await fsSet('users/' + uidPath(), { name: myName(), img: myImg(), stats, statsAt: Date.now(), app: IS_APP ? 'app' : 'web', v: APP_VER }); fdOk('fsW'); }
+  catch (e) { FR.lastStatsAt = 0; fdErr('fsW', e); dlog('친구: 기록 올리기 실패 ' + (e.status || '')); }
 }
 function friTick(){                         // 5초마다: 바뀐 게 있으면 올리기
   if (!friOn() || document.hidden && !S.web) return;
@@ -3932,6 +4036,7 @@ function friTick(){                         // 5초마다: 바뀐 게 있으면 
   rtPush(false);
   if (!RT.es && !document.hidden) rtOpen();
   if (Date.now() - FR.lastStatsAt > 180000) pushStats(true);
+  if (!document.hidden && curView !== 'fri' && Date.now() - (FR.loadedAt || 0) > (RT.ok ? 300000 : 45000)) { FR.loadedAt = Date.now(); friLoad().then(renderLiveStrip); }
 }
 
 /* ---------- 받아 오기 ---------- */
@@ -3939,9 +4044,10 @@ async function friLoad(){
   if (!fbReady()) return;
   try {
     const [u, l] = await Promise.all([fsList('users'), fsList('lists')]);
-    FR.users = u; FR.lists = l.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); FR.loaded = true; FR.err = null;
+    u.forEach(x => { x._fn = x.nowAt || 0; x._fs = x.statsAt || 0; });
+    FR.users = u; FR.lists = l.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)); FR.loaded = true; FR.err = null; FR.loadedAt = Date.now(); fdOk('fsR');
     liveMerge();
-  } catch (e) { FR.err = e; dlog('친구: 불러오기 실패 ' + (e.status || '') + ' ' + (e.detail || '')); }
+  } catch (e) { FR.err = e; fdErr('fsR', e); dlog('친구: 불러오기 실패 ' + (e.status || '') + ' ' + (e.detail || '')); }
 }
 function friPoll(){
   clearTimeout(FR.pollT);
@@ -4118,7 +4224,9 @@ function renderFriMain(box){
   liveFullAt = Date.now();
   const html =
     `<header class="spHead fHead"><div><p class="spKicker fk"><i></i>Luma 친구 · ${all.length}명</p><h1>친구</h1></div>
-      <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></header>` + err +
+      <span class="fHb"><button class="fShare" data-fa="diag">${RT.ok ? '<i class="on"></i>' : '<i></i>'}연결 상태</button>
+      <button class="fShare" data-fa="settings" title="공유 설정">${SET.shNow || SET.shStats ? '<i class="on"></i>공유 중' : '<i></i>공유 꺼짐'}</button></span></header>` + err +
+    (FR.diag ? friDiagHTML() : '') +
     (!FR.loaded && !err ? '<div class="spin"></div>' : '') +
     (FR.loaded ? `
     <div class="stTiles fTiles">
@@ -4135,7 +4243,7 @@ function renderFriMain(box){
     <section class="spSec"><div class="secHead"><h2 class="sec">친구 순위표</h2>
       <div class="segs">${seg('fRankSeg', 'data-fr', [['today', '오늘'], ['week', '이번 주'], ['month', '이번 달']], per)}${seg('fBySeg', 'data-fby', [['time', '시간'], ['plays', '재생 횟수']], by)}</div></div>
       <div class="fRank">${ranked.map((r, i) => `<button class="fRk${me && r.u.id === me.id ? ' me' : ''}" data-fu="${esc(r.u.id)}" style="--i:${i}">
-        <span class="n">${i === 0 && r.v ? '👑' : i + 1}</span>${avatar(r.u)}<span class="nm">${esc(r.u.name || '')}${me && r.u.id === me.id ? ' <small>나</small>' : ''}${r.streak > 1 ? ` <em class="stk">🔥${r.streak}일</em>` : ''}</span>
+        <span class="n">${i === 0 && r.v ? '👑' : i + 1}</span>${avatar(r.u)}<span class="nm">${esc(r.u.name || '')}${me && r.u.id === me.id ? ' <small>나</small>' : ''}${r.streak > 1 ? ` <em class="stk">🔥${r.streak}일</em>` : ''}${!(me && r.u.id === me.id) && Date.now() - Math.max(r.u.statsAt || 0, r.u.rtAt || 0) > 600000 ? ` <em class="old">${ago(Math.max(r.u.statsAt || 0, r.u.rtAt || 0))} 기록</em>` : ''}</span>
         <span class="v">${fmtV(r.v)}</span><span class="bar"><i style="width:${Math.max(r.v ? 2 : 0, r.v / maxV * 100)}%"></i></span></button>`).join('')}</div>
     </section>
     ${ag.tracks.length ? `<section class="spSec"><div class="secHead"><h2 class="sec">이번 주 우리가 많이 들은 곡</h2><button class="link" data-fa="playagg">전체 재생</button></div>
@@ -4162,6 +4270,22 @@ function renderFriMain(box){
   if (box._h === html && box._pg === 'main') return;
   box.innerHTML = html; box._h = html; box._pg = 'main';
   requestAnimationFrame(() => ['fRankSeg', 'fBySeg'].forEach(id => { const sg = $(id); if (sg) placeSeg(sg); }));
+}
+const agoS = ts => !ts ? '아직 없음' : (Date.now() - ts < 90000 ? Math.max(1, Math.round((Date.now() - ts) / 1000)) + '초 전' : ago(ts));
+function friDiagHTML(){
+  const line = (ok, label, text) => `<div class="fdL"><i class="${ok === true ? 'ok' : ok === false ? 'bad' : ''}"></i><b>${label}</b><span>${esc(text)}</span></div>`;
+  const w = (k, name) => line(FD[k].err ? false : FD[k].at ? true : null, name, FD[k].err ? '실패 · ' + FD[k].err : FD[k].at ? '성공 · ' + agoS(FD[k].at) : '아직 시도 안 함');
+  const us = others();
+  return `<div class="fDiag"><h3>연결 상태 <small>Luma ${APP_VER} · ${IS_APP ? '앱' : '웹'}</small></h3>
+    ${w('fsW', '내 정보 올리기')}${w('fsR', '친구 정보 받기')}
+    ${line(RT.ok ? true : RT.url ? false : null, '실시간 연결', RT.ok ? '연결됨' + (FD.rtR.at ? ' · 마지막 소식 ' + agoS(FD.rtR.at) : '') : RT.url ? '끊김 (다시 연결하는 중)' : 'Realtime Database를 찾지 못함')}
+    ${w('rtW', '실시간 올리기')}
+    ${line(SET.shNow && SET.shStats ? true : false, '내 공유 설정', `지금 듣는 곡 ${SET.shNow ? '켜짐' : '꺼짐'} · 재생 기록 ${SET.shStats ? '켜짐' : '꺼짐'}`)}
+    <h3>친구별 마지막 소식</h3>
+    ${us.length ? us.map(u => { const last = Math.max(u.nowAt || 0, u.statsAt || 0, u.rtAt || 0);
+      return line(Date.now() - last < 180000 ? true : null, esc(u.name), `${agoS(last)}${u.v ? ' · Luma ' + u.v : ' · 예전 버전'}${u.app ? ' · ' + (u.app === 'app' ? '앱' : '웹') : ''}`); }).join('') : '<div class="fdL"><span>아직 친구가 없어요</span></div>'}
+    <p>친구 소식은 <b>친구가 Luma를 켜 둔 동안에만</b> 올라와요. 친구가 Spotify 앱으로만 듣거나 Luma를 닫으면 "마지막 소식" 시각에서 멈춰요. "예전 버전"으로 나오면 친구에게 Luma 새로고침을 부탁해 주세요.</p>
+    <button class="pill" data-fa="diagrefresh">지금 다시 확인</button></div>`;
 }
 function friNowSecHTML(){
   const us = others();
@@ -4459,6 +4583,9 @@ function bindFri(){
     if (fa) {
       const a = fa.dataset.fa;
       if (a === 'back') return friGo(FR.page === 'list' || FR.page === 'friend' || FR.page === 'new' || FR.page === 'share' ? 'main' : 'main');
+      if (a === 'diag') { FR.diag = !FR.diag; return renderFri(true); }
+      if (a === 'diagrefresh') { fa.textContent = '확인하는 중…'; FR.lastNow = ''; RT.lastSig = '';
+        return Promise.all([pushNow(true), pushStats(true), rtPush(true), friLoad()]).then(() => { if (!RT.es) rtOpen(); renderFri(true); }); }
       if (a === 'reload') { FR.err = null; renderFri(); return friLoad().then(() => renderFri(true)); }
       if (a === 'settings') { openSettings(); setTimeout(() => { const g = $('setFriGroup'); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 250); return; }
       if (a === 'on') { SET.friOn = true; saveSet(); return openFri(); }
@@ -4748,7 +4875,10 @@ function rtApply(path, data){
   if (!parts.length) { RT.live = data && typeof data === 'object' ? data : {}; }
   else {
     const id = parts[0];
-    if (parts.length === 1) { if (data == null) delete RT.live[id]; else RT.live[id] = data; }
+    if (parts.length === 1) {
+      if (data == null) { const old = RT.live[id]; delete RT.live[id]; const u = FR.users.find(x => x.id === ((old && old.sid) || id)); if (u && !(me && u.id === me.id)) u.now = null; }
+      else RT.live[id] = data;
+    }
     else { const o = RT.live[id] = RT.live[id] || {}; if (data == null) delete o[parts[1]]; else o[parts[1]] = data; }
   }
   // 내 기록으로 서버 시각 차이 계산
@@ -4758,6 +4888,7 @@ function rtApply(path, data){
     const est = mineRec.at - (RT.sentAt + (Date.now() - RT.sentAt) / 2);
     if (Date.now() - RT.sentAt < 5000) { RT.skews.push(est); if (RT.skews.length > 7) RT.skews.shift(); RT.skew = RT.skews.slice().sort((a, b) => a - b)[RT.skews.length >> 1]; }
   }
+  FD.rtR.at = Date.now();
   liveMerge(); liveRender(); folCheck();
 }
 async function rtOpen(){
@@ -4819,40 +4950,46 @@ async function rtPush(force){
     const t = await clAuth();
     const url = `${RT.url}/now/${encodeURIComponent(rtKey(me.id))}.json?auth=${encodeURIComponent(t)}&print=silent`;
     RT.sentAt = Date.now();
-    if (!n && !ls) await fetch(url, { method: 'DELETE' });
-    else await fetch(url, { method: 'PUT', body: JSON.stringify({
+    let r;
+    if (!n && !ls) r = await fetch(url, { method: 'DELETE' });
+    else r = await fetch(url, { method: 'PUT', body: JSON.stringify({ v: APP_VER,
       ...(n ? { uri: n.uri, id: n.id, n: n.n, a: n.a, img_t: n.img, big: n.big, dur: n.dur, pos: n.pos, playing: n.playing } : {}),
       ...(ls || {}),
       sid: me.id, name: myName(), img: myImg(), at: { '.sv': 'timestamp' }, with: n && FOL.uid ? (folUser() || {}).name || '' : '' }) });
-  } catch { RT.lastSig = ''; }
+    if (!r.ok) {                           // 거절당하면 다음에 다시 보내요 (전에는 성공한 줄 알고 멈췄어요)
+      const txt = await r.text().catch(() => '');
+      RT.lastSig = ''; fdErr('rtW', { status: r.status, message: txt.slice(0, 70) });
+      if (r.status === 401) CL.tok = null;
+      if (r.status === 404) { RT.url = ''; LS.del('luma_rtdb'); }
+      dlog('친구 실시간 올리기 실패 ' + r.status + ' ' + txt.slice(0, 50));
+    } else fdOk('rtW');
+  } catch (e) { RT.lastSig = ''; fdErr('rtW', e); }
 }
-/* 실시간 정보를 친구 목록에 합치기 */
+/* 실시간 정보를 친구 목록에 합치기.
+   친구 정보는 두 길(15초마다 읽는 Firestore, 바로 오는 실시간)로 오는데, 항상 더 새 것을 써요.
+   (전에는 실시간 쪽이 오래된 값이어도 그걸로 덮어써서 화면이 안 바뀔 수 있었어요) */
 function liveMerge(){
-  const liveIds = new Set();
   for (const [key, v] of Object.entries(RT.live)) {
     if (!v || typeof v !== 'object') continue;
     const id = v.sid || key;
-    liveIds.add(id);
     if (me && id === me.id) continue;
     let u = FR.users.find(x => x.id === id);
-    if (!u) { u = { id, name: v.name || id, img: v.img || '' }; FR.users.push(u); }
+    if (!u) { u = { id, name: v.name || id, img: v.img || '', _fn: 0, _fs: 0 }; FR.users.push(u); }
     const localAt = (v.at || 0) - RT.skew;
-    if (v.st && RT.ok) {                    // 재생 시간·최근 들은 곡은 실시간 값이 더 새 거예요
+    u.rtAt = localAt; if (v.v) u.v = v.v;
+    if (v.name) u.name = v.name; if (v.img) u.img = v.img;
+    if (v.st && localAt >= (u._fs || 0) - 5000) {
       const o = u.stats || {};
       u.stats = { ...o, day: v.st.d, week: v.st.w, month: v.st.m, todayMs: v.st.tMs, weekMs: v.st.wMs, monthMs: v.st.mMs,
                   todayPlays: v.st.tP, weekPlays: v.st.wP, monthPlays: v.st.mP, weekUniq: v.st.wU, streak: v.st.stk,
                   recent: Array.isArray(v.rec) ? v.rec : (o.recent || []) };
       u.statsAt = localAt;
     }
-    if (!v.uri) { u.now = null; continue; }
-    if (!u.nowAt || localAt >= u.nowAt - 1000 || RT.ok) {
-      u.now = { uri: v.uri, id: v.id, n: v.n, a: v.a, img: v.img_t || '', big: v.big || '', dur: v.dur || 0, pos: v.pos || 0, playing: !!v.playing, with: v.with || '' };
+    if (localAt >= (u._fn || 0) - 5000) {
+      u.now = v.uri ? { uri: v.uri, id: v.id, n: v.n, a: v.a, img: v.img_t || '', big: v.big || '', dur: v.dur || 0, pos: v.pos || 0, playing: !!v.playing, with: v.with || '' } : null;
       u.nowAt = localAt;
-      if (v.name) u.name = v.name; if (v.img) u.img = v.img;
     }
   }
-  // 실시간 목록에서 사라진 친구(공유 끔) → 듣는 곡 지우기
-  if (RT.ok) for (const u of FR.users) if (!(me && u.id === me.id) && !liveIds.has(u.id) && u.now && Date.now() - (u.nowAt || 0) < 3600e3) u.now = null;
 }
 let liveRT = 0, liveFullT = 0, liveFullAt = 0;
 /* 내 숫자도 기기 기록에서 바로 다시 계산 */
@@ -5018,7 +5155,9 @@ async function startApp(){
   pollRemote();
   // 다른 기기 상태 확인: 재생 중이면 2.5초마다, 멈춰 있으면 5초마다
   let pollN = 0;
-  setInterval(() => { if (!tok || document.hidden || S.web) return; if (S.paused && ++pollN % 2) return; pollRemote(); }, 2500);
+  setInterval(() => { if (!tok || S.web || (document.hidden && !(IS_APP && widgetsOn()))) return; if ((S.paused || document.hidden) && ++pollN % 2) return; pollRemote(); }, 2500);
+  if (IS_APP) setInterval(widgetSync, 700);
+  setTimeout(uploadMyLyrics, 8000);
   if (fbReady()) { setTimeout(() => { pushStats(true); pushNow(true); }, 4000); setInterval(friTick, 5000); setTimeout(() => { rtOpen().then(() => rtPush(true)); friLoad().then(() => { liveMerge(); renderLiveStrip(); }); }, 1500); }
 }
 

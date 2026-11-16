@@ -38,5 +38,15 @@
             android:name=".PlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- 홈 화면 위젯: 지금 듣는 곡 / 싱크 가사 -->
+        <receiver android:name=".NowWidget" android:exported="false" android:label="@string/w_now_name">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_now_info" />
+        </receiver>
+        <receiver android:name=".LyricsWidget" android:exported="false" android:label="@string/w_ly_name">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_lyrics_info" />
+        </receiver>
     </application>
 </manifest>

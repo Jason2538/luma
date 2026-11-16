@@ -47,7 +47,7 @@ public class PlaybackService extends Service {
 
     private MediaSession session;
     private String title = "", artist = "", album = "", art = "", artLoaded = "";
-    private boolean playing;
+    private boolean playing, remote;
     private long pos, dur, at;
     private Bitmap artBitmap;
     private PowerManager.WakeLock wake;
@@ -133,6 +133,7 @@ public class PlaybackService extends Service {
             artist = o.optString("artist", "");
             album = o.optString("album", "");
             playing = o.optBoolean("playing");
+            remote = o.optBoolean("remote");   // Spotify 앱 등 다른 기기에서 나는 소리를 조작만 하는 중
             pos = o.optLong("pos", 0);
             dur = o.optLong("dur", 0);
             at = SystemClock.elapsedRealtime();
@@ -145,8 +146,9 @@ public class PlaybackService extends Service {
         } catch (Exception e) {
             return;
         }
+        session.setActive(!remote);         // 다른 기기 재생 중에는 이어폰 버튼을 가로채지 않아요
         refresh();
-        if (playing) {
+        if (playing && !remote) {
             if (!wake.isHeld()) wake.acquire(4 * 60 * 60 * 1000L);
             if (wifi != null && !wifi.isHeld()) wifi.acquire();
         } else {
@@ -194,7 +196,9 @@ public class PlaybackService extends Service {
                 .addAction(new Notification.Action.Builder(Icon.createWithResource(this, playing ? R.drawable.ic_n_pause : R.drawable.ic_n_play),
                         playing ? "일시정지" : "재생", action(A_TOGGLE, 2)).build())
                 .addAction(new Notification.Action.Builder(Icon.createWithResource(this, R.drawable.ic_n_next), "다음 곡", action(A_NEXT, 3)).build())
-                .setStyle(new Notification.MediaStyle().setMediaSession(session.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
+                ;
+        if (remote) b.setSubText("위젯 동기화 중");
+        else b.setStyle(new Notification.MediaStyle().setMediaSession(session.getSessionToken()).setShowActionsInCompactView(0, 1, 2));
         if (artBitmap != null) b.setLargeIcon(artBitmap);
         return b.build();
     }
@@ -242,6 +246,7 @@ public class PlaybackService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         // 최근 앱 목록에서 Luma를 밀어서 닫으면 재생도 끝나요.
+        Widgets.appGone(this);
         shutdown();
         super.onTaskRemoved(rootIntent);
     }

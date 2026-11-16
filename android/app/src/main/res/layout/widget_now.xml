@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/w_root"
+    android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical"
+    android:gravity="center_vertical" android:background="@drawable/widget_bg" android:padding="12dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical">
+        <ImageView android:id="@+id/w_art" android:layout_width="52dp" android:layout_height="52dp"
+            android:src="@drawable/widget_art" android:scaleType="centerCrop" android:contentDescription="앨범 커버" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:orientation="vertical" android:layout_marginStart="12dp" android:layout_marginEnd="4dp">
+            <TextView android:id="@+id/w_title" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Luma" android:textColor="#FFFFFFFF" android:textSize="15sp" android:textStyle="bold"
+                android:singleLine="true" android:ellipsize="end" />
+            <TextView android:id="@+id/w_artist" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="눌러서 Luma 열기" android:textColor="#B3FFFFFF" android:textSize="13sp"
+                android:singleLine="true" android:ellipsize="end" />
+        </LinearLayout>
+        <ImageButton android:id="@+id/w_prev" android:layout_width="40dp" android:layout_height="40dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_prev" android:scaleType="center"
+            android:contentDescription="이전 곡" />
+        <ImageButton android:id="@+id/w_toggle" android:layout_width="44dp" android:layout_height="44dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_play" android:scaleType="center"
+            android:contentDescription="재생 또는 일시정지" />
+        <ImageButton android:id="@+id/w_next" android:layout_width="40dp" android:layout_height="40dp"
+            android:background="@drawable/widget_btn" android:src="@drawable/ic_n_next" android:scaleType="center"
+            android:contentDescription="다음 곡" />
+    </LinearLayout>
+    <ProgressBar android:id="@+id/w_prog" style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent" android:layout_height="3dp" android:layout_marginTop="8dp"
+        android:max="200" android:progress="0" android:progressDrawable="@drawable/widget_prog" />
+</LinearLayout>

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Luma</string>
+    <string name="w_now_name">Luma · 지금 듣는 곡</string>
+    <string name="w_ly_name">Luma · 싱크 가사</string>
+    <string name="w_now_desc">지금 듣는 곡과 재생 버튼을 보여줘요</string>
+    <string name="w_ly_desc">지금 듣는 곡의 가사를 노래에 맞춰 보여줘요</string>
 </resources>
